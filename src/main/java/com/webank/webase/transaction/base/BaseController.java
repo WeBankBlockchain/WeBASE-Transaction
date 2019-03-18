@@ -1,13 +1,3 @@
-package com.webank.webase.transaction.base;
-
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
-import java.util.List;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.validation.BindingResult;
-import org.springframework.validation.ObjectError;
-
 /*
  * Copyright 2012-2019 the original author or authors.
  *
@@ -23,6 +13,16 @@ import org.springframework.validation.ObjectError;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.webank.webase.transaction.base;
+
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
+import java.util.List;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.ObjectError;
+
 @Slf4j
 public abstract class BaseController {
     /**

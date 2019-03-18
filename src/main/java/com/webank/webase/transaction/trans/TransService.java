@@ -1,19 +1,3 @@
-package com.webank.webase.transaction.trans;
-
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
-import com.webank.webase.transaction.base.BaseResponse;
-import com.webank.webase.transaction.base.ConstantCode;
-import com.webank.webase.transaction.base.ConstantProperties;
-import com.webank.webase.transaction.front.FrontService;
-import java.util.List;
-import java.util.concurrent.RejectedExecutionException;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DuplicateKeyException;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
-import org.springframework.stereotype.Service;
-
 /*
  * Copyright 2012-2019 the original author or authors.
  *
@@ -29,6 +13,21 @@ import org.springframework.stereotype.Service;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.webank.webase.transaction.trans;
+
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.webank.webase.transaction.base.BaseResponse;
+import com.webank.webase.transaction.base.ConstantCode;
+import com.webank.webase.transaction.base.ConstantProperties;
+import com.webank.webase.transaction.front.FrontService;
+import java.util.List;
+import java.util.concurrent.RejectedExecutionException;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DuplicateKeyException;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.stereotype.Service;
 
 /**
  * TransService.

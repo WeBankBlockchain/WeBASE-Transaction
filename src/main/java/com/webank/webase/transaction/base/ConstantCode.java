@@ -1,5 +1,3 @@
-package com.webank.webase.transaction.base;
-
 /*
  * Copyright 2012-2019 the original author or authors.
  *
@@ -15,6 +13,8 @@ package com.webank.webase.transaction.base;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.webank.webase.transaction.base;
+
 public interface ConstantCode {
 
     // return success

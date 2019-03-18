@@ -1,13 +1,3 @@
-package com.webank.webase.transaction.schedule;
-
-import com.webank.webase.transaction.base.ConstantProperties;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.scheduling.annotation.SchedulingConfigurer;
-import org.springframework.scheduling.config.ScheduledTaskRegistrar;
-import org.springframework.scheduling.support.CronTrigger;
-import org.springframework.stereotype.Component;
-
 /*
  * Copyright 2012-2019 the original author or authors.
  *
@@ -23,6 +13,16 @@ import org.springframework.stereotype.Component;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.webank.webase.transaction.schedule;
+
+import com.webank.webase.transaction.base.ConstantProperties;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.SchedulingConfigurer;
+import org.springframework.scheduling.config.ScheduledTaskRegistrar;
+import org.springframework.scheduling.support.CronTrigger;
+import org.springframework.stereotype.Component;
+
 @Component
 @EnableScheduling
 public class SchedulerService implements SchedulingConfigurer {
