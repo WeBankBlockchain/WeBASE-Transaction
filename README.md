@@ -28,7 +28,14 @@
 ## 3.1 拉取代码
 执行命令：
 ```
-git clone http://xxx/webase-transcation.git
+git clone https://github.com/WeBankFinTech/webase-transcation.git
+```
+
+**注意**：代码拉取后，切换到相应分支。
+
+```shell
+cd webase-transcation
+git checkout XXXXX
 ```
 
 ## 3.2 编译代码
@@ -71,6 +78,11 @@ cd dist
 启动：sh start.sh
 停止：sh stop.sh
 检查：sh status.sh
+```
+**备注**：如果脚本执行错误，尝试以下命令:
+```
+赋权限：chmod + *.sh
+转格式：dos2unix *.sh
 ```
 
 ## 3.5 查看日志
