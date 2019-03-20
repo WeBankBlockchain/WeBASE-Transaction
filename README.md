@@ -207,6 +207,14 @@ E:\webase-transcation\src\main\java\com\webank\webase\transaction\Application.ja
   位置: 类 Application
 ```
 
+## 5.2 gradle build失败
+
+```shell
+gradle build
+```
+执行后，出现下面错误。**请检查gradle版本，需要使用5.0以上版本。**
+`Could not find method annotationProcessor() for arguments [org.projectlombok:lombok:1.18.2] on object of type org.gradle.api.internal.artifacts.dsl.dependencies.DefaultDependencyHandler.`
+
 # 6. <a id="chapter-6"></a>附录
 
 ## 6.1 Java环境部署
