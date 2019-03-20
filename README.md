@@ -31,6 +31,13 @@
 git clone https://github.com/WeBankFinTech/webase-transcation.git
 ```
 
+**注意**：代码拉取后，切换到相应分支。
+
+```shell
+cd webase-transcation
+git checkout XXXXX
+```
+
 ## 3.2 编译代码
 
 （1）进入目录：
@@ -71,6 +78,11 @@ cd dist
 启动：sh start.sh
 停止：sh stop.sh
 检查：sh status.sh
+```
+**备注**：如果脚本执行错误，尝试以下命令:
+```
+赋权限：chmod + *.sh
+转格式：dos2unix *.sh
 ```
 
 ## 3.5 查看日志
@@ -184,8 +196,9 @@ c.异常返回结果示例
 ```
 # 5. <a id="chapter-5"></a>问题排查
 
-## 5.1 编译错误
-配置一下lombok，lombok的配置和使用请在网上查询。
+## 5.1 gradle build失败
+
+如果出现以下错误，**请配置一下lombok**，lombok的配置和使用请在网上查询。
 ```
 > Task :compileJava
 E:\webase-transcation\src\main\java\com\webank\webase\transaction\Application.java:21: 错误: 找不到符号
@@ -193,6 +206,11 @@ E:\webase-transcation\src\main\java\com\webank\webase\transaction\Application.ja
         ^
   符号:   变量 log
   位置: 类 Application
+```
+
+如果出现以下错误，**请检查gradle版本，需要使用5.0或以上版本。**
+```
+> Could not find method annotationProcessor() for arguments [org.projectlombok:lombok:1.18.2] on object of type org.gradle.api.internal.artifacts.dsl.dependencies.DefaultDependencyHandler.
 ```
 
 # 6. <a id="chapter-6"></a>附录

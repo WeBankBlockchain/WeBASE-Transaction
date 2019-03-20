@@ -1,14 +1,3 @@
-package com.webank.webase.transaction.schedule;
-
-import com.webank.webase.transaction.base.ConstantProperties;
-import com.webank.webase.transaction.trans.TransInfo;
-import com.webank.webase.transaction.trans.TransMapper;
-import com.webank.webase.transaction.trans.TransService;
-import java.util.List;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 /*
  * Copyright 2012-2019 the original author or authors.
  *
@@ -24,6 +13,18 @@ import org.springframework.stereotype.Service;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+package com.webank.webase.transaction.schedule;
+
+import com.webank.webase.transaction.base.ConstantProperties;
+import com.webank.webase.transaction.trans.TransInfo;
+import com.webank.webase.transaction.trans.TransMapper;
+import com.webank.webase.transaction.trans.TransService;
+import java.util.List;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 @Slf4j
 @Service
 public class SendTransSchedule {

@@ -1,9 +1,3 @@
-package com.webank.webase.transaction.base;
-
-import lombok.Data;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
-
 /*
  * Copyright 2012-2019 the original author or authors.
  *
@@ -19,6 +13,13 @@ import org.springframework.context.annotation.Configuration;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+package com.webank.webase.transaction.base;
+
+import lombok.Data;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Configuration;
+
 @Data
 @Configuration
 @ConfigurationProperties(prefix = ConstantProperties.CONSTANT_PREFIX)
