@@ -13,11 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.webank.webase.transaction.schedule;
 
 import com.webank.webase.transaction.base.ConstantProperties;
-import com.webank.webase.transaction.trans.TransInfo;
+import com.webank.webase.transaction.trans.TransInfoDto;
 import com.webank.webase.transaction.trans.TransMapper;
 import com.webank.webase.transaction.trans.TransService;
 import java.util.List;
@@ -40,7 +39,7 @@ public class SendTransSchedule {
      */
     public void schedule() {
         log.debug("SendTransSchedule start...");
-        List<TransInfo> transInfoList =
+        List<TransInfoDto> transInfoList =
                 transMapper.selectUnStatTrans(properties.getRequestCountMax(),
                         properties.getSelectCount(), properties.getIntervalTime());
         if (transInfoList == null || transInfoList.size() == 0) {

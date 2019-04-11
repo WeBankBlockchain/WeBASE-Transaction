@@ -13,24 +13,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.webank.webase.transaction.trans;
 
 import java.util.List;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Service;
 
+/**
+ * SignType.
+ *
+ */
 @Service
 public interface TransMapper {
     
+	void createTbConstract();
+	
     void createTbTransaction();
+    
+    void insertConstractInfo(ContractInfoDto contractInfoDto);
+    
+    void insertTransInfo(TransInfoDto transInfoDto);
+    
+    int checkUuid(@Param("groupId") int groupId, @Param("uuid") String uuid);
+    
+    String selectContractAddress(@Param("groupId") int groupId, @Param("uuid") String uuid);
+    
+    String selectContractAbi(@Param("groupId") int groupId, @Param("contractAddress") String contractAddress);
 
-    void insertTransInfo(TransInfo transInfoDto);
-
-    List<TransInfo> selectUnStatTrans(@Param("requestCountMax") int requestCountMax,
+    List<TransInfoDto> selectUnStatTrans(@Param("requestCountMax") int requestCountMax,
             @Param("selectCount") int selectCount, @Param("intervalTime") int intervalTime);
 
-    List<TransInfo> selectUnStatTransByJob(@Param("requestCountMax") int requestCountMax,
+    List<TransInfoDto> selectUnStatTransByJob(@Param("requestCountMax") int requestCountMax,
             @Param("selectCount") int selectCount, @Param("intervalTime") int intervalTime,
             @Param("shardingTotalCount") int shardingTotalCount,
             @Param("shardingItem") int shardingItem);

@@ -13,23 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.webank.webase.transaction.config;
+package com.webank.webase.transaction.trans;
 
-import com.webank.webase.transaction.trans.TransMapper;
+import java.util.List;
+
 import lombok.Data;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Configuration;
 
+/**
+ * contract compile info.
+ * 
+ */
 @Data
-@Configuration
-public class InitTable implements InitializingBean {
-    @Autowired
-    private TransMapper transMapper;
-
-    @Override
-    public void afterPropertiesSet() throws Exception {
-    	transMapper.createTbConstract();
-        transMapper.createTbTransaction();
-    }
+public class CompileInfo {
+	private String contractName;
+    private String contractBin;
+    private List<Object> contractAbi;
 }

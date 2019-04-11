@@ -4,7 +4,7 @@ server:
 
 spring: 
   datasource: 
-    url: jdbc:mysql://10.0.0.1:3306/testDB?useUnicode=true&characterEncoding=utf8
+    url: jdbc:mysql://127.0.0.1:3306/testdb?useUnicode=true&characterEncoding=utf8
     username: root
     password: 123456
     driver-class-name: com.mysql.jdbc.Driver
@@ -12,19 +12,36 @@ spring:
 mybatis: 
   mapper-locations: classpath:mapper/*.xml
 
+sdk:
+  orgName: webank
+  timeout: 10000
+  groupConfig:
+    allChannelConnections:
+    - groupId: 1
+      connectionsStr:
+      - 212.129.164.65:20201
+    - groupId: 2
+      connectionsStr:
+      - 212.129.164.65:20201
+
 constant: 
-  frontIpPorts: 10.0.0.1:8081
+  signServiceUrl: http://127.0.0.1:8085/sign-service/sign
+  privateKey: edf02a4a69b14ee6b1650a95de71d5f50496ef62ae4213026bd8d6651d030995
+  solTempDir: ./conf/temp
   cronTrans: 0/1 * * * * ?
   requestCountMax: 6
   selectCount: 10
   intervalTime: 600
   sleepTime: 50
+  ifDistributedTask: false
 
-thread: 
-  corePoolSize: 50
-  maxPoolSize: 100
-  queueCapacity: 500
-  keepAlive: 60
+job:
+  regCenter:  
+    serverLists: 127.0.0.1:2181
+    namespace: elasticjob-trans
+  dataflow:  
+    shardingTotalCount: 1
+    shardingItemParameters: 0=0
 
 logging: 
   config: classpath:log4j2.xml
