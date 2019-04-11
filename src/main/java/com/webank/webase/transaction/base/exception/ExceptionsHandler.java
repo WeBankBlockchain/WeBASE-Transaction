@@ -1,18 +1,3 @@
-package com.webank.webase.transaction.base.exception;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.webank.webase.transaction.base.BaseResponse;
-import com.webank.webase.transaction.base.ConstantCode;
-import com.webank.webase.transaction.base.RetCode;
-
-import java.util.Optional;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.ControllerAdvice;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseBody;
-
 /*
  * Copyright 2012-2019 the original author or authors.
  *
@@ -28,6 +13,20 @@ import org.springframework.web.bind.annotation.ResponseBody;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.webank.webase.transaction.base.exception;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.webank.webase.transaction.base.BaseResponse;
+import com.webank.webase.transaction.base.ConstantCode;
+import com.webank.webase.transaction.base.RetCode;
+
+import java.util.Optional;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 /**
  * ExceptionsHandler.
