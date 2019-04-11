@@ -19,10 +19,10 @@ sdk:
     allChannelConnections:
     - groupId: 1
       connectionsStr:
-      - 212.129.164.65:20201
+      - 127.0.0.1:20201
     - groupId: 2
       connectionsStr:
-      - 212.129.164.65:20201
+      - 127.0.0.1:20201
 
 constant: 
   signServiceUrl: http://127.0.0.1:8085/sign-service/sign
