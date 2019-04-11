@@ -1,3 +1,7 @@
+package com.webank.webase.transaction.base.exception;
+
+import com.webank.webase.transaction.base.RetCode;
+
 /*
  * Copyright 2012-2019 the original author or authors.
  *
@@ -13,23 +17,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.webank.webase.transaction.config;
 
-import com.webank.webase.transaction.trans.TransMapper;
-import lombok.Data;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Configuration;
+/**
+ * BaseException.
+ * 
+ */
+public class BaseException extends Exception {
 
-@Data
-@Configuration
-public class InitTable implements InitializingBean {
-    @Autowired
-    private TransMapper transMapper;
+    private static final long serialVersionUID = 1L;
+    private RetCode retCode;
 
-    @Override
-    public void afterPropertiesSet() throws Exception {
-    	transMapper.createTbConstract();
-        transMapper.createTbTransaction();
+    public BaseException(RetCode retCode) {
+        super(retCode.getMsg());
+        this.retCode = retCode;
+    }
+
+    public BaseException(int code, String msg) {
+        super(msg);
+        this.retCode = new RetCode(code, msg);
+    }
+
+    public RetCode getRetCode() {
+        return retCode;
     }
 }

@@ -13,23 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.webank.webase.transaction.config;
+package com.webank.webase.transaction.trans;
 
-import com.webank.webase.transaction.trans.TransMapper;
+import com.webank.webase.transaction.base.ConstantCode;
+
+import java.util.ArrayList;
+import java.util.List;
+import javax.validation.constraints.NotNull;
 import lombok.Data;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Configuration;
+import org.hibernate.validator.constraints.NotBlank;
 
 @Data
-@Configuration
-public class InitTable implements InitializingBean {
-    @Autowired
-    private TransMapper transMapper;
-
-    @Override
-    public void afterPropertiesSet() throws Exception {
-    	transMapper.createTbConstract();
-        transMapper.createTbTransaction();
-    }
+public class ReqTransCall {
+	@NotNull(message = ConstantCode.GROUP_ID_IS_EMPTY)
+	private int groupId;
+    @NotBlank(message = ConstantCode.CONTRACT_ADDRESS_IS_EMPTY)
+    private String contractAddress;
+    private List<Object> contractAbi;
+    @NotBlank(message = ConstantCode.FUNCTION_NAME_IS_EMPTY)
+    private String funcName;
+    private List<Object> funcParam = new ArrayList<>();
 }
