@@ -67,6 +67,7 @@
 
 [1. 返回码信息列表 12](#返回码信息列表)
 
+
 1、合约编译接口
 ===============
 
@@ -112,51 +113,32 @@ HTTP POST
 2）数据格式
 
 a.请求正常返回结果
-
+```
 {
-
-"code": 0,
-
-"message": "success",
-
-"data": [
-
-{
-
-"contractName": "",
-
-"contractBin": "",
-
-"contractAbi": []
-
-},
-
-{
-
-"contractName": "",
-
-"contractBin": "",
-
-"contractAbi": []
-
+  "code": 0,
+  "message": "success",
+  "data": [
+    {
+    "contractName": "",
+    "contractBin": "",
+    "contractAbi": []
+    },
+    {
+    "contractName": "",
+    "contractBin": "",
+    "contractAbi": []
+    }
+  ]
 }
-
-]
-
-}
-
+```
 b.异常返回结果示例（信息详情请参看附录1）
-
+```
 {
-
-"code": 103001,
-
-"message": "system error",
-
-"data": null
-
+  "code": 103001,
+  "message": "system error",
+  "data": null
 }
-
+```
 2、合约部署接口
 ===============
 
@@ -190,25 +172,17 @@ HTTP POST
 | 6        | 构造方法参数 | funcParam   | List\<Object\> |              | 否       | JSON数组                                           |
 
 2）数据格式
-
+```
 {
-
-"groupId":1,
-
-"uuid":"XXX",
-
-"signType":0,
-
-"contractBin":"0xXXXXX",
-
-"contractAbi":[],
-
-"funcName":"set",
-
-"funcParam":["hello"]
-
+  "groupId":1,
+  "uuid":"XXX",
+  "signType":0,
+  "contractBin":"0xXXXXX",
+  "contractAbi":[],
+  "funcName":"set",
+  "funcParam":["hello"]
 }
-
+```
 响应参数
 --------
 
@@ -224,27 +198,22 @@ HTTP POST
 
 a.请求正常返回结果
 
+```
 {
-
-"code": 0,
-
-"message": "success",
-
-"data": "0xXXXXX"
-
+  "code": 0,
+  "message": "success",
+  "data": "0xXXXXX"
 }
+```
 
 b.异常返回结果示例（信息详情请参看附录1）
-
+```
 {
-
-"code": 103001,
-
-"message": "system error",
-
-"data": null
-
+  "code": 103001,
+  "message": "system error",
+  "data": null
 }
+```
 
 3、合约地址查询接口
 ===================
@@ -292,28 +261,21 @@ http://127.0.0.1:8082/webase-transaction/trans/address/1/10001
 2）数据格式
 
 a.请求正常返回结果
-
+```
 {
-
-"code": 0,
-
-"message": "success",
-
-"data": "0xXXXXX"
-
+  "code": 0,
+  "message": "success",
+  "data": "0xXXXXX"
 }
-
+```
 b.异常返回结果示例（信息详情请参看附录1）
-
+```
 {
-
-"code": 103001,
-
-"message": "system error",
-
-"data": null
-
+  "code": 103001,
+  "message": "system error",
+  "data": null
 }
+```
 
 4、交易请求接口
 ===============
@@ -349,25 +311,17 @@ HTTP POST
 | 7        | 方法参数   | funcParam       | List\<Object\> |              | 否       | JSON数组                                           |
 
 2）数据格式
-
+```
 {
-
-"groupId":1,
-
-"uuid":"XXX",
-
-"signType":0,
-
-"contractAddress":"0xXXXXX",
-
-"contractAbi":[],
-
-"funcName":"set",
-
-"funcParam":["hello"]
-
+  "groupId":1,
+  "uuid":"XXX",
+  "signType":0,
+  "contractAddress":"0xXXXXX",
+  "contractAbi":[],
+  "funcName":"set",
+  "funcParam":["hello"]
 }
-
+```
 响应参数
 --------
 
@@ -382,28 +336,22 @@ HTTP POST
 2）数据格式
 
 a.请求正常返回结果
-
+```
 {
-
-"code": 0,
-
-"message": "success",
-
-"data": null
-
+  "code": 0,
+  "message": "success",
+  "data": null
 }
-
+```
 b.异常返回结果示例（信息详情请参看附录1）
 
+```
 {
-
-"code": 103001,
-
-"message": "system error",
-
-"data": null
-
+  "code": 103001,
+  "message": "system error",
+  "data": null
 }
+```
 
 5、交易查询接口
 ===============
@@ -437,21 +385,15 @@ HTTP POST
 | 5        | 方法参数   | funcParam       | List\<Object\> |              | 否       | JSON数组 |
 
 2）数据格式
-
+```
 {
-
-"groupId":1,
-
-"contractAddress":"0xXXXXX",
-
-"contractAbi":[],
-
-"funcName":"get",
-
-"funcParam":[]
-
+  "groupId":1,
+  "contractAddress":"0xXXXXX",
+  "contractAbi":[],
+  "funcName":"get",
+  "funcParam":[]
 }
-
+```
 响应参数
 --------
 
@@ -466,32 +408,23 @@ HTTP POST
 2）数据格式
 
 a.请求正常返回结果
-
+```
 {
-
-"code": 0,
-
-"message": "success",
-
-"data": [
-
-"hello"
-
-]
-
+  "code": 0,
+  "message": "success",
+  "data": [
+    "hello"
+  ]
 }
-
+```
 b.异常返回结果示例（信息详情请参看附录1）
-
+```
 {
-
-"code": 103001,
-
-"message": "system error",
-
-"data": null
-
+  "code": 103001,
+  "message": "system error",
+  "data": null
 }
+```
 
 附录
 ====
