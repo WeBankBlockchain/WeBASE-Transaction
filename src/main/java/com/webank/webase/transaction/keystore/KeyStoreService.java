@@ -18,11 +18,18 @@ package com.webank.webase.transaction.keystore;
 import org.fisco.bcos.web3j.crypto.ECKeyPair;
 import org.fisco.bcos.web3j.crypto.Keys;
 import org.fisco.bcos.web3j.utils.Numeric;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import com.alibaba.fastjson.JSON;
+import com.webank.webase.transaction.base.BaseResponse;
 import com.webank.webase.transaction.base.ConstantCode;
+import com.webank.webase.transaction.base.ConstantProperties;
 import com.webank.webase.transaction.base.exception.BaseException;
+import com.webank.webase.transaction.util.CommonUtils;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -33,7 +40,12 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Service
 public class KeyStoreService {
-    static final int PUBLIC_KEY_LENGTH_IN_HEX = 128;
+	@Autowired
+    RestTemplate restTemplate;
+	@Autowired
+    private ConstantProperties properties;
+	
+    private static final int PUBLIC_KEY_LENGTH_IN_HEX = 128;
 
     /**
      * getKey.
@@ -60,5 +72,32 @@ public class KeyStoreService {
             log.error("createEcKeyPair fail.");
             throw new BaseException(ConstantCode.SYSTEM_ERROR);
         }
+    }
+    
+    /**
+     * getSignDate from sign service.
+     * 
+     * @param params params
+     * @return
+     * @throws BaseException
+     */
+    public String getSignDate(EncodeInfo params) throws BaseException {
+    	try {
+    		SignInfo signInfo = new SignInfo();
+            String url = properties.getSignServiceUrl();
+            log.info("getSignDate url:{}", url);
+            HttpHeaders headers = CommonUtils.buildHeaders();
+            HttpEntity<String> formEntity =
+                    new HttpEntity<String>(JSON.toJSONString(params), headers);
+            BaseResponse response = restTemplate.postForObject(url, formEntity, BaseResponse.class);
+            log.info("getSignDate response:{}", JSON.toJSONString(response));
+            if (response.getCode() == 0) {
+            	signInfo =CommonUtils.object2JavaBean(response.getData(), SignInfo.class);
+            }
+            return signInfo.getSignDataStr();
+        } catch (Exception e) {
+            log.error("getSignDate exception", e);
+        }
+		return null;
     }
 }

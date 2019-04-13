@@ -15,6 +15,15 @@
  */
 package com.webank.webase.transaction.trans;
 
+import javax.validation.Valid;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.alibaba.fastjson.JSON;
 import com.webank.webase.transaction.base.BaseController;
 import com.webank.webase.transaction.base.BaseResponse;
@@ -22,24 +31,8 @@ import com.webank.webase.transaction.base.exception.BaseException;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-
-import java.io.IOException;
-
-import javax.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 
 /**
  * TransController.
@@ -53,51 +46,6 @@ public class TransController extends BaseController {
     @Autowired
     TransService transService;
 
-    /**
-     * contract compile.
-     * 
-     * @param contract compile parameter
-     * @param result checkResult
-     * @return
-     * @throws BaseException 
-     * @throws IOException 
-     */
-    @ApiOperation(value = "contract compile", notes = "contract compile")
-    @PostMapping("/compile")
-    public BaseResponse compile(@ApiParam(value = "contract zip file", required = true)
-    		@RequestParam("file") MultipartFile file) throws BaseException, IOException {
-    	return transService.compile(file);
-    }
-    
-    /**
-     * contract deploy.
-     * 
-     * @param contract deploy parameter
-     * @param result checkResult
-     * @return
-     * @throws BaseException 
-     */
-    @ApiOperation(value = "contract deploy", notes = "contract deploy")
-    @ApiImplicitParam(name = "req", value = "deploy info", required = true,
-    dataType = "ReqContractDeploy")
-    @PostMapping("/deploy")
-    public BaseResponse deploy(@Valid @RequestBody ReqContractDeploy req,
-    		BindingResult result) throws BaseException {
-    	log.info("deploy start. req:{}", JSON.toJSONString(req));
-    	checkParamResult(result);
-    	return transService.deploy(req);
-    }
-    
-    @ApiOperation(value = "getAddress", notes = "Get contract address")
-    @ApiImplicitParams({
-    	@ApiImplicitParam(name = "groupId", value = "groupId", required = true, dataType = "int", paramType = "path"),
-        @ApiImplicitParam(name = "uuid", value = "uuid", required = true, dataType = "String", paramType = "path")})
-    @GetMapping("/address/{groupId}/{uuid}")
-    public BaseResponse getAddress(@PathVariable("groupId") int groupId,
-    		@PathVariable("uuid") String uuid){
-        return transService.getAddress(groupId, uuid);
-    }
-    
     /**
      * transaction send.
      * 

@@ -34,7 +34,9 @@ public class SchedulerService implements SchedulingConfigurer {
 	@Override
 	public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {
 		if (!constants.isIfDistributedTask()) {
-			taskRegistrar.addTriggerTask(() -> sendTransSchedule.schedule(),
+			taskRegistrar.addTriggerTask(() -> sendTransSchedule.deploySchedule(),
+					(context) -> new CronTrigger(constants.getCronTrans()).nextExecutionTime(context));
+			taskRegistrar.addTriggerTask(() -> sendTransSchedule.transSchedule(),
 					(context) -> new CronTrigger(constants.getCronTrans()).nextExecutionTime(context));
 		}
 	}

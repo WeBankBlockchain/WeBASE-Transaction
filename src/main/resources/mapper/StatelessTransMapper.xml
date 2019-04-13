@@ -2,42 +2,28 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"   
 "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.webank.webase.transaction.trans.TransMapper">
-	<update id="createTbConstract">
-        CREATE TABLE IF NOT EXISTS tb_contract (
-            id int(11) NOT NULL AUTO_INCREMENT COMMENT '自增编号',
-            group_id int(11) NOT NULL COMMENT '群组编号',
-            uuid varchar(64) NOT NULL COMMENT '业务流水号',
-            contract_bin text NOT NULL COMMENT '合约bin',
-            contract_abi text NOT NULL COMMENT '合约abi',
-            contract_address varchar(64) NOT NULL COMMENT '合约地址',
-            gmt_create datetime DEFAULT NULL COMMENT '创建时间',
-            gmt_modify datetime DEFAULT NULL COMMENT '修改时间',
-            PRIMARY KEY (id),
-            UNIQUE KEY idx_gu_01 (group_id,uuid),
-            UNIQUE KEY idx_ca_02 (contract_address),
-            KEY idx_gi_03 (group_id)
-        ) COMMENT='合约信息表' ENGINE=InnoDB CHARSET=utf8
-    </update>
-    
-    <update id="createTbTransaction">
-        CREATE TABLE IF NOT EXISTS tb_transaction (
+    <update id="createTbStatelessTrans">
+        CREATE TABLE IF NOT EXISTS tb_stateless_transaction (
             id bigint UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '自增编号',
             group_id int(11) NOT NULL COMMENT '群组编号',
-            uuid varchar(64) NOT NULL COMMENT '业务流水号',
+            uuid_stateless varchar(64) NOT NULL COMMENT '合约无状态交易业务流水号',
+            uuid_deploy varchar(64) NOT NULL COMMENT '部署交易业务流水号',
             contract_abi text NOT NULL COMMENT '合约abi',
             contract_address varchar(64) NOT NULL COMMENT '合约地址',
             func_name varchar(32) NOT NULL COMMENT '调用的合约方法名',
             func_param text COMMENT '合约方法的入参json',
-            sign_type tinyint(4) DEFAULT '0' COMMENT '签名 类型(0-本地配置私钥签名，1-本地随机私钥签名，2-调用云端签名)',
+            sign_type tinyint(4) DEFAULT '0' COMMENT '签名 类型(0-本地配置私钥，1-本地随机私钥，2-调用签名服务)',
             request_count tinyint(4) DEFAULT '0' COMMENT '请求次数',
-            trans_status tinyint(4) DEFAULT '0' COMMENT '处理状态(0-待处理，1-处理成功)',
+            handle_status tinyint(4) DEFAULT '0' COMMENT '处理状态(0-待处理，1-处理成功)',
+            trans_hash varchar(128) COMMENT '交易hash值',
+            receipt_status varchar(16) COMMENT '交易回执状态',
             gmt_create datetime DEFAULT NULL COMMENT '创建时间',
             gmt_modify datetime DEFAULT NULL COMMENT '修改时间',
             PRIMARY KEY (id),
             UNIQUE KEY (group_id,uuid),
             KEY idx_gi_01 (group_id),
             KEY idx_ts_02 (trans_status)
-        ) COMMENT='交易请求信息表' ENGINE=InnoDB CHARSET=utf8
+        ) COMMENT='合约无状态交易请求信息表' ENGINE=InnoDB CHARSET=utf8
     </update>
     
     <sql id="TRANS_COLUMN">
@@ -51,30 +37,11 @@
         sign_type as signType
     </sql>
     
-    <insert id="insertConstractInfo" parameterType="com.webank.webase.transaction.trans.ContractInfoDto">
-        insert into tb_contract(
-            `group_id`,
-            `uuid`,
-            `contract_bin`,
-            `contract_abi`,
-            `contract_address`,
-            `gmt_create`,
-            `gmt_modify`
-        ) values (
-            #{groupId},
-            #{uuid},
-            #{contractBin},
-            #{contractAbi},
-            #{contractAddress},
-            NOW(),
-            NOW()
-        )
-    </insert>
-    
     <insert id="insertTransInfo" parameterType="com.webank.webase.transaction.trans.TransInfoDto">
-        insert into tb_transaction(
+        insert into tb_stateless_transaction(
             `group_id`,
-            `uuid`,
+            `uuid_stateless`,
+            `uuid_deploy`,
             `contract_address`,
             `contract_abi`,
             `func_name`,
@@ -84,7 +51,8 @@
             `gmt_modify`
         ) values (
             #{groupId},
-            #{uuid},
+            #{uuidStateless},
+            #{uuidDeploy},
             #{contractAddress},
             #{contractAbi},
             #{funcName},
@@ -95,30 +63,9 @@
         )
     </insert>
     
-    <select id="checkUuid" resultType="int">
-        select count(1)
-        from tb_contract
-        where group_id = #{groupId}
-          and uuid = #{uuid}
-    </select>
-    
-    <select id="selectContractAddress" resultType="java.lang.String">
-        select contract_address
-        from tb_contract
-        where group_id = #{groupId}
-          and uuid = #{uuid}
-    </select>
-    
-    <select id="selectContractAbi" resultType="java.lang.String">
-        select contract_abi
-        from tb_contract
-        where group_id = #{groupId}
-          and contract_address = #{contractAddress}
-    </select>
-    
     <select id="selectUnStatTrans" resultType="com.webank.webase.transaction.trans.TransInfoDto">
         select <include refid="TRANS_COLUMN" />
-        from tb_transaction
+        from tb_stateless_transaction
         where trans_status = 0
         <![CDATA[
           and request_count <= #{requestCountMax}
@@ -129,7 +76,7 @@
     
     <select id="selectUnStatTransByJob" resultType="com.webank.webase.transaction.trans.TransInfoDto">
         select <include refid="TRANS_COLUMN" />
-        from tb_transaction
+        from tb_stateless_transaction
         where trans_status = 0
         and MOD(id,#{shardingTotalCount}) = #{shardingItem}
         <![CDATA[
@@ -140,14 +87,14 @@
     </select>
     
     <update id="updateRequestCount">
-        update tb_transaction 
+        update tb_stateless_transaction 
         set request_count=#{requestCount},
         	gmt_modify=NOW() 
         where id = #{id}
     </update>
     
     <update id="updateTransStatus">
-        update tb_transaction 
+        update tb_stateless_transaction 
         set trans_status=1,
         	gmt_modify=NOW() 
         where id = #{id}

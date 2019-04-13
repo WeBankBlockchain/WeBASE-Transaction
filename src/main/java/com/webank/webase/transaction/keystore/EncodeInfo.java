@@ -13,16 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.webank.webase.transaction.trans;
+package com.webank.webase.transaction.keystore;
 
 import lombok.Data;
 
 /**
- * SignInfo.
+ * EncodeInfo.
  * 
  */
 @Data
-public class SignInfo {
-	private String signDataStr;
-    private String temp;
+public class EncodeInfo {
+    private String encodedDataStr;
+    private String desc;
 }

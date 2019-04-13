@@ -21,7 +21,8 @@ public interface ConstantCode {
 
     // paramaters check
     String GROUP_ID_IS_EMPTY = "{\"code\":203001,\"msg\":\"group id cannot be empty\"}";
-    String UUID_IS_EMPTY = "{\"code\":203002,\"msg\":\"uuid cannot be empty\"}";
+    String UUID_DEPLOY_IS_EMPTY = "{\"code\":203002,\"msg\":\"deploy uuid cannot be empty\"}";
+    String UUID_TRANS_IS_EMPTY = "{\"code\":203002,\"msg\":\"trans uuid cannot be empty\"}";
     String SIGN_TYPE_IS_EMPTY = "{\"code\":203003,\"msg\":\"sign type cannot be empty\"}";
     String CONTRACT_BIN_IS_EMPTY = "{\"code\":203004,\"msg\":\"contract bin cannot be empty\"}";
     String CONTRACT_ABI_IS_EMPTY = "{\"code\":203005,\"msg\":\"contract abi cannot be empty\"}";
@@ -29,6 +30,7 @@ public interface ConstantCode {
     String FUNCTION_NAME_IS_EMPTY = "{\"code\":203007,\"msg\":\"function name cannot be empty\"}";
 
     // general error
+    RetCode UUID_DEPLOY_IS_EXISTS = RetCode.mark(303001, "deploy uuid is already exists");
     RetCode UUID_IS_EXISTS = RetCode.mark(303001, "uuid is already exists");
     RetCode GET_SIGN_DATA_ERROR = RetCode.mark(303002, "get sign data from sign service error");
     RetCode IN_FUNCPARAM_ERROR = RetCode.mark(303003, "contract funcParam is error");
@@ -40,6 +42,7 @@ public interface ConstantCode {
     RetCode TRANSACTION_QUERY_FAILED = RetCode.mark(303009, "query data from chain failed");
     RetCode FILE_IS_EMPTY = RetCode.mark(303010, "file cannot be empty");
     RetCode NOT_A_ZIP_FILE = RetCode.mark(303011, "it is not a zip file");
+    RetCode CONTRACT_NOT_DEPLOED = RetCode.mark(303011, "contract is not deploed");
 
     // system error
     RetCode SYSTEM_ERROR = RetCode.mark(103001, "system error");
