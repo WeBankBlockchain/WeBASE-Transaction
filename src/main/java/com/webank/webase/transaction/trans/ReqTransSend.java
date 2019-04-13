@@ -27,12 +27,12 @@ import org.hibernate.validator.constraints.NotBlank;
 public class ReqTransSend {
 	@NotNull(message = ConstantCode.GROUP_ID_IS_EMPTY)
 	private int groupId;
-	@NotBlank(message = ConstantCode.UUID_IS_EMPTY)
-    private String uuid;
+	@NotBlank(message = ConstantCode.UUID_TRANS_IS_EMPTY)
+	private String uuidStateless;
+	@NotBlank(message = ConstantCode.UUID_DEPLOY_IS_EMPTY)
+    private String uuidDeploy;
 	@NotNull(message = ConstantCode.SIGN_TYPE_IS_EMPTY)
 	private int signType;
-    @NotBlank(message = ConstantCode.CONTRACT_ADDRESS_IS_EMPTY)
-    private String contractAddress;
     private List<Object> contractAbi;
     @NotBlank(message = ConstantCode.FUNCTION_NAME_IS_EMPTY)
     private String funcName;

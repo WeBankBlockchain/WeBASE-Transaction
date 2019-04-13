@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.webank.webase.transaction.trans;
+package com.webank.webase.transaction.contract;
 
 import java.util.List;
 import org.apache.ibatis.annotations.Param;
@@ -24,21 +24,25 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public interface TransMapper {
-	
-    void createTbStatelessTrans();
+public interface ContractMapper {
     
-    void insertTransInfo(TransInfoDto transInfoDto);
+	void createTbDeployTrans();
+    
+    void insertDeployInfo(DeployInfoDto deployInfoDto);
+    
+    String selectContractAddress(@Param("groupId") int groupId, @Param("uuidDeploy") String uuidDeploy);
+    
+    String selectContractAbi(@Param("groupId") int groupId, @Param("contractAddress") String contractAddress);
 
-    List<TransInfoDto> selectUnStatTrans(@Param("requestCountMax") int requestCountMax,
+    List<DeployInfoDto> selectUnStatTrans(@Param("requestCountMax") int requestCountMax,
             @Param("selectCount") int selectCount, @Param("intervalTime") int intervalTime);
 
-    List<TransInfoDto> selectUnStatTransByJob(@Param("requestCountMax") int requestCountMax,
+    List<DeployInfoDto> selectUnStatTransByJob(@Param("requestCountMax") int requestCountMax,
             @Param("selectCount") int selectCount, @Param("intervalTime") int intervalTime,
             @Param("shardingTotalCount") int shardingTotalCount,
             @Param("shardingItem") int shardingItem);
 
     void updateRequestCount(@Param("id") Long id, @Param("requestCount") int requestCount);
 
-    void updateHandleStatus(TransInfoDto transInfoDto);
+    void updateHandleStatus(DeployInfoDto deployInfoDto);
 }

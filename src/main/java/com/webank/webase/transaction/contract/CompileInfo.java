@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.webank.webase.transaction.trans;
+package com.webank.webase.transaction.contract;
 
 import java.util.List;
 

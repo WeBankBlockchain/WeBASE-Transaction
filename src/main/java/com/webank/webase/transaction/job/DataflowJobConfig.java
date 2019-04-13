@@ -15,6 +15,15 @@
  */
 package com.webank.webase.transaction.job;
 
+import javax.annotation.Resource;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
+
 import com.dangdang.ddframe.job.config.JobCoreConfiguration;
 import com.dangdang.ddframe.job.config.JobRootConfiguration;
 import com.dangdang.ddframe.job.config.dataflow.DataflowJobConfiguration;
@@ -22,14 +31,8 @@ import com.dangdang.ddframe.job.lite.api.JobScheduler;
 import com.dangdang.ddframe.job.lite.config.LiteJobConfiguration;
 import com.dangdang.ddframe.job.lite.spring.api.SpringJobScheduler;
 import com.dangdang.ddframe.job.reg.zookeeper.ZookeeperRegistryCenter;
-import javax.annotation.Resource;
+
 import lombok.Data;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 /**
  * DataflowJobConfig.
@@ -49,22 +52,33 @@ public class DataflowJobConfig {
     private String cronMonitor;
 
     /**
-     * transMonitorScheduler.
+     * transScheduler.
      * 
      * @param dataflowJob instance
      * @return
      */
     @Bean(initMethod = "init")
-    public JobScheduler transMonitorScheduler(final TransHandleDataflowJob dataflowJob) {
-        return new SpringJobScheduler(dataflowJob, regCenter, transMonitorDataflowConfig());
+    public JobScheduler transScheduler(final TransHandleDataflowJob dataflowJob) {
+        return new SpringJobScheduler(dataflowJob, regCenter, transDataflowConfig());
+    }
+    
+    /**
+     * deployScheduler.
+     * 
+     * @param dataflowJob instance
+     * @return
+     */
+    @Bean(initMethod = "init")
+    public JobScheduler deployScheduler(final DeployHandleDataflowJob dataflowJob) {
+    	return new SpringJobScheduler(dataflowJob, regCenter, deployDataflowConfig());
     }
 
     /**
-     * transMonitorDataflowConfig.
+     * transDataflowConfig.
      * 
      * @return
      */
-    private LiteJobConfiguration transMonitorDataflowConfig() {
+    private LiteJobConfiguration transDataflowConfig() {
         JobCoreConfiguration dataflowCoreConfig =
                 JobCoreConfiguration
                         .newBuilder(TransHandleDataflowJob.class.getName(), cronMonitor,
@@ -77,6 +91,26 @@ public class DataflowJobConfig {
                 LiteJobConfiguration.newBuilder(dataflowJobConfig).overwrite(true).build();
 
         return (LiteJobConfiguration) dataflowJobRootConfig;
+    }
+    
+    /**
+     * deployDataflowConfig.
+     * 
+     * @return
+     */
+    private LiteJobConfiguration deployDataflowConfig() {
+    	JobCoreConfiguration dataflowCoreConfig =
+    			JobCoreConfiguration
+    			.newBuilder(DeployHandleDataflowJob.class.getName(), cronMonitor,
+    					shardingTotalCount)
+    			.shardingItemParameters(shardingItemParameters).build();
+    	DataflowJobConfiguration dataflowJobConfig =
+    			new DataflowJobConfiguration(dataflowCoreConfig,
+    					DeployHandleDataflowJob.class.getCanonicalName(), false);
+    	JobRootConfiguration dataflowJobRootConfig =
+    			LiteJobConfiguration.newBuilder(dataflowJobConfig).overwrite(true).build();
+    	
+    	return (LiteJobConfiguration) dataflowJobRootConfig;
     }
 
 }

@@ -13,19 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.webank.webase.transaction.trans;
+package com.webank.webase.transaction.contract;
 
 import lombok.Data;
 
 /**
- * ContractInfoDto.
+ * TransInfoDto.
  * 
  */
 @Data
-public class ContractInfoDto {
+public class DeployInfoDto {
+    private Long id;
     private int groupId;
-    private String uuid;
+    private String uuidDeploy;
     private String contractBin;
     private String contractAbi;
     private String contractAddress;
+    private String funcParam;
+    private int signType;
+    private int requestCount;
+    private String transHash;
+    private boolean receiptStatus;
 }

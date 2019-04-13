@@ -15,18 +15,14 @@
  */
 package com.webank.webase.transaction.trans;
 
-import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.fisco.bcos.channel.client.TransactionSucCallback;
@@ -46,19 +42,11 @@ import org.fisco.bcos.web3j.protocol.core.methods.request.Transaction;
 import org.fisco.bcos.web3j.protocol.core.methods.response.AbiDefinition;
 import org.fisco.bcos.web3j.protocol.core.methods.response.SendTransaction;
 import org.fisco.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
-import org.fisco.bcos.web3j.solidity.compiler.CompilationResult;
-import org.fisco.bcos.web3j.solidity.compiler.CompilationResult.ContractMetadata;
-import org.fisco.bcos.web3j.solidity.compiler.SolidityCompiler;
-import org.fisco.bcos.web3j.solidity.compiler.SolidityCompiler.Options;
 import org.fisco.bcos.web3j.utils.Numeric;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.web.multipart.MultipartFile;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
@@ -66,8 +54,11 @@ import com.webank.webase.transaction.base.BaseResponse;
 import com.webank.webase.transaction.base.ConstantCode;
 import com.webank.webase.transaction.base.ConstantProperties;
 import com.webank.webase.transaction.base.exception.BaseException;
+import com.webank.webase.transaction.contract.ContractMapper;
+import com.webank.webase.transaction.keystore.EncodeInfo;
 import com.webank.webase.transaction.keystore.KeyStoreInfo;
 import com.webank.webase.transaction.keystore.KeyStoreService;
+import com.webank.webase.transaction.keystore.SignType;
 import com.webank.webase.transaction.util.CommonUtils;
 import com.webank.webase.transaction.util.ContractAbiUtil;
 
@@ -82,163 +73,16 @@ import lombok.extern.slf4j.Slf4j;
 public class TransService {
 	@Autowired
 	Map<Integer,Web3j> web3jMap;
-	@Autowired
-    RestTemplate restTemplate;
     @Autowired
     private TransMapper transMapper;
+    @Autowired
+    private ContractMapper contractMapper;
     @Autowired
     private ThreadPoolTaskExecutor transExecutor;
     @Autowired
     private ConstantProperties properties;
     @Autowired
     private KeyStoreService keyStoreService;
-    
-    /**
-     * contract compile.
-     * 
-     * @param req parameter
-     * @return
-     * @throws BaseException
-     * @throws IOException 
-     */
-    public BaseResponse compile(MultipartFile zipFile) throws BaseException, IOException {
-    	BaseResponse baseRsp = new BaseResponse(ConstantCode.RET_SUCCEED);
-    	String path = properties.getSolTempDir();
-    	// unzip
-    	CommonUtils.unZipFiles(zipFile, path);
-    	// get sol files
-    	File solFileList = new File(path);
-        File[] solFiles = solFileList.listFiles();
-        List<CompileInfo> compileInfos = new ArrayList<>();
-        for (File solFile : solFiles) {
-        	String contractName = solFile.getName().substring(0, solFile.getName().lastIndexOf("."));
-        	// compile
-        	SolidityCompiler.Result res =
-        	        SolidityCompiler.compile(solFile, true, Options.ABI, Options.BIN);
-        	// compile result
-        	CompilationResult result = CompilationResult.parse(res.output);
-        	List<ContractMetadata> contracts = result.getContracts();
-        	CompileInfo compileInfo = new CompileInfo();
-        	compileInfo.setContractName(contractName);
-			compileInfo.setContractBin(result.getContract(contractName).bin);
-			compileInfo.setContractAbi(JSONArray.parseArray(result.getContract(contractName).abi));
-    		compileInfos.add(compileInfo);
-        }
-        // delete sol files
-        CommonUtils.deleteFiles(path);
-    	baseRsp.setData(compileInfos);
-		return baseRsp;
-    }
-    
-	/**
-	 * contract deploy.
-	 * 
-	 * @param req parameter
-	 * @return
-	 * @throws BaseException
-	 */
-	public BaseResponse deploy(ReqContractDeploy req) throws BaseException {
-    	int groupId = req.getGroupId();
-        String uuid = req.getUuid();
-        String contractAddress = "";
-        try {
-        	// check uuid
-        	int count = transMapper.checkUuid(groupId, uuid);
-        	if (count > 0) {
-        		log.warn("deploy fail. uuid:{} is already exists", uuid);
-        		throw new BaseException(ConstantCode.UUID_IS_EXISTS);
-        	}
-        	// inputs format
-        	String contractAbi = JSON.toJSONString(req.getContractAbi());
-            List<Object> params = req.getFuncParam();
-            AbiDefinition abiDefinition = ContractAbiUtil.getAbiDefinition(contractAbi);
-            List<String> funcInputTypes = ContractAbiUtil.getFuncInputType(abiDefinition);
-            // Constructor encode
-            String encodedConstructor = "";
-            String contractBin = req.getContractBin();
-            if (funcInputTypes != null && funcInputTypes.size() > 0) {
-                if (funcInputTypes.size() == params.size()) {
-                	List<Type> finalInputs = ContractAbiUtil.inputFormat(funcInputTypes, params);
-                    encodedConstructor = FunctionEncoder.encodeConstructor(finalInputs);
-                } else {
-                    log.warn("deploy fail. funcInputTypes:{}, params:{}", funcInputTypes, params);
-                    throw new BaseException(ConstantCode.IN_FUNCPARAM_ERROR);
-                }
-            }
-            // create transaction
-            String data = contractBin + encodedConstructor;
-            Random r = new Random();
-            BigInteger randomid = new BigInteger(250, r);
-            BigInteger blockLimit = web3jMap.get(groupId).getBlockNumberCache();
-            RawTransaction rawTransaction = RawTransaction.createTransaction(
-                    randomid, ConstantProperties.GAS_PRICE, ConstantProperties.GAS_LIMIT, blockLimit,
-                    "", BigInteger.ZERO, data);
-            // get sign data
-            String signMsg = "";
-            if (req.getSignType() == SignType.LOCALCONFIG.getValue()) {
-            	Credentials credentials = Credentials.create(properties.getPrivateKey());
-            	byte[] signedMessage = TransactionEncoder.signMessage(rawTransaction, credentials);
-            	signMsg = Numeric.toHexString(signedMessage);
-            } else if (req.getSignType() == SignType.LOCALRANDOM.getValue()) {
-            	KeyStoreInfo keyStoreInfo = keyStoreService.getKey();
-            	Credentials credentials = Credentials.create(keyStoreInfo.getPrivateKey());
-            	byte[] signedMessage = TransactionEncoder.signMessage(rawTransaction, credentials);
-            	signMsg = Numeric.toHexString(signedMessage);
-            } else if (req.getSignType() == SignType.CLOUDCALL.getValue()) {
-                byte[] encodedTransaction = TransactionEncoder.encode(rawTransaction);
-                String encodedDataStr = new String(encodedTransaction);
-                
-                EncodeInfo encodeInfo = new EncodeInfo();
-                encodeInfo.setEncodedDataStr(encodedDataStr);
-                String signDataStr = getSignDate(encodeInfo);
-                if (StringUtils.isBlank(signDataStr)) {
-        			log.warn("get sign data error.");
-        			throw new BaseException(ConstantCode.GET_SIGN_DATA_ERROR);
-        		}
-                
-                SignatureData signData = CommonUtils.stringToSignatureData(signDataStr);
-                byte[] signedMessage = TransactionEncoder.encode(rawTransaction, signData);
-                signMsg = Numeric.toHexString(signedMessage);
-            } else {
-            	throw new BaseException(ConstantCode.SIGN_TYPE_ERROR);
-            }
-            // send transaction
-            final CompletableFuture<TransactionReceipt> transFuture = new CompletableFuture<>();
-            sendMessage(groupId, signMsg, transFuture);
-            TransactionReceipt receipt = transFuture.get(properties.getTransMaxWait(), TimeUnit.SECONDS);
-            contractAddress = receipt.getContractAddress();
-            // insert db
-        	ContractInfoDto contractInfoDto = new ContractInfoDto();
-        	contractInfoDto.setGroupId(groupId);
-            contractInfoDto.setUuid(uuid);
-            contractInfoDto.setContractBin(contractBin);
-            contractInfoDto.setContractAbi(contractAbi);
-            contractInfoDto.setContractAddress(contractAddress);
-            transMapper.insertConstractInfo(contractInfoDto);
-        } catch (IOException | InterruptedException | 
-        		ExecutionException | TimeoutException e) {
-            log.error("deploy groupId:{} uuid:{} Exception:{}", groupId, uuid, e);
-            throw new BaseException(ConstantCode.DEPLOY_FAILED);
-        } 
-        BaseResponse baseRsp = new BaseResponse(ConstantCode.RET_SUCCEED);
-        baseRsp.setData(contractAddress);
-        log.info("deploy end. groupId:{} uuid:{} baseRsp:{}", groupId, uuid, baseRsp);
-        return baseRsp;
-    }
-
-    /** 
-     * getAddress.
-     * 
-     * @param groupId groupId
-     * @param uuid uuid
-     * @return
-     */
-    public BaseResponse getAddress(int groupId, String uuid) {
-    	BaseResponse baseRsp = new BaseResponse(ConstantCode.RET_SUCCEED);
-    	baseRsp.setData(transMapper.selectContractAddress(groupId, uuid));
-    	return baseRsp;
-    }
-    
     /**
      * save transaction request data.
      * 
@@ -248,21 +92,26 @@ public class TransService {
      */
     public BaseResponse save(ReqTransSend req) throws BaseException {
         int groupId = req.getGroupId();
-        String uuid = req.getUuid();
-        String contractAddress = req.getContractAddress();
+        String uuid = req.getUuidStateless();
         String funcName = req.getFuncName();
         List<Object> abiList = req.getContractAbi();
         List<Object> params = req.getFuncParam();
         try {
         	// check sign type
         	if (!SignType.isInclude(req.getSignType())) {
-        		log.warn("save fail. uuid:{} is already exists", uuid);
+        		log.warn("save fail. signType:{} is not existed", req.getSignType());
         		throw new BaseException(ConstantCode.SIGN_TYPE_ERROR);
         	}
+        	// check if contract has been deployed
+        	String contractAddress = contractMapper.selectContractAddress(groupId, req.getUuidDeploy());
+    		if (StringUtils.isBlank(contractAddress)) {
+    			log.warn("save fail. contract is not deploed", contractAddress);
+    			throw new BaseException(ConstantCode.CONTRACT_NOT_DEPLOED);
+    		}
         	// check contractAbi
         	String contractAbi = "";
         	if (abiList == null || abiList.size() == 0) {
-        		contractAbi = transMapper.selectContractAbi(groupId, contractAddress);
+        		contractAbi = contractMapper.selectContractAbi(groupId, contractAddress);
         		if (StringUtils.isBlank(contractAbi)) {
         			log.warn("save fail. contractAddress:{} abi is not exists", contractAddress);
         			throw new BaseException(ConstantCode.CONTRACT_ABI_ERROR);
@@ -290,7 +139,8 @@ public class TransService {
         	// insert db
             TransInfoDto transInfoDto = new TransInfoDto();
             transInfoDto.setGroupId(groupId);
-            transInfoDto.setUuid(uuid);
+            transInfoDto.setUuidStateless(uuid);
+            transInfoDto.setUuidDeploy(req.getUuidDeploy());
             transInfoDto.setContractAbi(contractAbi);
             transInfoDto.setContractAddress(contractAddress);
             transInfoDto.setFuncName(funcName);
@@ -315,15 +165,20 @@ public class TransService {
      */
     public BaseResponse call(ReqTransCall req) throws BaseException {
     	int groupId = req.getGroupId();
-    	String contractAddress = req.getContractAddress();
     	String funcName = req.getFuncName();
     	List<Object> abiList = req.getContractAbi();
     	List<Object> params = req.getFuncParam();
     	try {
+    		// check if contract has been deployed
+    		String contractAddress = contractMapper.selectContractAddress(groupId, req.getUuidDeploy());
+    		if (StringUtils.isBlank(contractAddress)) {
+    			log.warn("save fail. contract is not deploed", contractAddress);
+    			throw new BaseException(ConstantCode.CONTRACT_NOT_DEPLOED);
+    		}
     		// check contractAbi
     		String contractAbi = "";
     		if (abiList == null || abiList.size() == 0) {
-    			contractAbi = transMapper.selectContractAbi(groupId, contractAddress);
+    			contractAbi = contractMapper.selectContractAbi(groupId, contractAddress);
     			if (StringUtils.isBlank(contractAbi)) {
     				log.warn("call fail. contractAddress:{} abi is not exists", contractAddress);
     				throw new BaseException(ConstantCode.CONTRACT_ABI_ERROR);
@@ -365,7 +220,7 @@ public class TransService {
             }
             return baseRsp;
     	} catch (IOException e) {
-    		log.error("call contractAddress:{} funcName:{} Exception:{}", contractAddress, funcName, e);
+    		log.error("call funcName:{} Exception:{}", funcName, e);
     		throw new BaseException(ConstantCode.TRANSACTION_QUERY_FAILED);
     	}
     }
@@ -457,7 +312,7 @@ public class TransService {
                 
                 EncodeInfo encodeInfo = new EncodeInfo();
                 encodeInfo.setEncodedDataStr(encodedDataStr);
-                String signDataStr = getSignDate(encodeInfo);
+                String signDataStr = keyStoreService.getSignDate(encodeInfo);
                 if (StringUtils.isBlank(signDataStr)) {
         			log.warn("transSend get sign data error.");
         			return;
@@ -471,9 +326,9 @@ public class TransService {
             final CompletableFuture<TransactionReceipt> transFuture = new CompletableFuture<>();
             sendMessage(groupId, signMsg, transFuture);
             TransactionReceipt receipt = transFuture.get(properties.getTransMaxWait(), TimeUnit.SECONDS);
-            if (receipt.isStatusOK()) {
-            	transMapper.updateTransStatus(id);
-            }
+            transInfoDto.setTransHash(receipt.getTransactionHash());
+            transInfoDto.setReceiptStatus(receipt.isStatusOK());
+            transMapper.updateHandleStatus(transInfoDto);
         } catch (Exception e) {
             log.error("fail transSend id:{}", id, e);
         }
@@ -486,7 +341,7 @@ public class TransService {
      * @param future future
      * @throws IOException
      */
-    private void sendMessage(int groupId, String signMsg, final CompletableFuture<TransactionReceipt> future) throws IOException {
+    public void sendMessage(int groupId, String signMsg, final CompletableFuture<TransactionReceipt> future) throws IOException {
         Request<?, SendTransaction> request = web3jMap.get(groupId).sendRawTransaction(signMsg);
         request.setNeedTransCallback(true);
         request.setTransactionSucCallback(new TransactionSucCallback() {
@@ -498,32 +353,5 @@ public class TransService {
 			}
         });
         request.send();
-    }
-    
-    /**
-     * getSignDate from sign service.
-     * 
-     * @param params params
-     * @return
-     * @throws BaseException
-     */
-    public String getSignDate(EncodeInfo params) throws BaseException {
-    	try {
-    		SignInfo signInfo = new SignInfo();
-            String url = properties.getSignServiceUrl();
-            log.info("getSignDate url:{}", url);
-            HttpHeaders headers = CommonUtils.buildHeaders();
-            HttpEntity<String> formEntity =
-                    new HttpEntity<String>(JSON.toJSONString(params), headers);
-            BaseResponse response = restTemplate.postForObject(url, formEntity, BaseResponse.class);
-            log.info("getSignDate response:{}", JSON.toJSONString(response));
-            if (response.getCode() == 0) {
-            	signInfo =CommonUtils.object2JavaBean(response.getData(), SignInfo.class);
-            }
-            return signInfo.getSignDataStr();
-        } catch (Exception e) {
-            log.error("getSignDate exception", e);
-        }
-		return null;
     }
 }

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.webank.webase.transaction.trans;
+package com.webank.webase.transaction.contract;
 
 import com.webank.webase.transaction.base.ConstantCode;
 import java.util.ArrayList;
@@ -30,11 +30,11 @@ import org.hibernate.validator.constraints.NotEmpty;
  * 
  */
 @Data
-public class ReqContractDeploy {
+public class ReqDeploy {
 	@NotNull(message = ConstantCode.GROUP_ID_IS_EMPTY)
 	private int groupId;
-	@NotBlank(message = ConstantCode.UUID_IS_EMPTY)
-    private String uuid;
+	@NotBlank(message = ConstantCode.UUID_DEPLOY_IS_EMPTY)
+    private String uuidDeploy;
 	@NotNull(message = ConstantCode.SIGN_TYPE_IS_EMPTY)
 	private int signType;
     @NotBlank(message = ConstantCode.CONTRACT_BIN_IS_EMPTY)

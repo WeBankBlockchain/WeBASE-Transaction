@@ -15,6 +15,7 @@
  */
 package com.webank.webase.transaction.config;
 
+import com.webank.webase.transaction.contract.ContractMapper;
 import com.webank.webase.transaction.trans.TransMapper;
 import lombok.Data;
 import org.springframework.beans.factory.InitializingBean;
@@ -24,12 +25,14 @@ import org.springframework.context.annotation.Configuration;
 @Data
 @Configuration
 public class InitTable implements InitializingBean {
+	@Autowired
+    private ContractMapper contractMapper;
     @Autowired
     private TransMapper transMapper;
 
     @Override
     public void afterPropertiesSet() throws Exception {
-    	transMapper.createTbConstract();
-        transMapper.createTbTransaction();
+    	contractMapper.createTbDeployTrans();;
+        transMapper.createTbStatelessTrans();;
     }
 }
