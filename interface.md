@@ -79,7 +79,7 @@
 接口URL
 -------
 
-http://localhost:8082/webase-transcation/trans/compile
+http://localhost:8082/webase-transcation/contract/compile
 
 调用方法
 --------
@@ -108,7 +108,7 @@ HTTP POST
 |----------|----------|------------|----------|--------------|----------|-------------------|
 | 1        | 返回码   | code       | String   |              | 是       | 返回码信息请附录1 |
 | 2        | 提示信息 | message    | String   |              | 是       |                   |
-| 3        | 返回数据 | data       | Object   |              | 是       | 合约信息列表      |
+| 3        | 返回数据 | data       | Object   |              | 是       |       |
 
 2）数据格式
 
@@ -117,18 +117,7 @@ a.请求正常返回结果
 {
   "code": 0,
   "message": "success",
-  "data": [
-    {
-    "contractName": "",
-    "contractBin": "",
-    "contractAbi": []
-    },
-    {
-    "contractName": "",
-    "contractBin": "",
-    "contractAbi": []
-    }
-  ]
+  "data": null
 }
 ```
 b.异常返回结果示例（信息详情请参看附录1）
@@ -150,7 +139,7 @@ b.异常返回结果示例（信息详情请参看附录1）
 接口URL
 -------
 
-http://localhost:8082/webase-transcation/trans/deploy
+http://localhost:8082/webase-transcation/contract/deploy
 
 调用方法
 --------
@@ -165,7 +154,7 @@ HTTP POST
 | **序号** | **中文**     | **参数名**  | **类型**       | **最大长度** | **必填** | **说明**                                           |
 |----------|--------------|-------------|----------------|--------------|----------|----------------------------------------------------|
 | 1        | 群组编号     | groupId     | int            | 16           | 是       |                                                    |
-| 2        | 业务流水号   | uuid        | String         | 64           | 是       |                                                    |
+| 2        | 部署业务流水号   | uuidDeploy        | String         | 64           | 是       |                                                    |
 | 3        | 签名类型     | signType    | int            | 2            | 是       | 0-本地配置私钥签名，1-本地随机私钥签名，2-云端签名 |
 | 4        | 合约Bin      | contractBin | String         |              | 是       |                                                    |
 | 5        | 合约Abi      | contractAbi | List\<Object\> |              | 是       | JSON数组                                           |
@@ -175,7 +164,7 @@ HTTP POST
 ```
 {
   "groupId":1,
-  "uuid":"XXX",
+  "uuidDeploy":"XXX",
   "signType":0,
   "contractBin":"0xXXXXX",
   "contractAbi":[],
@@ -192,7 +181,7 @@ HTTP POST
 |----------|----------|------------|----------|--------------|----------|-------------------|
 | 1        | 返回码   | code       | String   |              | 是       | 返回码信息请附录1 |
 | 2        | 提示信息 | message    | String   |              | 是       |                   |
-| 3        | 返回数据 | data       | Object   |              | 是       | 合约地址          |
+| 3        | 返回数据 | data       | Object   |              | 是       |           |
 
 2）数据格式
 
@@ -202,7 +191,7 @@ a.请求正常返回结果
 {
   "code": 0,
   "message": "success",
-  "data": "0xXXXXX"
+  "data": null
 }
 ```
 
@@ -221,12 +210,12 @@ b.异常返回结果示例（信息详情请参看附录1）
 接口描述
 --------
 
-根据群组编号和和业务流水号查询部署的合约地址。
+根据群组编号和和部署业务流水号查询部署的合约地址。
 
 接口URL
 -------
 
-http://localhost:8082/webase-transcation/trans/address/{groupId}/{uuid}
+http://localhost:8082/webase-transcation/contract/address/{groupId}/{uuidDeploy}
 
 调用方法
 --------
@@ -241,11 +230,11 @@ HTTP GET
 | **序号** | **中文**   | **参数名** | **类型** | **最大长度** | **必填** | **说明** |
 |----------|------------|------------|----------|--------------|----------|----------|
 | 1        | 群组编号   | groupId    | int      | 16           | 是       |          |
-| 2        | 业务流水号 | uuid       | String   | 64           | 是       |          |
+| 2        | 部署业务流水号 | uuidDeploy       | String   | 64           | 是       |          |
 
 1.  数据格式
 
-http://127.0.0.1:8082/webase-transaction/trans/address/1/10001
+http://127.0.0.1:8082/webase-transaction/contract/address/1/10001
 
 响应参数
 --------
@@ -256,7 +245,7 @@ http://127.0.0.1:8082/webase-transaction/trans/address/1/10001
 |----------|----------|------------|----------|--------------|----------|-------------------|
 | 1        | 返回码   | code       | String   |              | 是       | 返回码信息请附录1 |
 | 2        | 提示信息 | message    | String   |              | 是       |                   |
-| 3        | 返回数据 | data       | Object   |              |          |                   |
+| 3        | 返回数据 | data       | Object   |              |          |  合约地址                 |
 
 2）数据格式
 
@@ -303,18 +292,20 @@ HTTP POST
 | **序号** | **中文**   | **参数名**      | **类型**       | **最大长度** | **必填** | **说明**                                           |
 |----------|------------|-----------------|----------------|--------------|----------|----------------------------------------------------|
 | 1        | 群组编号   | groupId         | int            | 16           | 是       |                                                    |
-| 2        | 业务流水号 | uuid            | String         | 64           | 是       |                                                    |
-| 3        | 签名类型   | signType        | int            | 2            | 是       | 0-本地配置私钥签名，1-本地随机私钥签名，2-云端签名 |
-| 4        | 合约地址   | contractAddress | String         |              | 是       |                                                    |
-| 5        | 合约Abi    | contractAbi     | List\<Object\> |              | 否       | JSON数组                                           |
-| 6        | 调用方法名 | funcName        | String         |              | 是       |                                                    |
-| 7        | 方法参数   | funcParam       | List\<Object\> |              | 否       | JSON数组                                           |
+| 2        | 交易业务流水号 | uuidStateless            | String         | 64           | 是       |                                                    |
+| 3        | 部署业务流水号   | uuidDeploy        | String         | 64           | 是       |                                                    |
+| 4        | 签名类型   | signType        | int            | 2            | 是       | 0-本地配置私钥签名，1-本地随机私钥签名，2-云端签名 |
+| 5        | 合约地址   | contractAddress | String         |              | 是       |                                                    |
+| 6        | 合约Abi    | contractAbi     | List\<Object\> |              | 否       | JSON数组                                           |
+| 7        | 调用方法名 | funcName        | String         |              | 是       |                                                    |
+| 8        | 方法参数   | funcParam       | List\<Object\> |              | 否       | JSON数组                                           |
 
 2）数据格式
 ```
 {
   "groupId":1,
-  "uuid":"XXX",
+  "uuidStateless":"XXX",
+  "uuidDeploy":"XXX",
   "signType":0,
   "contractAddress":"0xXXXXX",
   "contractAbi":[],
@@ -379,7 +370,7 @@ HTTP POST
 | **序号** | **中文**   | **参数名**      | **类型**       | **最大长度** | **必填** | **说明** |
 |----------|------------|-----------------|----------------|--------------|----------|----------|
 | 1        | 群组编号   | groupId         | int            | 16           | 是       |          |
-| 2        | 合约地址   | contractAddress | String         |              | 是       |          |
+| 2        | 部署业务流水号   | uuidDeploy        | String         | 64           | 是       |                                                    |
 | 3        | 合约Abi    | contractAbi     | List\<Object\> |              | 否       | JSON数组 |
 | 4        | 调用方法名 | funcName        | String         |              | 是       |          |
 | 5        | 方法参数   | funcParam       | List\<Object\> |              | 否       | JSON数组 |
@@ -388,7 +379,7 @@ HTTP POST
 ```
 {
   "groupId":1,
-  "contractAddress":"0xXXXXX",
+  "uuidDeploy":"XXX",
   "contractAbi":[],
   "funcName":"get",
   "funcParam":[]

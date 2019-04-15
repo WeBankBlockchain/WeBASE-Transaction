@@ -154,6 +154,7 @@ public class ContractService {
             deployInfoDto.setUuidDeploy(uuid);
             deployInfoDto.setContractBin(contractBin);
             deployInfoDto.setContractAbi(contractAbi);
+            deployInfoDto.setFuncParam(JSON.toJSONString(params));
             deployInfoDto.setSignType(req.getSignType());
             contractMapper.insertDeployInfo(deployInfoDto);
         } catch (DuplicateKeyException e) {
