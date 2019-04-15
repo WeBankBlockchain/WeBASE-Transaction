@@ -79,7 +79,7 @@ public class ContractController extends BaseController {
      */
     @ApiOperation(value = "contract deploy", notes = "contract deploy")
     @ApiImplicitParam(name = "req", value = "deploy info", required = true,
-    dataType = "ReqContractDeploy")
+    dataType = "ReqDeploy")
     @PostMapping("/deploy")
     public BaseResponse deploy(@Valid @RequestBody ReqDeploy req,
     		BindingResult result) throws BaseException {

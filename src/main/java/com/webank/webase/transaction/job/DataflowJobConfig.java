@@ -47,7 +47,6 @@ public class DataflowJobConfig {
     private ZookeeperRegistryCenter regCenter;
 
     private int shardingTotalCount;
-    private String shardingItemParameters;
     @Value("${constant.cronTrans}")
     private String cronMonitor;
 
@@ -83,7 +82,7 @@ public class DataflowJobConfig {
                 JobCoreConfiguration
                         .newBuilder(TransHandleDataflowJob.class.getName(), cronMonitor,
                                 shardingTotalCount)
-                        .shardingItemParameters(shardingItemParameters).build();
+                        .shardingItemParameters(null).build();
         DataflowJobConfiguration dataflowJobConfig =
                 new DataflowJobConfiguration(dataflowCoreConfig,
                         TransHandleDataflowJob.class.getCanonicalName(), false);
@@ -103,7 +102,7 @@ public class DataflowJobConfig {
     			JobCoreConfiguration
     			.newBuilder(DeployHandleDataflowJob.class.getName(), cronMonitor,
     					shardingTotalCount)
-    			.shardingItemParameters(shardingItemParameters).build();
+    			.shardingItemParameters(null).build();
     	DataflowJobConfiguration dataflowJobConfig =
     			new DataflowJobConfiguration(dataflowCoreConfig,
     					DeployHandleDataflowJob.class.getCanonicalName(), false);
