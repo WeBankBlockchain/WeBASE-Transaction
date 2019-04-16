@@ -93,7 +93,7 @@ public class ContractService {
      */
     public BaseResponse compile(MultipartFile zipFile) throws BaseException, IOException {
     	BaseResponse baseRsp = new BaseResponse(ConstantCode.RET_SUCCEED);
-    	String path = properties.getSolTempDir();
+    	String path = new File("temp").getAbsolutePath();
     	// unzip
     	CommonUtils.unZipFiles(zipFile, path);
     	// get sol files

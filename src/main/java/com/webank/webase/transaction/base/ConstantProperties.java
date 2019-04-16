@@ -37,7 +37,6 @@ public class ConstantProperties {
     public static final String CONSTANT_PREFIX = "constant";
     private String signServiceUrl = "http://10.0.0.1:8081/sign-service/sign";
     private String privateKey = "edf02a4a69b14ee6b1650a95de71d5f50496ef62ae4213026bd8d6651d030995";
-    private String solTempDir = "./conf/temp";
     private String cronTrans = "0/1 * * * * ?";
     private int requestCountMax = 6;
     private int selectCount = 10;

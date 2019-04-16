@@ -61,6 +61,9 @@ public class CommonUtils {
             throw new BaseException(ConstantCode.NOT_A_ZIP_FILE);
         }
         File file = new File(path + fileName);
+        if (!file.getParentFile().exists()) { 
+        	file.getParentFile().mkdirs();
+		}
         zipFile.transferTo(file);
         ZipFile zf = new ZipFile(file);
         for (Enumeration entries = zf.entries(); entries.hasMoreElements();) {
