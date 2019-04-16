@@ -117,7 +117,6 @@ constant:
   signServiceUrl: http://127.0.0.1:8085/webase-sign/sign
   # 本地配置私钥进行签名，使用这种模式则对应修改
   privateKey: edf02a4a69b14ee6b1650a95de71d5f50496ef62ae4213026bd8d6651d030995
-  solTempDir: ./conf/temp
   cronTrans: 0/1 * * * * ?
   requestCountMax: 6
   selectCount: 10
