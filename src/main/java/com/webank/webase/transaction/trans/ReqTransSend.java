@@ -13,28 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.webank.webase.transaction.trans;
 
 import com.webank.webase.transaction.base.ConstantCode;
+
+import java.util.ArrayList;
 import java.util.List;
 import javax.validation.constraints.NotNull;
 import lombok.Data;
 import org.hibernate.validator.constraints.NotBlank;
 
 @Data
-public class ReqTransHandle {
-    @NotBlank(message = ConstantCode.PARAM_FAIL_UUID_IS_EMPTY)
-    private String uuid;
-    @NotNull(message = ConstantCode.PARAM_FAIL_USERID_IS_EMPTY)
-    private Integer userId;
-    @NotNull(message = ConstantCode.PARAM_FAIL_IFASYNC_IS_EMPTY)
-    private boolean ifAsync = true;
-    @NotBlank(message = ConstantCode.PARAM_FAIL_CONTRACTNAME_IS_EMPTY)
-    private String contractName;
-    @NotBlank(message = ConstantCode.PARAM_FAIL_VERSION_IS_EMPTY)
-    private String version;
-    @NotBlank(message = ConstantCode.PARAM_FAIL_FUNCNAME_IS_EMPTY)
+public class ReqTransSend {
+	@NotNull(message = ConstantCode.GROUP_ID_IS_EMPTY)
+	private int groupId;
+	@NotBlank(message = ConstantCode.UUID_TRANS_IS_EMPTY)
+	private String uuidStateless;
+	@NotBlank(message = ConstantCode.UUID_DEPLOY_IS_EMPTY)
+    private String uuidDeploy;
+	@NotNull(message = ConstantCode.SIGN_TYPE_IS_EMPTY)
+	private int signType;
+    private List<Object> contractAbi;
+    @NotBlank(message = ConstantCode.FUNCTION_NAME_IS_EMPTY)
     private String funcName;
-    private List<Object> funcParam;
+    private List<Object> funcParam = new ArrayList<>();
 }

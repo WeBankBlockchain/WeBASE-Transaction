@@ -19,13 +19,35 @@
             </Policies>
             <DefaultRolloverStrategy max="24" />
         </RollingFile>
+        
+        <RollingFile name="web3sdk" fileName="${logPath}/web3sdk.log"
+                     filePattern="${logPath}/web3sdk.log.%d{yyyy-MM-dd}.%i.log.gz">
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5p %c{1}(%L) - %m%n" />
+            <Policies>
+                <TimeBasedTriggeringPolicy />
+                <SizeBasedTriggeringPolicy size="200 MB" />
+            </Policies>
+            <DefaultRolloverStrategy max="24" />
+        </RollingFile>
 
         <Async name="asyncTransaction" bufferSize="512">
             <AppenderRef ref="transaction" />
         </Async>
+        
+        <Async name="asyncWeb3sdk" bufferSize="512">
+            <AppenderRef ref="web3sdk" />
+        </Async>
     </Appenders>
 
     <Loggers>
+    	<Logger name="org.fisco.bcos.channel" level="debug" additivity="false">
+            <AppenderRef ref="asyncWeb3sdk" />
+        </Logger>
+        
+        <Logger name="org.fisco.bcos.web3j" level="debug" additivity="false">
+            <AppenderRef ref="asyncWeb3sdk" />
+        </Logger>
+        
         <Root level="info">
             <AppenderRef ref="asyncTransaction" />
         </Root>

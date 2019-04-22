@@ -13,27 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.webank.webase.transaction;
+package com.webank.webase.transaction.trans;
 
-import org.mybatis.spring.annotation.MapperScan;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-
-import lombok.extern.slf4j.Slf4j;
-import springfox.documentation.swagger2.annotations.EnableSwagger2;
+import lombok.Data;
 
 /**
- * Startup class.
- *
+ * TransInfoDto.
+ * 
  */
-@Slf4j
-@EnableSwagger2
-@SpringBootApplication
-@MapperScan("com.webank.webase.transaction")
-public class Application {
-
-    public static void main(String[] args) {
-        SpringApplication.run(Application.class, args);
-        log.info("main run success...");
-    }
+@Data
+public class TransInfoDto {
+    private Long id;
+    private int groupId;
+    private String uuidStateless;
+    private String uuidDeploy;
+    private String contractAbi;
+    private String contractAddress;
+    private String funcName;
+    private String funcParam;
+    private int signType;
+    private int requestCount;
+    private String transHash;
+    private boolean receiptStatus;
 }

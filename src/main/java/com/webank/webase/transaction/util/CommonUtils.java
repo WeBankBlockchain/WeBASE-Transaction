@@ -13,17 +13,83 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.webank.webase.transaction.util;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
+import java.util.Enumeration;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
+
+import org.fisco.bcos.web3j.crypto.Sign.SignatureData;
+import org.fisco.bcos.web3j.utils.Numeric;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.web.multipart.MultipartFile;
+
+import com.alibaba.fastjson.JSON;
+import com.webank.webase.transaction.base.ConstantCode;
+import com.webank.webase.transaction.base.exception.BaseException;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * CommonUtils.
  * 
  */
+@Slf4j
 public class CommonUtils {
+	
+	public static void unZipFiles(MultipartFile zipFile, String path) throws IOException, BaseException {
+		if (zipFile.isEmpty()) {
+            throw new BaseException(ConstantCode.FILE_IS_EMPTY);
+        }
+		if (!path.endsWith(File.separator)) {
+            path = path + File.separator;
+        }
+		String fileName = zipFile.getOriginalFilename();
+        int pos = fileName.lastIndexOf(".");
+        String extName = fileName.substring(pos + 1).toLowerCase();
+        if (!extName.equals("zip")) {
+            throw new BaseException(ConstantCode.NOT_A_ZIP_FILE);
+        }
+        File file = new File(path + fileName);
+        if (!file.getParentFile().exists()) { 
+        	file.getParentFile().mkdirs();
+		}
+        zipFile.transferTo(file);
+        ZipFile zf = new ZipFile(file);
+        for (Enumeration entries = zf.entries(); entries.hasMoreElements();) {
+            ZipEntry entry = (ZipEntry)entries.nextElement();
+            String zipEntryName = entry.getName();
+            if (!zipEntryName.endsWith(".sol")) {
+                continue;
+            }
+            InputStream in = zf.getInputStream(entry);
+            String outPath = (path + zipEntryName).replaceAll("\\*", "/");
+            log.info("unZipFiles outPath:{}", outPath);
+            
+            OutputStream out = new FileOutputStream(outPath);
+            byte[] buf1 = new byte[1024];
+            int len;
+            while ((len=in.read(buf1))>0) {
+                out.write(buf1,0,len);
+            }
+            in.close();
+            out.close();
+        }
+        zf.close();
+        if (file.exists()) {
+            file.delete();
+        }
+	}
 
     /**
      * buildHeaders.
@@ -36,5 +102,166 @@ public class CommonUtils {
         headers.setContentType(type);
         headers.add("Accept", MediaType.APPLICATION_JSON.toString());
         return headers;
+    }
+    
+    /**
+     * stringToSignatureData.
+     * 
+     * @param signatureData signatureData
+     * @return
+     */
+    public static SignatureData stringToSignatureData(String signatureData) {
+        byte[] byteArr = Numeric.hexStringToByteArray(signatureData);
+        byte[] signR = new byte[32];
+        System.arraycopy(byteArr, 1, signR, 0, signR.length);
+        byte[] signS = new byte[32];
+        System.arraycopy(byteArr, 1 + signR.length, signS, 0, signS.length);
+        return new SignatureData(byteArr[0], signR, signS);
+    }
+
+    /**
+     * signatureDataToString.
+     * 
+     * @param signatureData signatureData
+     * @return
+     */
+    public static String signatureDataToString(SignatureData signatureData) {
+        byte[] byteArr = new byte[1 + signatureData.getR().length + signatureData.getS().length];
+        byteArr[0] = signatureData.getV();
+        System.arraycopy(signatureData.getR(), 0, byteArr, 1, signatureData.getR().length);
+        System.arraycopy(signatureData.getS(), 0, byteArr, signatureData.getR().length + 1,
+                signatureData.getS().length);
+        return Numeric.toHexString(byteArr, 0, byteArr.length, false);
+    }
+    
+    /**
+     * serializeToString.
+     * 
+     * @param object object
+     * @return
+     */
+    public static String serializeToString(Object object) {
+        ObjectOutputStream oos = null;
+        ByteArrayOutputStream bos = null;
+        try {
+            bos = new ByteArrayOutputStream();
+            oos = new ObjectOutputStream(bos);
+            oos.writeObject(object);
+            return bos.toString("ISO-8859-1");
+        } catch (IOException e) {
+            System.out.println("Exception:" + e.toString());
+            return null;
+        } finally {
+            try {
+                if (oos != null) {
+                    oos.close();
+                }
+                if (bos != null) {
+                    bos.close();
+                }
+            } catch (IOException ex) {
+                System.out.println("io could not close:" + ex.toString());
+            }
+        }
+    }
+    
+    /**
+     * deserializeToObject.
+     * 
+     * @param str str
+     * @return
+     */
+    public static Object deserializeToObject(String str) {
+        ByteArrayInputStream bais = null;
+        ObjectInputStream ois = null;
+        try {
+            bais = new ByteArrayInputStream(str.getBytes("ISO-8859-1"));
+            ois = new ObjectInputStream(bais);
+            return ois.readObject();
+        } catch (IOException | ClassNotFoundException e) {
+            System.out.println("bytes Could not deserialize:" + e.toString());
+            return null;
+        } finally {
+            try {
+                if (bais != null) {
+                    bais.close();
+                }
+                if (ois != null) {
+                    ois.close();
+                }
+            } catch (IOException ex) {
+                System.out.println("LogManage Could not serialize:" + ex.toString());
+            }
+        }
+    }
+    
+    /**
+     * Object to JavaBean.
+     * 
+     * @param obj obj
+     * @param clazz clazz
+     * @return
+     */
+    public static <T> T object2JavaBean(Object obj, Class<T> clazz) {
+        if (obj == null || clazz == null) {
+            log.warn("Object2JavaBean. obj or clazz null");
+            return null;
+        }
+        String jsonStr = JSON.toJSONString(obj);
+        return JSON.parseObject(jsonStr, clazz);
+    }
+    
+    /**
+     * delete single File.
+     * 
+     * @param filePath filePath
+     * @return
+     */
+    public static boolean deleteFile(String filePath) {
+        boolean flag = false;
+        File file = new File(filePath);
+        if (file.isFile() && file.exists()) {
+            file.delete();
+            flag = true;
+        }
+        return flag;
+    }
+
+    /**
+     * delete Files.
+     * 
+     * @param path path
+     * @return
+     */
+    public static boolean deleteFiles(String path) {
+        if (!path.endsWith(File.separator)) {
+            path = path + File.separator;
+        }
+        File dirFile = new File(path);
+        if (!dirFile.exists() || !dirFile.isDirectory()) {
+            return false;
+        }
+        boolean flag = true;
+        File[] files = dirFile.listFiles();
+        if (files == null) {
+            return false;
+        }
+        for (int i = 0; i < files.length; i++) {
+            if (files[i].isFile()) {
+                flag = deleteFile(files[i].getAbsolutePath());
+                if (!flag) {
+                    break;
+                }
+            } else {
+                flag = deleteFiles(files[i].getAbsolutePath());
+                if (!flag) {
+                    break;
+                }
+            }
+        }
+        if (!flag) {
+            return false;
+        }
+        return true;
     }
 }

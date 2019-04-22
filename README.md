@@ -10,9 +10,22 @@
 
 # 1. <a id="chapter-1"></a>功能说明
 
-本工程为交易服务子系统。功能：处理无状态交易，缓存上链。
-交易请求分为同步请求和异步请求。同步请求会直接请求前置交易接口，返回处理结果。异步请求会将交易请求信息缓存到数据库，通过轮询服务向对应节点前置交易接口发送请求，确保交易成功上链。
+本工程为交易服务子系统。功能：合约编译；交易请求处理，交易分为合约部署和普通的合约调用请求。<br>
 
+合约编译：上传合约文件zip压缩包，返回合约编译信息<br>
+
+合约部署：交易服务子系统会将合约部署请求信息缓存到数据库，通过轮询服务向节点发送交易请求，确保合约成功部署。<br>
+
+合约调用：分为无状态交易上链（非constant方法）和交易结果查询（constant方法）。<br>
+无状态交易上链是交易服务子系统会将交易请求信息缓存到数据库，通过轮询服务向节点发送交易请求，确保交易成功上链。<br>
+交易结果查询是交易服务子系统会同步向节点发送交易请求，返回结果。<br>
+
+无状态交易上链数据签名支持以下模式：<br>
+1、本地配置私钥签名<br>
+2、本地随机私钥签名<br>
+3、调用云端签名服务签名<br>
+
+本工程支持单机部署，也支持分布式任务多活部署（使用分布式任务的话需部署zookeeper）。<br>
 
 # 2. <a id="chapter-2"></a>前提条件
 
@@ -20,8 +33,9 @@
 | ------ | --------------- |
 | Java   | jdk1.8.0_121或以上版本    |
 | gradle | gradle-5.0或以上版本 |
+| zookeeper | zookeeper-3.4.10或以上版本 |
 | 数据库    | mysql-5.6或以上版本  |
-备注：安装说明请参看附录。
+备注：安装说明请参看附录，不使用分布式任务可以不部署zookeeper。
 
 # 3. <a id="chapter-3"></a>部署说明
 
@@ -31,11 +45,11 @@
 git clone https://github.com/WeBankFinTech/webase-transcation.git
 ```
 
-**注意**：代码拉取后，切换到相应分支。
+**注意**：代码拉取后，可以切换到相应分支（如：dev）。
 
 ```shell
 cd webase-transcation
-git checkout XXXXX
+git checkout dev
 ```
 
 ## 3.2 编译代码
@@ -57,16 +71,68 @@ gradle build
 ```shell
 cd dist/conf
 ```
+**将节点sdk目录下的以下文件复制到当前目录：**
+ca.crt、node.crt、node.key
 
-（2）修改服务配置（没变化可以不修改）：
+
+（2）以下有注释的地方根据实际情况修改：
 ```shell
-修改当前服务端口：sed -i "s/8082/${your_server_port}/g" application.yml
-修改数据库IP：sed -i "s/10.0.0.1/${your_db_ip}/g" application.yml
-修改数据库名称：sed -i "s/testDB/${your_db_name}/g" application.yml
-修改数据库用户名：sed -i "s/root/${your_db_account}/g" application.yml
-修改数据库密码：sed -i "s/123456/${your_db_password}/g" application.yml
-修改前置服务ip端口：sed -i "s/10.0.0.1:8081/${your_ip_port}/g" application.yml
-例子（将端口由8082改为8090）：sed -i "s/8082/8090/g" application.yml
+vi application.yml
+```
+
+```
+server: 
+  # 本工程服务端口，端口被占用则修改
+  port: 8082
+  context-path: /webase-transaction
+
+spring: 
+  datasource: 
+    # 数据库连接信息
+    url: jdbc:mysql://127.0.0.1:3306/testdb?useUnicode=true&characterEncoding=utf8
+    # 数据库用户名
+    username: root
+    # 数据库密码
+    password: 123456
+    driver-class-name: com.mysql.jdbc.Driver
+
+sdk:
+  # 机构名
+  orgName: webank
+  timeout: 10000
+  # 群组信息，可配置多群组和多节点
+  groupConfig:
+    allChannelConnections:
+    - groupId: 1
+      connectionsStr:
+      - 127.0.0.1:20200
+      - 127.0.0.1:20201
+    - groupId: 2
+      connectionsStr:
+      - 127.0.0.1:20200
+      - 127.0.0.1:20201
+
+constant: 
+  # 签名服务url，需要调用签名服务进行签名的话则对应修改，使用本地签名的话可以不修改
+  signServiceUrl: http://127.0.0.1:8085/webase-sign/sign
+  # 本地配置私钥进行签名，使用这种模式则对应修改
+  privateKey: edf02a4a69b14ee6b1650a95de71d5f50496ef62ae4213026bd8d6651d030995
+  cronTrans: 0/1 * * * * ?
+  requestCountMax: 6
+  selectCount: 10
+  intervalTime: 600
+  sleepTime: 50
+  # 使用分布式任务部署多活（true-是，false-否）
+  ifDistributedTask: false
+
+job:
+  regCenter:  
+    # 部署多活的话需配置zookeeper，支持集群
+    serverLists: 127.0.0.1:2181
+    namespace: elasticjob-trans
+  dataflow:  
+    # 分片数（如多活3个的话可分成3片）
+    shardingTotalCount: 3
 ```
 
 ## 3.4 服务启停
@@ -98,102 +164,8 @@ tail -f log/webase-transcation.log
 ```
 # 4. <a id="chapter-4"></a>接口说明
 
-## 4.1 接口描述
+- [接口说明请点击](interface.md)
 
-通过合约信息进行调用，交易请求分为同步请求和异步请求。同步请求会直接请求前置交易接口，返回处理结果。异步请求会将交易请求信息缓存到数据库，通过轮询服务向对应节点前置交易接口发送请求，确保交易成功上链。
-
-## 4.2 接口URL
-```
-http://localhost:8082/webase-transcation/trans/handle
-```
-
-## 4.3 调用方法
-```
-HTTP POST
-```
-
-## 4.4 请求参数
-
-（1）参数表
-
-| **序号** | **中文**         | **参数名**   | **类型**       | **最大长度** | **必填** | **说明**             |
-| -------- | ---------------- | ------------ | -------------- | ------------ | -------- | -------------------- |
-| 1        | 业务流水号       | uuid         | String         | 64           | 是       |                      |
-| 2        | 用户编号         | userID       | Integer        | 16           | 是       |                      |
-| 3        | 是否异步发送交易 | ifAsync      | Bool           |              | 是       | true-异步 false-同步 |
-| 4        | 合约名称         | contractName | String         | 32           | 是       |                      |
-| 5        | 合约版本         | version      | String         | 32           | 是       |                      |
-| 6        | 方法名           | funcName     | String         | 32           | 是       |                      |
-| 7        | 方法参数         | funcParam    | List\<Object\> |              |          | JSONArray，对应合约方法参数，多个参数以“,”分隔|
-
-（2）数据格式
-```
-{
-    "uuid":"1811221K702190000000000006402198",
-    "userID":700001,
-    "ifAsync":true,
-    "contractName":"HelloWorld",
-    "version":"1.0",
-    "funcName":"set",
-    "funcParam":["hello"]
-}
-```
-（3）示例
-```
-curl -l -H "Content-type: application/json" -X POST -d '{"uuid": "1811221K702190000000000006402198", "userID": 700001, "ifAsync":true, "contractName": "HelloWorld", "version": "1.0", "funcName": "set", "funcParam": ["hello"]}' http://localhost:8082/webase-transcation/trans/handle
-```
-
-## 4.5 响应参数
-
-（1）参数表
-
-| **序号** | **中文** | **参数名** | **类型** | **最大长度** | **必填** | **说明**            |
-| -------- | -------- | ---------- | -------- | ------------ | -------- | ------------------- |
-| 1        | 返回码   | code       | String   |              | 是       |                     |
-| 2        | 提示信息 | message    | String   |              | 是       |                     |
-| 3        | 返回数据 | data       | Object   |              |          |                     |
-
-（2）数据格式
-
-a.异步请求正常返回结果
-```
-{
-    "code": 0,
-    "message": "success",
-    "data": null
-}
-```
-
-b.同步请求正常返回结果
-```
-{
-"code": 0,
-"message": "success",
-"data": {
-    "blockHash": "0x57080aae71f3f17ffc5fd924aaaa86dd0d8948548539752b6394a46d7fd85188",
-    "gasUsed": 32734,
-    "transactionIndexRaw": "0",
-    "blockNumberRaw": "80",
-    "blockNumber": 80,
-    "contractAddress": "0x0000000000000000000000000000000000000000",
-    "cumulativeGasUsed": 32734,
-    "transactionIndex": 0,
-    "gasUsedRaw": "0x7fde",
-    "logs": [],
-    "cumulativeGasUsedRaw": "0x7fde",
-    "transactionHash": "0xf7290cb31483c792b8fb10175e92274148d10e4162588f05305aa85b246e8bed"
-    }
-}
-```
-
-c.异常返回结果示例
-```
-{
-    "code": 203008,
-    "message": "uuid is already exists",
-    "data": null
-}
-```
 # 5. <a id="chapter-5"></a>问题排查
 
 ## 5.1 gradle build失败
@@ -321,6 +293,6 @@ mysql -utest -ptest1234 -h 10.0.0.1 -P 3306
 创建数据库
 
 ```sql
-mysql > create database testDB;
+mysql > create database testdb;
 ```
 
