@@ -13,27 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.webank.webase.transaction;
+package com.webank.webase.transaction.keystore;
 
-import org.mybatis.spring.annotation.MapperScan;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-
-import lombok.extern.slf4j.Slf4j;
-import springfox.documentation.swagger2.annotations.EnableSwagger2;
+import lombok.Data;
 
 /**
- * Startup class.
- *
+ * EncodeInfo.
+ * 
  */
-@Slf4j
-@EnableSwagger2
-@SpringBootApplication
-@MapperScan("com.webank.webase.transaction")
-public class Application {
-
-    public static void main(String[] args) {
-        SpringApplication.run(Application.class, args);
-        log.info("main run success...");
-    }
+@Data
+public class EncodeInfo {
+    private String encodedDataStr;
+    private String desc;
 }

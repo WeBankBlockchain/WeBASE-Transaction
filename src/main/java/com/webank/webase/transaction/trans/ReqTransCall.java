@@ -13,32 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.webank.webase.transaction.base;
+package com.webank.webase.transaction.trans;
 
+import com.webank.webase.transaction.base.ConstantCode;
+
+import java.util.ArrayList;
+import java.util.List;
+import javax.validation.constraints.NotNull;
 import lombok.Data;
+import org.hibernate.validator.constraints.NotBlank;
 
 @Data
-public class RetCode {
-    private Integer code;
-    private String msg;
-
-    public RetCode() {}
-
-    public RetCode(int code, String msg) {
-        this.code = code;
-        this.msg = msg;
-    }
-
-    public static RetCode mark(int code, String msg) {
-        return new RetCode(code, msg);
-    }
-
-    public static RetCode mark(Integer code) {
-        return new RetCode(code, null);
-    }
-
-    @Override
-    public String toString() {
-        return "RetCode [code=" + code + ", msg=" + msg + "]";
-    }
+public class ReqTransCall {
+	@NotNull(message = ConstantCode.GROUP_ID_IS_EMPTY)
+	private int groupId;
+	@NotBlank(message = ConstantCode.UUID_DEPLOY_IS_EMPTY)
+    private String uuidDeploy;
+    private List<Object> contractAbi;
+    @NotBlank(message = ConstantCode.FUNCTION_NAME_IS_EMPTY)
+    private String funcName;
+    private List<Object> funcParam = new ArrayList<>();
 }

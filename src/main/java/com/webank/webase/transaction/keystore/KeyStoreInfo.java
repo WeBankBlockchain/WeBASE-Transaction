@@ -13,27 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.webank.webase.transaction.keystore;
 
-package com.webank.webase.transaction.trans;
-
-import java.util.Date;
 import lombok.Data;
 
-/**
- * TransInfoDto.
- * 
- */
 @Data
-public class TransInfo {
-    private Long id;
-    private int userId;
-    private String uuid;
-    private String contractName;
-    private String version;
-    private String funcName;
-    private String funcParam;
-    private int requestCount;
-    private int transStatus;
-    private Date gmtCreate;
-    private Date gmtModify;
+public class KeyStoreInfo {
+    private String publicKey;
+    private String privateKey;
+    private String address;
 }

@@ -13,26 +13,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.webank.webase.transaction.base;
-
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
+ 
 import java.util.List;
-import lombok.extern.slf4j.Slf4j;
+
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
+import com.webank.webase.transaction.base.exception.BaseException;
+
+import lombok.extern.slf4j.Slf4j;
+
+/**
+ * BaseController.
+ * 
+ */
 @Slf4j
 public abstract class BaseController {
     /**
      * checkParamResult.
      * 
-     * @param BindingResult bindingResult
-     * @return
+     * @param bindingResult checkResult
      */
-    protected BaseResponse checkParamResult(BindingResult bindingResult) {
+    protected BaseResponse checkParamResult(BindingResult bindingResult) throws BaseException {
         if (!bindingResult.hasErrors()) {
             return null;
         }
@@ -40,7 +46,7 @@ public abstract class BaseController {
         String errorMsg = getParamValidFaildMessage(bindingResult);
         if (StringUtils.isBlank(errorMsg)) {
             log.warn("OnWarning:param exception. errorMsg is empty");
-            return new BaseResponse(ConstantCode.PARAM_VAILD_FAIL);
+            throw new BaseException(ConstantCode.PARAM_VAILD_FAIL);
         }
 
         RetCode retCode = null;
@@ -48,19 +54,13 @@ public abstract class BaseController {
             JSONObject jsonObject = JSON.parseObject(errorMsg);
             retCode = JSONObject.toJavaObject(jsonObject, RetCode.class);
         } catch (Exception ex) {
-            log.warn("OnWarning:retCodeJson convert error:" + ex.getMessage());
-            return new BaseResponse(ConstantCode.PARAM_VAILD_FAIL);
+            log.warn("OnWarning:retCodeJson convert error");
+            throw new BaseException(ConstantCode.PARAM_VAILD_FAIL);
         }
 
-        return new BaseResponse(retCode);
+        throw new BaseException(retCode);
     }
 
-    /**
-     * getParamValidFaildMessage.
-     * 
-     * @param BindingResult bindingResult
-     * @return
-     */
     private String getParamValidFaildMessage(BindingResult bindingResult) {
         List<ObjectError> errorList = bindingResult.getAllErrors();
         log.info("errorList:{}", JSON.toJSONString(errorList));
@@ -74,7 +74,6 @@ public abstract class BaseController {
             log.warn("onWarning:objectError is empty!");
             return null;
         }
-
         return objectError.getDefaultMessage();
     }
 }

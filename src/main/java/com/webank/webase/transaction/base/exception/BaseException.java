@@ -13,27 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.webank.webase.transaction;
+package com.webank.webase.transaction.base.exception;
 
-import org.mybatis.spring.annotation.MapperScan;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-
-import lombok.extern.slf4j.Slf4j;
-import springfox.documentation.swagger2.annotations.EnableSwagger2;
+import com.webank.webase.transaction.base.RetCode;
 
 /**
- * Startup class.
- *
+ * BaseException.
+ * 
  */
-@Slf4j
-@EnableSwagger2
-@SpringBootApplication
-@MapperScan("com.webank.webase.transaction")
-public class Application {
+public class BaseException extends Exception {
 
-    public static void main(String[] args) {
-        SpringApplication.run(Application.class, args);
-        log.info("main run success...");
+    private static final long serialVersionUID = 1L;
+    private RetCode retCode;
+
+    public BaseException(RetCode retCode) {
+        super(retCode.getMsg());
+        this.retCode = retCode;
+    }
+
+    public BaseException(int code, String msg) {
+        super(msg);
+        this.retCode = new RetCode(code, msg);
+    }
+
+    public RetCode getRetCode() {
+        return retCode;
     }
 }

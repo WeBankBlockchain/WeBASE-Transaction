@@ -1,30 +1,58 @@
 server: 
+  # 本工程服务端口，端口被占用则修改
   port: 8082
   context-path: /webase-transaction
 
 spring: 
   datasource: 
-    url: jdbc:mysql://10.0.0.1:3306/testDB?useUnicode=true&characterEncoding=utf8
+    # 数据库连接信息
+    url: jdbc:mysql://127.0.0.1:3306/testdb?useUnicode=true&characterEncoding=utf8
+    # 数据库用户名
     username: root
+    # 数据库密码
     password: 123456
     driver-class-name: com.mysql.jdbc.Driver
 
-mybatis: 
-  mapper-locations: classpath:mapper/*.xml
+sdk:
+  # 机构名
+  orgName: webank
+  timeout: 10000
+  # 群组信息，可配置多群组和多节点
+  groupConfig:
+    allChannelConnections:
+    - groupId: 1
+      connectionsStr:
+      - 127.0.0.1:20200
+      - 127.0.0.1:20201
+    - groupId: 2
+      connectionsStr:
+      - 127.0.0.1:20200
+      - 127.0.0.1:20201
 
 constant: 
-  frontIpPorts: 10.0.0.1:8081
+  # 签名服务url，需要调用签名服务进行签名的话则对应修改，使用本地签名的话可以不修改
+  signServiceUrl: http://127.0.0.1:8085/webase-sign/sign
+  # 本地配置私钥进行签名，使用这种模式则对应修改
+  privateKey: edf02a4a69b14ee6b1650a95de71d5f50496ef62ae4213026bd8d6651d030995
   cronTrans: 0/1 * * * * ?
   requestCountMax: 6
   selectCount: 10
   intervalTime: 600
   sleepTime: 50
+  # 使用分布式任务部署多活（true-是，false-否）
+  ifDistributedTask: false
 
-thread: 
-  corePoolSize: 50
-  maxPoolSize: 100
-  queueCapacity: 500
-  keepAlive: 60
+job:
+  regCenter:  
+    # 部署多活的话需配置zookeeper，支持集群
+    serverLists: 127.0.0.1:2181
+    namespace: elasticjob-trans
+  dataflow:  
+    # 分片数（如多活3个的话可分成3片）
+    shardingTotalCount: 3
 
+mybatis: 
+  mapper-locations: classpath:mapper/*.xml
+  
 logging: 
   config: classpath:log4j2.xml
