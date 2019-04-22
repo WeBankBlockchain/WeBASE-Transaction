@@ -94,7 +94,7 @@ public class ContractController extends BaseController {
         @ApiImplicitParam(name = "uuidDeploy", value = "uuidDeploy", required = true, dataType = "String", paramType = "path")})
     @GetMapping("/address/{groupId}/{uuidDeploy}")
     public BaseResponse getAddress(@PathVariable("groupId") int groupId,
-    		@PathVariable("uuidDeploy") String uuidDeploy){
+    		@PathVariable("uuidDeploy") String uuidDeploy) throws BaseException{
         return contractService.getAddress(groupId, uuidDeploy);
     }
 }

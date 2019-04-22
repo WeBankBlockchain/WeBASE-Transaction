@@ -105,7 +105,7 @@ public class TransService {
         	// check if contract has been deployed
         	String contractAddress = contractMapper.selectContractAddress(groupId, req.getUuidDeploy());
     		if (StringUtils.isBlank(contractAddress)) {
-    			log.warn("save fail. contract is not deploed", contractAddress);
+    			log.warn("save fail. contract has not been deployed", contractAddress);
     			throw new BaseException(ConstantCode.CONTRACT_NOT_DEPLOED);
     		}
         	// check contractAbi

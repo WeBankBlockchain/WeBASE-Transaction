@@ -20,7 +20,7 @@
             gmt_modify datetime DEFAULT NULL COMMENT '修改时间',
             PRIMARY KEY (id),
             UNIQUE KEY idx_gu_01 (group_id,uuid_deploy),
-            UNIQUE KEY idx_ca_02 (contract_address),
+            UNIQUE KEY idx_gc_02 (group_id,contract_address),
             KEY idx_gi_03 (group_id),
             KEY idx_ts_04 (handle_status)
         ) COMMENT='部署交易信息表' ENGINE=InnoDB CHARSET=utf8

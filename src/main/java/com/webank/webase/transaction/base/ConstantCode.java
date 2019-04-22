@@ -42,7 +42,7 @@ public interface ConstantCode {
     RetCode TRANSACTION_QUERY_FAILED = RetCode.mark(303009, "query data from chain failed");
     RetCode FILE_IS_EMPTY = RetCode.mark(303010, "file cannot be empty");
     RetCode NOT_A_ZIP_FILE = RetCode.mark(303011, "it is not a zip file");
-    RetCode CONTRACT_NOT_DEPLOED = RetCode.mark(303011, "contract is not deploed");
+    RetCode CONTRACT_NOT_DEPLOED = RetCode.mark(303011, "contract has not been deployed");
 
     // system error
     RetCode SYSTEM_ERROR = RetCode.mark(103001, "system error");

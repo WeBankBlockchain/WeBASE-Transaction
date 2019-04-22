@@ -173,10 +173,17 @@ public class ContractService {
      * @param groupId groupId
      * @param uuid uuid
      * @return
+     * @throws BaseException 
      */
-    public BaseResponse getAddress(int groupId, String uuidDeploy) {
+    public BaseResponse getAddress(int groupId, String uuidDeploy) throws BaseException {
     	BaseResponse baseRsp = new BaseResponse(ConstantCode.RET_SUCCEED);
-    	baseRsp.setData(contractMapper.selectContractAddress(groupId, uuidDeploy));
+    	// check if contract has been deployed
+    	String contractAddress = contractMapper.selectContractAddress(groupId, uuidDeploy);
+		if (StringUtils.isBlank(contractAddress)) {
+			log.warn("getAddress fail. contract has not been deployed", contractAddress);
+			throw new BaseException(ConstantCode.CONTRACT_NOT_DEPLOED);
+		}
+    	baseRsp.setData(contractAddress);
     	return baseRsp;
     }
     
