@@ -94,6 +94,8 @@ public class ContractService {
     public BaseResponse compile(MultipartFile zipFile) throws BaseException, IOException {
     	BaseResponse baseRsp = new BaseResponse(ConstantCode.RET_SUCCEED);
     	String path = new File("temp").getAbsolutePath();
+    	// clear temp folder
+        CommonUtils.deleteFiles(path);
     	// unzip
     	CommonUtils.unZipFiles(zipFile, path);
     	// get sol files
@@ -101,6 +103,9 @@ public class ContractService {
         File[] solFiles = solFileList.listFiles();
         List<CompileInfo> compileInfos = new ArrayList<>();
         for (File solFile : solFiles) {
+        	if (!solFile.getName().endsWith(".sol")) {
+                continue;
+            }
         	String contractName = solFile.getName().substring(0, solFile.getName().lastIndexOf("."));
         	// compile
         	SolidityCompiler.Result res =
@@ -114,8 +119,6 @@ public class ContractService {
 			compileInfo.setContractAbi(JSONArray.parseArray(result.getContract(contractName).abi));
     		compileInfos.add(compileInfo);
         }
-        // delete sol files
-        CommonUtils.deleteFiles(path);
     	baseRsp.setData(compileInfos);
 		return baseRsp;
     }
