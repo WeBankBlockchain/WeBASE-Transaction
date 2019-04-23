@@ -110,14 +110,21 @@ public class ContractService {
         	// compile
         	SolidityCompiler.Result res =
         	        SolidityCompiler.compile(solFile, true, Options.ABI, Options.BIN);
-        	// compile result
+        	// check result
+        	if (res.isFailed()) {
+        		log.warn("compile fail. contract:{} compile error. {}", contractName, res.errors);
+        		throw new BaseException(ConstantCode.CONTRACT_COMPILE_ERROR.getCode(), res.errors);
+        	}
+        	// parse result
         	CompilationResult result = CompilationResult.parse(res.output);
         	List<ContractMetadata> contracts = result.getContracts();
-        	CompileInfo compileInfo = new CompileInfo();
-        	compileInfo.setContractName(contractName);
-			compileInfo.setContractBin(result.getContract(contractName).bin);
-			compileInfo.setContractAbi(JSONArray.parseArray(result.getContract(contractName).abi));
-    		compileInfos.add(compileInfo);
+        	if (contracts.size() > 0) {
+        		CompileInfo compileInfo = new CompileInfo();
+        		compileInfo.setContractName(contractName);
+        		compileInfo.setContractBin(result.getContract(contractName).bin);
+        		compileInfo.setContractAbi(JSONArray.parseArray(result.getContract(contractName).abi));
+        		compileInfos.add(compileInfo);
+        	}
         }
     	baseRsp.setData(compileInfos);
 		return baseRsp;
