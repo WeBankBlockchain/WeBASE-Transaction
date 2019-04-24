@@ -47,13 +47,11 @@ public class DeployHandleDataflowJob implements DataflowJob<DeployInfoDto> {
 
     @Override
     public List<DeployInfoDto> fetchData(ShardingContext context) {
+    	log.debug("deploy fetchData item:{}", context.getShardingItem());
         // query untreated data
         List<DeployInfoDto> deployInfoList = contractMapper.selectUnStatTransByJob(
                 properties.getRequestCountMax(), properties.getSelectCount(),
                 properties.getIntervalTime(), shardingTotalCount, context.getShardingItem());
-        if (deployInfoList == null || deployInfoList.size() == 0) {
-            log.info("no data was found in deploy item:{}", context.getShardingItem());
-        }
         return deployInfoList;
     }
 

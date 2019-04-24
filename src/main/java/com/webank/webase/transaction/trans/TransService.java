@@ -61,6 +61,7 @@ import com.webank.webase.transaction.keystore.KeyStoreService;
 import com.webank.webase.transaction.keystore.SignType;
 import com.webank.webase.transaction.util.CommonUtils;
 import com.webank.webase.transaction.util.ContractAbiUtil;
+import com.webank.webase.transaction.util.LogUtils;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -91,6 +92,7 @@ public class TransService {
      * @throws BaseException 
      */
     public BaseResponse save(ReqTransSend req) throws BaseException {
+    	long startTime = System.currentTimeMillis();
         int groupId = req.getGroupId();
         String uuid = req.getUuidStateless();
         String funcName = req.getFuncName();
@@ -154,6 +156,9 @@ public class TransService {
         }
         log.info("save end. groupId:{} uuid:{}", groupId, uuid);
         BaseResponse baseRsp = new BaseResponse(ConstantCode.RET_SUCCEED);
+        long endTime = System.currentTimeMillis();
+        LogUtils.monitorBusinessLogger().info(ConstantProperties.CODE_BUSINESS_10002, 
+        		endTime - startTime, ConstantProperties.MSG_BUSINESS_10002);
         return baseRsp;
     }
     
@@ -247,7 +252,6 @@ public class TransService {
                 Thread.currentThread().interrupt();
             }
         }
-
     }
 
     /**
@@ -256,7 +260,7 @@ public class TransService {
      * @param transInfoDto transInfoDto
      */
     public void transSend(TransInfoDto transInfoDto) {
-    	log.info("sendTrans transInfoDto:{}", JSON.toJSONString(transInfoDto));
+    	log.info("transSend transInfoDto:{}", JSON.toJSONString(transInfoDto));
     	Long id = transInfoDto.getId();
     	int groupId = transInfoDto.getGroupId();
     	int requestCount = transInfoDto.getRequestCount();
@@ -268,6 +272,8 @@ public class TransService {
             if (requestCount == properties.getRequestCountMax()) {
                 log.warn("transSend id:{} has reached limit:{}", id,
                         properties.getRequestCountMax());
+                LogUtils.monitorAbnormalLogger().error(ConstantProperties.CODE_ABNORMAL_S0004, 
+                		ConstantProperties.MSG_ABNORMAL_S0004);
                 return;
             }
 
@@ -331,6 +337,8 @@ public class TransService {
             transMapper.updateHandleStatus(transInfoDto);
         } catch (Exception e) {
             log.error("fail transSend id:{}", id, e);
+            LogUtils.monitorAbnormalLogger().error(ConstantProperties.CODE_ABNORMAL_S0002, 
+            		ConstantProperties.MSG_ABNORMAL_S0002);
         }
     }
     
