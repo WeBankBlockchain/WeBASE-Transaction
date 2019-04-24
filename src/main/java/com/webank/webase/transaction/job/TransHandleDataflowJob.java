@@ -47,13 +47,11 @@ public class TransHandleDataflowJob implements DataflowJob<TransInfoDto> {
 
     @Override
     public List<TransInfoDto> fetchData(ShardingContext context) {
+    	log.debug("trans fetchData item:{}", context.getShardingItem());
         // query untreated data
         List<TransInfoDto> transInfoList = transMapper.selectUnStatTransByJob(
                 properties.getRequestCountMax(), properties.getSelectCount(),
                 properties.getIntervalTime(), shardingTotalCount, context.getShardingItem());
-        if (transInfoList == null || transInfoList.size() == 0) {
-            log.info("no data was found in item:{}", context.getShardingItem());
-        }
         return transInfoList;
     }
 

@@ -60,6 +60,7 @@ import com.webank.webase.transaction.keystore.SignType;
 import com.webank.webase.transaction.trans.TransService;
 import com.webank.webase.transaction.util.CommonUtils;
 import com.webank.webase.transaction.util.ContractAbiUtil;
+import com.webank.webase.transaction.util.LogUtils;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -138,6 +139,7 @@ public class ContractService {
 	 * @throws BaseException
 	 */
 	public BaseResponse deploy(ReqDeploy req) throws BaseException {
+		long startTime = System.currentTimeMillis();
     	int groupId = req.getGroupId();
         String uuid = req.getUuidDeploy();
         String contractAbi = JSON.toJSONString(req.getContractAbi());
@@ -174,6 +176,9 @@ public class ContractService {
         }
         BaseResponse baseRsp = new BaseResponse(ConstantCode.RET_SUCCEED);
         log.info("deploy end. groupId:{} uuid:{}", groupId, uuid);
+        long endTime = System.currentTimeMillis();
+        LogUtils.monitorBusinessLogger().info(ConstantProperties.CODE_BUSINESS_10001, 
+        		endTime - startTime, ConstantProperties.MSG_BUSINESS_10001);
         return baseRsp;
     }
 
@@ -219,7 +224,6 @@ public class ContractService {
                 Thread.currentThread().interrupt();
             }
         }
-
     }
 
     /**
@@ -240,6 +244,8 @@ public class ContractService {
             if (requestCount == properties.getRequestCountMax()) {
                 log.warn("deploySend id:{} has reached limit:{}", id,
                         properties.getRequestCountMax());
+                LogUtils.monitorAbnormalLogger().error(ConstantProperties.CODE_ABNORMAL_S0003, 
+                		ConstantProperties.MSG_ABNORMAL_S0003);
                 return;
             }
 
@@ -302,6 +308,8 @@ public class ContractService {
             contractMapper.updateHandleStatus(deployInfoDto);
         } catch (Exception e) {
             log.error("fail deploySend id:{}", id, e);
+            LogUtils.monitorAbnormalLogger().error(ConstantProperties.CODE_ABNORMAL_S0001, 
+            		ConstantProperties.MSG_ABNORMAL_S0001);
         }
     }
 }

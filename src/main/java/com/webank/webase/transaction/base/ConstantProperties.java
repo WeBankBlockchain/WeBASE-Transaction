@@ -32,6 +32,24 @@ public class ConstantProperties {
     
     public static final String TYPE_CONSTRUCTOR = "constructor";
     public static final String TYPE_FUNCTION = "function";
+    
+    // monitor business log format
+    public static final String MONITOR_BUSINESS_FORMAT = "[{\"CODE\":\"%s\",\"COST_TIME\":\"{}\",\"RES_CODE\":\"0\"}][{}]";
+    public static final String CODE_BUSINESS_10001 = String.format(MONITOR_BUSINESS_FORMAT, "10001");
+    public static final String MSG_BUSINESS_10001 = "deploy_transaction";
+    public static final String CODE_BUSINESS_10002 = String.format(MONITOR_BUSINESS_FORMAT, "10002");
+    public static final String MSG_BUSINESS_10002 = "stateless_transaction";
+    
+    // monitor abnormal log format
+    public static final String MONITOR_ABNORMAL_FORMAT = "[{\"CODE\":\"%s\",\"RES_CODE\":\"1\"}][{}]";
+    public static final String CODE_ABNORMAL_S0001 = String.format(MONITOR_ABNORMAL_FORMAT, "S2001");
+    public static final String MSG_ABNORMAL_S0001 = "deploy_to_chain_exception";
+    public static final String CODE_ABNORMAL_S0002 = String.format(MONITOR_ABNORMAL_FORMAT, "S2002");
+    public static final String MSG_ABNORMAL_S0002 = "stateless_to_chain_exception";
+    public static final String CODE_ABNORMAL_S0003 = String.format(MONITOR_ABNORMAL_FORMAT, "S2003");
+    public static final String MSG_ABNORMAL_S0003 = "deploy_request_arrive_limit";
+    public static final String CODE_ABNORMAL_S0004 = String.format(MONITOR_ABNORMAL_FORMAT, "S2004");
+    public static final String MSG_ABNORMAL_S0004 = "stateless_request_arrive_limit";
 
     // constant configuration from file
     public static final String CONSTANT_PREFIX = "constant";

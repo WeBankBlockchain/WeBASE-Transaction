@@ -52,11 +52,7 @@ public class SendTransSchedule {
     	List<DeployInfoDto> deployInfoList =
     			contractMapper.selectUnStatTrans(properties.getRequestCountMax(),
     					properties.getSelectCount(), properties.getIntervalTime());
-    	if (deployInfoList == null || deployInfoList.size() == 0) {
-    		log.info("no data was found in this deploySchedule.");
-    	} else {
-    		contractService.handleDeployInfo(deployInfoList);
-    	}
+    	contractService.handleDeployInfo(deployInfoList);
     }
     
     /**
@@ -67,10 +63,6 @@ public class SendTransSchedule {
         List<TransInfoDto> transInfoList =
                 transMapper.selectUnStatTrans(properties.getRequestCountMax(),
                         properties.getSelectCount(), properties.getIntervalTime());
-        if (transInfoList == null || transInfoList.size() == 0) {
-            log.info("no data was found in this transSchedule.");
-        } else {
-            transService.handleTransInfo(transInfoList);
-        }
+        transService.handleTransInfo(transInfoList);
     }
 }
