@@ -50,6 +50,8 @@ public class ConstantProperties {
     public static final String MSG_ABNORMAL_S0003 = "deploy_request_arrive_limit";
     public static final String CODE_ABNORMAL_S0004 = String.format(MONITOR_ABNORMAL_FORMAT, "S2004");
     public static final String MSG_ABNORMAL_S0004 = "stateless_request_arrive_limit";
+    public static final String CODE_ABNORMAL_S0005 = String.format(MONITOR_ABNORMAL_FORMAT, "S2005");
+    public static final String MSG_ABNORMAL_S0005 = "request_sign_server_exception";
 
     // constant configuration from file
     public static final String CONSTANT_PREFIX = "constant";

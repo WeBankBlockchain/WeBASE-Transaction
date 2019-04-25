@@ -10,24 +10,34 @@
         </Console>
 
         <RollingFile name="transaction" fileName="${logPath}/webase-transaction.log"
-            filePattern="${logPath}/webase-transaction.log.%d{yyyy-MM-dd}.%i.log.gz">
+            filePattern="${logPath}/$${date:yyyy-MM}/webase-transaction.%d{yyyy-MM-dd}.%i.log.gz">
             <PatternLayout
                 pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5p %c{1}(%L) - %m%n" />
             <Policies>
                 <TimeBasedTriggeringPolicy />
                 <SizeBasedTriggeringPolicy size="200 MB" />
             </Policies>
-            <DefaultRolloverStrategy max="24" />
+            <DefaultRolloverStrategy max="24" >
+                <Delete basePath="${logPath}/" >
+                    <IfFileName glob="webase-transaction.*.log.gz" />
+                    <IfLastModified age="15d" />
+                </Delete>
+            </DefaultRolloverStrategy>
         </RollingFile>
         
         <RollingFile name="web3sdk" fileName="${logPath}/web3sdk.log"
-                     filePattern="${logPath}/web3sdk.log.%d{yyyy-MM-dd}.%i.log.gz">
+                     filePattern="${logPath}/web3sdk.%d{yyyy-MM-dd}.%i.log.gz">
             <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5p %c{1}(%L) - %m%n" />
             <Policies>
                 <TimeBasedTriggeringPolicy />
                 <SizeBasedTriggeringPolicy size="200 MB" />
             </Policies>
-            <DefaultRolloverStrategy max="24" />
+            <DefaultRolloverStrategy max="24" >
+                <Delete basePath="${logPath}/" >
+                    <IfFileName glob="web3sdk.*.log.gz" />
+                    <IfLastModified age="15d" />
+                </Delete>
+            </DefaultRolloverStrategy>
         </RollingFile>
         
         <RollingFile name="monitorBusiness" fileName="${logPath}/monitor-business.log" 
@@ -37,17 +47,27 @@
 				<TimeBasedTriggeringPolicy />
 				<SizeBasedTriggeringPolicy size="200 MB" />
 			</Policies>
-			<DefaultRolloverStrategy max="24" />
+			<DefaultRolloverStrategy max="24" >
+                <Delete basePath="${logPath}/" >
+                    <IfFileName glob="monitor-business.*.log.gz" />
+                    <IfLastModified age="15d" />
+                </Delete>
+            </DefaultRolloverStrategy>
 		</RollingFile>
 		
         <RollingFile name="monitorAbnormal" fileName="${logPath}/monitor-abnormal.log" 
-                     filePattern="${logPath}/monitor-abnormal.%d{yyyy-MM-dd}.log.gz">
+                     filePattern="${logPath}/$${date:yyyy-MM}/monitor-abnormal.%d{yyyy-MM-dd}.log.gz">
 			<PatternLayout pattern="[%-5p][%d{yyyy-MM-dd HH:mm:ss.SSS}][%t][TRANS][123][123][LOG_POINT]%m%n" />
 			<Policies>
 				<TimeBasedTriggeringPolicy />
 				<SizeBasedTriggeringPolicy size="200 MB" />
 			</Policies>
-			<DefaultRolloverStrategy max="24" />
+			<DefaultRolloverStrategy max="24" >
+                <Delete basePath="${logPath}/" >
+                    <IfFileName glob="monitor-abnormal.*.log.gz" />
+                    <IfLastModified age="15d" />
+                </Delete>
+            </DefaultRolloverStrategy>
 		</RollingFile>
 
         <Async name="asyncWeb3sdk" bufferSize="512">

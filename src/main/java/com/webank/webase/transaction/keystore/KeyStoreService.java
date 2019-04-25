@@ -30,6 +30,7 @@ import com.webank.webase.transaction.base.ConstantCode;
 import com.webank.webase.transaction.base.ConstantProperties;
 import com.webank.webase.transaction.base.exception.BaseException;
 import com.webank.webase.transaction.util.CommonUtils;
+import com.webank.webase.transaction.util.LogUtils;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -66,7 +67,6 @@ public class KeyStoreService {
             keyStoreInfo.setPrivateKey(privateKey);
             keyStoreInfo.setAddress(address);
 
-            log.info("getKey finish. keyStoreInfo[{}]", JSON.toJSONString(keyStoreInfo));
             return keyStoreInfo;
         } catch (Exception e) {
             log.error("createEcKeyPair fail.");
@@ -97,6 +97,8 @@ public class KeyStoreService {
             return signInfo.getSignDataStr();
         } catch (Exception e) {
             log.error("getSignDate exception", e);
+            LogUtils.monitorAbnormalLogger().error(ConstantProperties.CODE_ABNORMAL_S0005, 
+            		ConstantProperties.MSG_ABNORMAL_S0005);
         }
 		return null;
     }
