@@ -18,18 +18,18 @@ package com.webank.webase.transaction.base;
 import lombok.Data;
 
 @Data
-public class BaseResponse {
+public class ResponseEntity {
     private int code;
     private String message;
     private Object data;
 
-    public BaseResponse() {}
+    public ResponseEntity() {}
 
-    public BaseResponse(int code) {
+    public ResponseEntity(int code) {
         this.code = code;
     }
 
-    public BaseResponse(RetCode rsc) {
+    public ResponseEntity(RetCode rsc) {
         this.code = rsc.getCode();
         this.message = rsc.getMsg();
     }
@@ -40,7 +40,7 @@ public class BaseResponse {
      * @param rsc not null
      * @param obj result
      */
-    public BaseResponse(RetCode rsc, Object obj) {
+    public ResponseEntity(RetCode rsc, Object obj) {
         this.code = rsc.getCode();
         this.message = rsc.getMsg();
         this.data = obj;
@@ -53,7 +53,7 @@ public class BaseResponse {
      * @param message not null
      * @param obj result
      */
-    public BaseResponse(int code, String message, Object obj) {
+    public ResponseEntity(int code, String message, Object obj) {
         this.code = code;
         this.message = message;
         this.data = obj;

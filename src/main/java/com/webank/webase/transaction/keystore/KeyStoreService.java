@@ -25,7 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import com.alibaba.fastjson.JSON;
-import com.webank.webase.transaction.base.BaseResponse;
+import com.webank.webase.transaction.base.ResponseEntity;
 import com.webank.webase.transaction.base.ConstantCode;
 import com.webank.webase.transaction.base.ConstantProperties;
 import com.webank.webase.transaction.base.exception.BaseException;
@@ -89,7 +89,7 @@ public class KeyStoreService {
             HttpHeaders headers = CommonUtils.buildHeaders();
             HttpEntity<String> formEntity =
                     new HttpEntity<String>(JSON.toJSONString(params), headers);
-            BaseResponse response = restTemplate.postForObject(url, formEntity, BaseResponse.class);
+            ResponseEntity response = restTemplate.postForObject(url, formEntity, ResponseEntity.class);
             log.info("getSignDate response:{}", JSON.toJSONString(response));
             if (response.getCode() == 0) {
             	signInfo =CommonUtils.object2JavaBean(response.getData(), SignInfo.class);

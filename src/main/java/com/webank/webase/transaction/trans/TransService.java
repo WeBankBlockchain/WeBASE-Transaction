@@ -50,7 +50,7 @@ import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
-import com.webank.webase.transaction.base.BaseResponse;
+import com.webank.webase.transaction.base.ResponseEntity;
 import com.webank.webase.transaction.base.ConstantCode;
 import com.webank.webase.transaction.base.ConstantProperties;
 import com.webank.webase.transaction.base.exception.BaseException;
@@ -91,7 +91,7 @@ public class TransService {
      * @return
      * @throws BaseException 
      */
-    public BaseResponse save(ReqTransSend req) throws BaseException {
+    public ResponseEntity save(ReqTransSendInfo req) throws BaseException {
     	long startTime = System.currentTimeMillis();
         int groupId = req.getGroupId();
         String uuid = req.getUuidStateless();
@@ -155,11 +155,11 @@ public class TransService {
             throw new BaseException(ConstantCode.UUID_IS_EXISTS);
         }
         log.info("save end. groupId:{} uuid:{}", groupId, uuid);
-        BaseResponse baseRsp = new BaseResponse(ConstantCode.RET_SUCCEED);
+        ResponseEntity response = new ResponseEntity(ConstantCode.RET_SUCCEED);
         long endTime = System.currentTimeMillis();
         LogUtils.monitorBusinessLogger().info(ConstantProperties.CODE_BUSINESS_10002, 
         		endTime - startTime, ConstantProperties.MSG_BUSINESS_10002);
-        return baseRsp;
+        return response;
     }
     
     /**
@@ -168,7 +168,7 @@ public class TransService {
      * @return
      * @throws BaseException
      */
-    public BaseResponse call(ReqTransCall req) throws BaseException {
+    public ResponseEntity call(ReqTransCallInfo req) throws BaseException {
     	int groupId = req.getGroupId();
     	String funcName = req.getFuncName();
     	List<Object> abiList = req.getContractAbi();
@@ -217,13 +217,13 @@ public class TransService {
             				contractAddress, encodedFunction), DefaultBlockParameterName.LATEST)
             		.send().getValue().getOutput();
             List<Type> typeList = FunctionReturnDecoder.decode(callOutput, function.getOutputParameters());
-            BaseResponse baseRsp = new BaseResponse(ConstantCode.RET_SUCCEED);
+            ResponseEntity response = new ResponseEntity(ConstantCode.RET_SUCCEED);
             if (typeList.size() > 0) {
-                baseRsp = ContractAbiUtil.callResultParse(funOutputTypes, typeList, baseRsp);
+                response = ContractAbiUtil.callResultParse(funOutputTypes, typeList, response);
             } else {
-                baseRsp.setData(typeList);
+                response.setData(typeList);
             }
-            return baseRsp;
+            return response;
     	} catch (IOException e) {
     		log.error("call funcName:{} Exception:{}", funcName, e);
     		throw new BaseException(ConstantCode.TRANSACTION_QUERY_FAILED);

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.webank.webase.transaction.schedule;
+package com.webank.webase.transaction.scheduler;
 
 import com.webank.webase.transaction.base.ConstantProperties;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,18 +25,18 @@ import org.springframework.stereotype.Component;
 
 @Component
 @EnableScheduling
-public class SchedulerService implements SchedulingConfigurer {
+public class SchedulerConfig implements SchedulingConfigurer {
 	@Autowired
-	private SendTransSchedule sendTransSchedule;
+	private ScheduleService scheduleService;
 	@Autowired
 	private ConstantProperties constants;
 
 	@Override
 	public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {
 		if (!constants.isIfDistributedTask()) {
-			taskRegistrar.addTriggerTask(() -> sendTransSchedule.deploySchedule(),
+			taskRegistrar.addTriggerTask(() -> scheduleService.deploySchedule(),
 					(context) -> new CronTrigger(constants.getCronTrans()).nextExecutionTime(context));
-			taskRegistrar.addTriggerTask(() -> sendTransSchedule.transSchedule(),
+			taskRegistrar.addTriggerTask(() -> scheduleService.transSchedule(),
 					(context) -> new CronTrigger(constants.getCronTrans()).nextExecutionTime(context));
 		}
 	}

@@ -29,7 +29,7 @@ import org.fisco.bcos.web3j.protocol.core.methods.response.AbiDefinition.NamedTy
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
-import com.webank.webase.transaction.base.BaseResponse;
+import com.webank.webase.transaction.base.ResponseEntity;
 import com.webank.webase.transaction.base.ConstantProperties;
 import com.webank.webase.transaction.base.exception.BaseException;
 
@@ -194,11 +194,11 @@ public class ContractAbiUtil {
      * 
      * @param funOutputTypes list
      * @param typeList list
-     * @param baseRsp response
+     * @param response response
      * @return
      */
-    public static BaseResponse callResultParse(List<String> funOutputTypes, List<Type> typeList,
-            BaseResponse baseRsp) throws BaseException {
+    public static ResponseEntity callResultParse(List<String> funOutputTypes, List<Type> typeList,
+            ResponseEntity response) throws BaseException {
         if (funOutputTypes.size() == typeList.size()) {
             List<Object> ressult = new ArrayList<>();
             for (int i = 0; i < funOutputTypes.size(); i++) {
@@ -221,8 +221,8 @@ public class ContractAbiUtil {
                     ressult.add(value);
                 }
             }
-            baseRsp.setData(JSON.parse(JSON.toJSONString(ressult)));
+            response.setData(JSON.parse(JSON.toJSONString(ressult)));
         }
-        return baseRsp;
+        return response;
     }
 }

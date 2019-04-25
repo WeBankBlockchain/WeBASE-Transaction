@@ -38,7 +38,7 @@ public abstract class BaseController {
      * 
      * @param bindingResult checkResult
      */
-    protected BaseResponse checkParamResult(BindingResult bindingResult) throws BaseException {
+    protected ResponseEntity checkParamResult(BindingResult bindingResult) throws BaseException {
         if (!bindingResult.hasErrors()) {
             return null;
         }

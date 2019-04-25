@@ -49,7 +49,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
-import com.webank.webase.transaction.base.BaseResponse;
+import com.webank.webase.transaction.base.ResponseEntity;
 import com.webank.webase.transaction.base.ConstantCode;
 import com.webank.webase.transaction.base.ConstantProperties;
 import com.webank.webase.transaction.base.exception.BaseException;
@@ -92,8 +92,8 @@ public class ContractService {
      * @throws BaseException
      * @throws IOException 
      */
-    public BaseResponse compile(MultipartFile zipFile) throws BaseException, IOException {
-    	BaseResponse baseRsp = new BaseResponse(ConstantCode.RET_SUCCEED);
+    public ResponseEntity compile(MultipartFile zipFile) throws BaseException, IOException {
+    	ResponseEntity response = new ResponseEntity(ConstantCode.RET_SUCCEED);
     	String path = new File("temp").getAbsolutePath();
     	// clear temp folder
         CommonUtils.deleteFiles(path);
@@ -127,8 +127,8 @@ public class ContractService {
         		compileInfos.add(compileInfo);
         	}
         }
-    	baseRsp.setData(compileInfos);
-		return baseRsp;
+    	response.setData(compileInfos);
+		return response;
     }
     
 	/**
@@ -138,7 +138,7 @@ public class ContractService {
 	 * @return
 	 * @throws BaseException
 	 */
-	public BaseResponse deploy(ReqDeploy req) throws BaseException {
+	public ResponseEntity deploy(ReqDeployInfo req) throws BaseException {
 		long startTime = System.currentTimeMillis();
     	int groupId = req.getGroupId();
         String uuid = req.getUuidDeploy();
@@ -174,12 +174,12 @@ public class ContractService {
                     e);
             throw new BaseException(ConstantCode.UUID_DEPLOY_IS_EXISTS);
         }
-        BaseResponse baseRsp = new BaseResponse(ConstantCode.RET_SUCCEED);
+        ResponseEntity response = new ResponseEntity(ConstantCode.RET_SUCCEED);
         log.info("deploy end. groupId:{} uuid:{}", groupId, uuid);
         long endTime = System.currentTimeMillis();
         LogUtils.monitorBusinessLogger().info(ConstantProperties.CODE_BUSINESS_10001, 
         		endTime - startTime, ConstantProperties.MSG_BUSINESS_10001);
-        return baseRsp;
+        return response;
     }
 
     /** 
@@ -190,16 +190,16 @@ public class ContractService {
      * @return
      * @throws BaseException 
      */
-    public BaseResponse getAddress(int groupId, String uuidDeploy) throws BaseException {
-    	BaseResponse baseRsp = new BaseResponse(ConstantCode.RET_SUCCEED);
+    public ResponseEntity getAddress(int groupId, String uuidDeploy) throws BaseException {
+    	ResponseEntity response = new ResponseEntity(ConstantCode.RET_SUCCEED);
     	// check if contract has been deployed
     	String contractAddress = contractMapper.selectContractAddress(groupId, uuidDeploy);
 		if (StringUtils.isBlank(contractAddress)) {
 			log.warn("getAddress fail. contract has not been deployed", contractAddress);
 			throw new BaseException(ConstantCode.CONTRACT_NOT_DEPLOED);
 		}
-    	baseRsp.setData(contractAddress);
-    	return baseRsp;
+    	response.setData(contractAddress);
+    	return response;
     }
     
     /**
