@@ -232,8 +232,9 @@ public class ContractService {
      * @param deployInfoDto deployInfoDto
      */
     public void deploySend(DeployInfoDto deployInfoDto) {
-    	log.info("sendTrans deployInfoDto:{}", JSON.toJSONString(deployInfoDto));
+    	log.debug("deploySend deployInfoDto:{}", JSON.toJSONString(deployInfoDto));
     	Long id = deployInfoDto.getId();
+    	log.debug("deploySend id:{}", id);
     	int groupId = deployInfoDto.getGroupId();
     	int requestCount = deployInfoDto.getRequestCount();
     	int signType = deployInfoDto.getSignType();

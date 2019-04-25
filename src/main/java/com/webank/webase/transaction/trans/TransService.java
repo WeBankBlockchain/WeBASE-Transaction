@@ -260,8 +260,9 @@ public class TransService {
      * @param transInfoDto transInfoDto
      */
     public void transSend(TransInfoDto transInfoDto) {
-    	log.info("transSend transInfoDto:{}", JSON.toJSONString(transInfoDto));
+    	log.debug("transSend transInfoDto:{}", JSON.toJSONString(transInfoDto));
     	Long id = transInfoDto.getId();
+    	log.info("transSend id:{}", id);
     	int groupId = transInfoDto.getGroupId();
     	int requestCount = transInfoDto.getRequestCount();
     	int signType = transInfoDto.getSignType();
