@@ -5,8 +5,7 @@
 > * [前提条件](#chapter-2)
 > * [部署说明](#chapter-3)
 > * [接口说明](#chapter-4)
-> * [问题排查](#chapter-5)
-> * [附录](#chapter-6)
+> * [附录](#chapter-5)
 
 # 1. <a id="chapter-1"></a>功能说明
 
@@ -32,7 +31,6 @@
 | 环境     | 版本              |
 | ------ | --------------- |
 | Java   | jdk1.8.0_121或以上版本    |
-| gradle | gradle-5.0或以上版本 |
 | zookeeper | zookeeper-3.4.10或以上版本 |
 | 数据库    | mysql-5.6或以上版本  |
 备注：安装说明请参看附录，不使用分布式任务可以不部署zookeeper。
@@ -45,23 +43,16 @@
 git clone https://github.com/WeBankFinTech/webase-transcation.git
 ```
 
-**注意**：代码拉取后，可以切换到相应分支（如：dev）。
-
-```shell
-cd webase-transcation
-git checkout dev
-```
-
 ## 3.2 编译代码
 
-（1）进入目录：
+在代码的根目录webase-transcation编译，如果出现问题可以查看[常见问题解答](install_FAQ.md)</br>
+方式一：如果服务器已安装gradle，且版本为gradle-4.10或以上
 ```shell
-cd webase-transcation
+gradle build -x test
 ```
-
-（2）执行构建命令：
+方式二：如果服务器未安装gradle，或者版本不是gradle-4.10或以上，使用gradlew编译
 ```shell
-gradle build
+./gradlew build -x test
 ```
 构建完成后，会在根目录webase-transcation下生成已编译的代码目录dist。
 
@@ -166,28 +157,10 @@ tail -f log/webase-transcation.log
 
 - [接口说明请点击](interface.md)
 
-# 5. <a id="chapter-5"></a>问题排查
 
-## 5.1 gradle build失败
+# 5. <a id="chapter-5"></a>附录
 
-如果出现以下错误，**请配置一下lombok**，lombok的配置和使用请在网上查询。
-```
-> Task :compileJava
-E:\webase-transcation\src\main\java\com\webank\webase\transaction\Application.java:21: 错误: 找不到符号
-        log.info("start success...");
-        ^
-  符号:   变量 log
-  位置: 类 Application
-```
-
-如果出现以下错误，**请检查gradle版本，需要使用5.0或以上版本。**
-```
-> Could not find method annotationProcessor() for arguments [org.projectlombok:lombok:1.18.2] on object of type org.gradle.api.internal.artifacts.dsl.dependencies.DefaultDependencyHandler.
-```
-
-# 6. <a id="chapter-6"></a>附录
-
-## 6.1 Java环境部署
+## 5.1 Java环境部署
 
 此处给出简单步骤，供快速查阅。更详细的步骤，请参考[官网](http://www.oracle.com/technetwork/java/javase/downloads/index.html)。
 
@@ -206,25 +179,7 @@ export PATH=$JAVA_HOME/bin:$PATH
 export CLASSPATH=.:$JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib/tools.jar
 ```
 
-## 6.2 gradle环境部署
-
-此处给出简单步骤，供快速查阅。更详细的步骤，请参考[官网](http://www.gradle.org/downloads)。
-
-（1）从[官网](http://www.gradle.org/downloads)下载5.0或以上版本的gradle安装包，并解压到相应目录
-
-```shell
-mkdir /software/
-unzip -d /software/ gradleXXX.zip
-```
-
-（2）配置环境变量
-
-```shell
-export GRADLE_HOME=/software/gradle-XXX
-export PATH=$GRADLE_HOME/bin:$PATH
-```
-
-## 6.3 数据库部署
+## 5.2 数据库部署
 
 此处以Centos/Fedora为例。
 
@@ -263,6 +218,11 @@ mysql > SET PASSWORD FOR 'root'@'localhost' = PASSWORD('123456');
 mysql > GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY '123456' WITH GRANT OPTION;
 ```
 
+**安全温馨提示：**
+
+1. 例子中给出的数据库密码（123456）仅为样例，强烈建议设置成复杂密码
+2. 例子中的远程授权设置会使数据库在所有网络上都可以访问，请按具体的网络拓扑和权限控制情况，设置网络和权限帐号
+
 授权test用户本地访问数据库
 ```sql
 mysql > create user 'test'@'localhost' identified by 'test1234';
@@ -273,7 +233,7 @@ mysql > create user 'test'@'localhost' identified by 'test1234';
 另开一个ssh测试本地用户test是否可以登录数据库
 
 ```shell
-mysql -utest -ptest1234 -h 10.0.0.1 -P 3306
+mysql -utest -ptest1234 -h 127.0.0.1 -P 3306
 ```
 
 登陆成功后，执行以下sql语句，若出现错误，则用户授权不成功
@@ -287,7 +247,7 @@ mysql > use test;
 登录数据库
 
 ```shell
-mysql -utest -ptest1234 -h 10.0.0.1 -P 3306
+mysql -utest -ptest1234 -h 127.0.0.1 -P 3306
 ```
 
 创建数据库
