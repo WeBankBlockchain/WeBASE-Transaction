@@ -17,7 +17,7 @@ package com.webank.webase.transaction.contract;
 
 import com.alibaba.fastjson.JSON;
 import com.webank.webase.transaction.base.BaseController;
-import com.webank.webase.transaction.base.BaseResponse;
+import com.webank.webase.transaction.base.ResponseEntity;
 import com.webank.webase.transaction.base.exception.BaseException;
 
 import io.swagger.annotations.Api;
@@ -64,7 +64,7 @@ public class ContractController extends BaseController {
      */
     @ApiOperation(value = "contract compile", notes = "contract compile")
     @PostMapping("/compile")
-    public BaseResponse compile(@ApiParam(value = "contract zip file", required = true)
+    public ResponseEntity compile(@ApiParam(value = "contract zip file", required = true)
     		@RequestParam("file") MultipartFile file) throws BaseException, IOException {
     	return contractService.compile(file);
     }
@@ -79,9 +79,9 @@ public class ContractController extends BaseController {
      */
     @ApiOperation(value = "contract deploy", notes = "contract deploy")
     @ApiImplicitParam(name = "req", value = "deploy info", required = true,
-    dataType = "ReqDeploy")
+    dataType = "ReqDeployInfo")
     @PostMapping("/deploy")
-    public BaseResponse deploy(@Valid @RequestBody ReqDeploy req,
+    public ResponseEntity deploy(@Valid @RequestBody ReqDeployInfo req,
     		BindingResult result) throws BaseException {
     	log.info("deploy start. req:{}", JSON.toJSONString(req));
     	checkParamResult(result);
@@ -93,7 +93,7 @@ public class ContractController extends BaseController {
     	@ApiImplicitParam(name = "groupId", value = "groupId", required = true, dataType = "int", paramType = "path"),
         @ApiImplicitParam(name = "uuidDeploy", value = "uuidDeploy", required = true, dataType = "String", paramType = "path")})
     @GetMapping("/address/{groupId}/{uuidDeploy}")
-    public BaseResponse getAddress(@PathVariable("groupId") int groupId,
+    public ResponseEntity getAddress(@PathVariable("groupId") int groupId,
     		@PathVariable("uuidDeploy") String uuidDeploy) throws BaseException{
         return contractService.getAddress(groupId, uuidDeploy);
     }

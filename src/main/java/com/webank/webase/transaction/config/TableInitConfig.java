@@ -24,7 +24,7 @@ import org.springframework.context.annotation.Configuration;
 
 @Data
 @Configuration
-public class InitTable implements InitializingBean {
+public class TableInitConfig implements InitializingBean {
 	@Autowired
     private ContractMapper contractMapper;
     @Autowired

@@ -24,11 +24,15 @@ import lombok.Data;
 import org.hibernate.validator.constraints.NotBlank;
 
 @Data
-public class ReqTransCall {
+public class ReqTransSendInfo {
 	@NotNull(message = ConstantCode.GROUP_ID_IS_EMPTY)
 	private int groupId;
+	@NotBlank(message = ConstantCode.UUID_TRANS_IS_EMPTY)
+	private String uuidStateless;
 	@NotBlank(message = ConstantCode.UUID_DEPLOY_IS_EMPTY)
     private String uuidDeploy;
+	@NotNull(message = ConstantCode.SIGN_TYPE_IS_EMPTY)
+	private int signType;
     private List<Object> contractAbi;
     @NotBlank(message = ConstantCode.FUNCTION_NAME_IS_EMPTY)
     private String funcName;

@@ -17,7 +17,7 @@ package com.webank.webase.transaction.base.exception;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.webank.webase.transaction.base.BaseResponse;
+import com.webank.webase.transaction.base.ResponseEntity;
 import com.webank.webase.transaction.base.ConstantCode;
 import com.webank.webase.transaction.base.RetCode;
 
@@ -46,12 +46,12 @@ public class ExceptionsHandler {
      */
     @ResponseBody
     @ExceptionHandler(value = BaseException.class)
-    public BaseResponse myExceptionHandler(BaseException baseException) throws Exception {
+    public ResponseEntity myExceptionHandler(BaseException baseException) throws Exception {
         log.warn("catch business exception", baseException);
         RetCode retCode = Optional.ofNullable(baseException).map(BaseException::getRetCode)
                 .orElse(ConstantCode.SYSTEM_ERROR);
 
-        BaseResponse rep = new BaseResponse(retCode);
+        ResponseEntity rep = new ResponseEntity(retCode);
         log.warn("business exception return:{}", mapper.writeValueAsString(rep));
         return rep;
     }
@@ -64,10 +64,10 @@ public class ExceptionsHandler {
      */
     @ResponseBody
     @ExceptionHandler(value = Exception.class)
-    public BaseResponse exceptionHandler(Exception exc) {
+    public ResponseEntity exceptionHandler(Exception exc) {
         log.info("catch  exception", exc);
         RetCode retCode = ConstantCode.SYSTEM_ERROR;
-        BaseResponse rep = new BaseResponse(retCode);
+        ResponseEntity rep = new ResponseEntity(retCode);
         try {
             log.warn("exceptionHandler system exception return:{}", mapper.writeValueAsString(rep));
         } catch (JsonProcessingException ex) {

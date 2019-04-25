@@ -26,7 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.alibaba.fastjson.JSON;
 import com.webank.webase.transaction.base.BaseController;
-import com.webank.webase.transaction.base.BaseResponse;
+import com.webank.webase.transaction.base.ResponseEntity;
 import com.webank.webase.transaction.base.exception.BaseException;
 
 import io.swagger.annotations.Api;
@@ -56,9 +56,9 @@ public class TransController extends BaseController {
      */
     @ApiOperation(value = "transaction send", notes = "transaction send")
     @ApiImplicitParam(name = "req", value = "transaction info", required = true,
-            dataType = "ReqTransSend")
+            dataType = "ReqTransSendInfo")
     @PostMapping("/send")
-    public BaseResponse send(@Valid @RequestBody ReqTransSend req,
+    public ResponseEntity send(@Valid @RequestBody ReqTransSendInfo req,
             BindingResult result) throws BaseException {
         log.info("transSend start. req:{}", JSON.toJSONString(req));
         checkParamResult(result);
@@ -66,7 +66,7 @@ public class TransController extends BaseController {
     }
     
     @PostMapping("/call")
-    public BaseResponse call(@Valid @RequestBody ReqTransCall req,
+    public ResponseEntity call(@Valid @RequestBody ReqTransCallInfo req,
     		BindingResult result) throws BaseException {
     	log.info("call start. req:{}", JSON.toJSONString(req));
     	checkParamResult(result);

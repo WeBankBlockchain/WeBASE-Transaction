@@ -30,7 +30,7 @@ import org.hibernate.validator.constraints.NotEmpty;
  * 
  */
 @Data
-public class ReqDeploy {
+public class ReqDeployInfo {
 	@NotNull(message = ConstantCode.GROUP_ID_IS_EMPTY)
 	private int groupId;
 	@NotBlank(message = ConstantCode.UUID_DEPLOY_IS_EMPTY)
