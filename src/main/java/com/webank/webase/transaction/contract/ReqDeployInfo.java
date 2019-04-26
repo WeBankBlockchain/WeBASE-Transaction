@@ -14,23 +14,29 @@
 
 package com.webank.webase.transaction.contract;
 
+import com.webank.webase.transaction.base.ConstantCode;
+import java.util.ArrayList;
+import java.util.List;
+import javax.validation.constraints.NotNull;
 import lombok.Data;
+import org.hibernate.validator.constraints.NotBlank;
+import org.hibernate.validator.constraints.NotEmpty;
 
 /**
- * TransInfoDto.
+ * contract deploy parameters.
  * 
  */
 @Data
-public class DeployInfoDto {
-    private Long id;
+public class ReqDeployInfo {
+    @NotNull(message = ConstantCode.GROUP_ID_IS_EMPTY)
     private int groupId;
+    @NotBlank(message = ConstantCode.UUID_DEPLOY_IS_EMPTY)
     private String uuidDeploy;
-    private String contractBin;
-    private String contractAbi;
-    private String contractAddress;
-    private String funcParam;
+    @NotNull(message = ConstantCode.SIGN_TYPE_IS_EMPTY)
     private int signType;
-    private int requestCount;
-    private String transHash;
-    private boolean receiptStatus;
+    @NotBlank(message = ConstantCode.CONTRACT_BIN_IS_EMPTY)
+    private String contractBin;
+    @NotEmpty(message = ConstantCode.CONTRACT_ABI_IS_EMPTY)
+    private List<Object> contractAbi;
+    private List<Object> funcParam = new ArrayList<>();
 }

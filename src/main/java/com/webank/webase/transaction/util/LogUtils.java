@@ -12,25 +12,26 @@
  * the License.
  */
 
-package com.webank.webase.transaction.contract;
+package com.webank.webase.transaction.util;
 
-import lombok.Data;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * TransInfoDto.
- * 
+ * LogUtils.
  */
-@Data
-public class DeployInfoDto {
-    private Long id;
-    private int groupId;
-    private String uuidDeploy;
-    private String contractBin;
-    private String contractAbi;
-    private String contractAddress;
-    private String funcParam;
-    private int signType;
-    private int requestCount;
-    private String transHash;
-    private boolean receiptStatus;
+public class LogUtils {
+
+    private static final Logger MONITORBUSINESS = LoggerFactory.getLogger("monitorBusiness");
+
+    private static final Logger MONITORABNORMAL = LoggerFactory.getLogger("monitorAbnormal");
+
+    public static Logger monitorBusinessLogger() {
+        return MONITORBUSINESS;
+    }
+
+    public static Logger monitorAbnormalLogger() {
+        return MONITORABNORMAL;
+    }
+
 }

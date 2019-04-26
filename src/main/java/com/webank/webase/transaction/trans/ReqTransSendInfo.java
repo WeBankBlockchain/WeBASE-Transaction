@@ -14,24 +14,25 @@
 
 package com.webank.webase.transaction.trans;
 
+import com.webank.webase.transaction.base.ConstantCode;
+import java.util.ArrayList;
+import java.util.List;
+import javax.validation.constraints.NotNull;
 import lombok.Data;
+import org.hibernate.validator.constraints.NotBlank;
 
-/**
- * TransInfoDto.
- * 
- */
 @Data
-public class TransInfoDto {
-    private Long id;
+public class ReqTransSendInfo {
+    @NotNull(message = ConstantCode.GROUP_ID_IS_EMPTY)
     private int groupId;
+    @NotBlank(message = ConstantCode.UUID_TRANS_IS_EMPTY)
     private String uuidStateless;
+    @NotBlank(message = ConstantCode.UUID_DEPLOY_IS_EMPTY)
     private String uuidDeploy;
-    private String contractAbi;
-    private String contractAddress;
-    private String funcName;
-    private String funcParam;
+    @NotNull(message = ConstantCode.SIGN_TYPE_IS_EMPTY)
     private int signType;
-    private int requestCount;
-    private String transHash;
-    private boolean receiptStatus;
+    private List<Object> contractAbi;
+    @NotBlank(message = ConstantCode.FUNCTION_NAME_IS_EMPTY)
+    private String funcName;
+    private List<Object> funcParam = new ArrayList<>();
 }
