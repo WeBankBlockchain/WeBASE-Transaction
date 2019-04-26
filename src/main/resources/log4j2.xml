@@ -18,10 +18,6 @@
                 <SizeBasedTriggeringPolicy size="200 MB" />
             </Policies>
             <DefaultRolloverStrategy max="24" >
-                <Delete basePath="${logPath}/" >
-                    <IfFileName glob="webase-transaction.log.*.log.gz" />
-                    <IfLastModified age="15d" />
-                </Delete>
             </DefaultRolloverStrategy>
         </RollingFile>
         
@@ -33,10 +29,6 @@
                 <SizeBasedTriggeringPolicy size="200 MB" />
             </Policies>
             <DefaultRolloverStrategy max="24" >
-                <Delete basePath="${logPath}/" >
-                    <IfFileName glob="web3sdk.log.*.log.gz" />
-                    <IfLastModified age="15d" />
-                </Delete>
             </DefaultRolloverStrategy>
         </RollingFile>
         
@@ -48,10 +40,6 @@
 				<SizeBasedTriggeringPolicy size="200 MB" />
 			</Policies>
 			<DefaultRolloverStrategy max="24" >
-                <Delete basePath="${logPath}/" >
-                    <IfFileName glob="monitor-business.log.*.log.gz" />
-                    <IfLastModified age="15d" />
-                </Delete>
             </DefaultRolloverStrategy>
 		</RollingFile>
 		
@@ -63,10 +51,6 @@
 				<SizeBasedTriggeringPolicy size="200 MB" />
 			</Policies>
 			<DefaultRolloverStrategy max="24" >
-                <Delete basePath="${logPath}/" >
-                    <IfFileName glob="monitor-abnormal.log.*.log.gz" />
-                    <IfLastModified age="15d" />
-                </Delete>
             </DefaultRolloverStrategy>
 		</RollingFile>
 
