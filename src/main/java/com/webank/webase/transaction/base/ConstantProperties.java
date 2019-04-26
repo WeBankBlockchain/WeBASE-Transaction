@@ -39,6 +39,10 @@ public class ConstantProperties {
     public static final String MSG_BUSINESS_10001 = "deploy_transaction";
     public static final String CODE_BUSINESS_10002 = String.format(MONITOR_BUSINESS_FORMAT, "10002");
     public static final String MSG_BUSINESS_10002 = "stateless_transaction";
+    public static final String CODE_BUSINESS_10003 = String.format(MONITOR_BUSINESS_FORMAT, "10003");
+    public static final String MSG_BUSINESS_10003 = "repetitive_deploy_uuid";
+    public static final String CODE_BUSINESS_10004 = String.format(MONITOR_BUSINESS_FORMAT, "10004");
+    public static final String MSG_BUSINESS_10004 = "repetitive_stateless_uuid";
     
     // monitor abnormal log format
     public static final String MONITOR_ABNORMAL_FORMAT = "[{\"CODE\":\"%s\",\"RES_CODE\":\"1\"}][{}]";
