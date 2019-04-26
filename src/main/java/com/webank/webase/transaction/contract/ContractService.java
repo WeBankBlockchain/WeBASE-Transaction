@@ -172,6 +172,9 @@ public class ContractService {
         } catch (DuplicateKeyException e) {
             log.error("save groupId:{} uuid:{} DuplicateKeyException:{}", groupId, uuid,
                     e);
+            long endTime = System.currentTimeMillis();
+            LogUtils.monitorBusinessLogger().info(ConstantProperties.CODE_BUSINESS_10003, 
+            		endTime - startTime, ConstantProperties.MSG_BUSINESS_10003);
             throw new BaseException(ConstantCode.UUID_DEPLOY_IS_EXISTS);
         }
         ResponseEntity response = new ResponseEntity(ConstantCode.RET_SUCCEED);
