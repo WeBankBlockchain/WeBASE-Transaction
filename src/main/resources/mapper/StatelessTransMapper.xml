@@ -89,16 +89,16 @@
     <update id="updateRequestCount">
         update tb_stateless_transaction 
         set request_count=#{requestCount},
-        	gmt_modify=NOW() 
+            gmt_modify=NOW() 
         where id = #{id}
     </update>
     
     <update id="updateHandleStatus">
         update tb_stateless_transaction 
         set trans_hash = #{transHash},
-        	receipt_status = #{receiptStatus},
-        	handle_status=1,
-        	gmt_modify=NOW() 
+            receipt_status = #{receiptStatus},
+            handle_status=1,
+            gmt_modify=NOW() 
         where id = #{id}
     </update>
 </mapper>
