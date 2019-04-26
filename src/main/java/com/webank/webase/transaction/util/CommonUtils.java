@@ -1,18 +1,17 @@
 /*
  * Copyright 2012-2019 the original author or authors.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
+
 package com.webank.webase.transaction.util;
 
 import java.io.ByteArrayInputStream;
@@ -27,17 +26,14 @@ import java.io.OutputStream;
 import java.util.Enumeration;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
-
 import org.fisco.bcos.web3j.crypto.Sign.SignatureData;
 import org.fisco.bcos.web3j.utils.Numeric;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.web.multipart.MultipartFile;
-
 import com.alibaba.fastjson.JSON;
 import com.webank.webase.transaction.base.ConstantCode;
 import com.webank.webase.transaction.base.exception.BaseException;
-
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -46,28 +42,35 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public class CommonUtils {
-	
-	public static void unZipFiles(MultipartFile zipFile, String path) throws IOException, BaseException {
-		if (zipFile.isEmpty()) {
+
+    /**
+     * unZipFiles.
+     * 
+     * @param zipFile file 
+     * @param path path
+     */
+    public static void unZipFiles(MultipartFile zipFile, String path)
+            throws IOException, BaseException {
+        if (zipFile.isEmpty()) {
             throw new BaseException(ConstantCode.FILE_IS_EMPTY);
         }
-		if (!path.endsWith(File.separator)) {
+        if (!path.endsWith(File.separator)) {
             path = path + File.separator;
         }
-		String fileName = zipFile.getOriginalFilename();
+        String fileName = zipFile.getOriginalFilename();
         int pos = fileName.lastIndexOf(".");
         String extName = fileName.substring(pos + 1).toLowerCase();
         if (!extName.equals("zip")) {
             throw new BaseException(ConstantCode.NOT_A_ZIP_FILE);
         }
         File file = new File(path + fileName);
-        if (!file.getParentFile().exists()) { 
-        	file.getParentFile().mkdirs();
-		}
+        if (!file.getParentFile().exists()) {
+            file.getParentFile().mkdirs();
+        }
         zipFile.transferTo(file);
         ZipFile zf = new ZipFile(file);
         for (Enumeration entries = zf.entries(); entries.hasMoreElements();) {
-            ZipEntry entry = (ZipEntry)entries.nextElement();
+            ZipEntry entry = (ZipEntry) entries.nextElement();
             String zipEntryName = entry.getName();
             if (!zipEntryName.endsWith(".sol")) {
                 continue;
@@ -75,12 +78,12 @@ public class CommonUtils {
             InputStream in = zf.getInputStream(entry);
             String outPath = (path + zipEntryName).replaceAll("\\*", "/");
             log.info("unZipFiles outPath:{}", outPath);
-            
+
             OutputStream out = new FileOutputStream(outPath);
             byte[] buf1 = new byte[1024];
             int len;
-            while ((len=in.read(buf1))>0) {
-                out.write(buf1,0,len);
+            while ((len = in.read(buf1)) > 0) {
+                out.write(buf1, 0, len);
             }
             in.close();
             out.close();
@@ -89,7 +92,7 @@ public class CommonUtils {
         if (file.exists()) {
             file.delete();
         }
-	}
+    }
 
     /**
      * buildHeaders.
@@ -103,7 +106,7 @@ public class CommonUtils {
         headers.add("Accept", MediaType.APPLICATION_JSON.toString());
         return headers;
     }
-    
+
     /**
      * stringToSignatureData.
      * 
@@ -133,7 +136,7 @@ public class CommonUtils {
                 signatureData.getS().length);
         return Numeric.toHexString(byteArr, 0, byteArr.length, false);
     }
-    
+
     /**
      * serializeToString.
      * 
@@ -164,7 +167,7 @@ public class CommonUtils {
             }
         }
     }
-    
+
     /**
      * deserializeToObject.
      * 
@@ -194,7 +197,7 @@ public class CommonUtils {
             }
         }
     }
-    
+
     /**
      * Object to JavaBean.
      * 
@@ -210,7 +213,7 @@ public class CommonUtils {
         String jsonStr = JSON.toJSONString(obj);
         return JSON.parseObject(jsonStr, clazz);
     }
-    
+
     /**
      * delete single File.
      * 

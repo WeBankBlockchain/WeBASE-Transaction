@@ -1,18 +1,17 @@
 /*
  * Copyright 2012-2019 the original author or authors.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
+
 package com.webank.webase.transaction.util;
 
 import java.io.File;
@@ -20,13 +19,11 @@ import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
 import org.fisco.bcos.web3j.abi.TypeReference;
 import org.fisco.bcos.web3j.abi.datatypes.DynamicArray;
 import org.fisco.bcos.web3j.abi.datatypes.Type;
 import org.fisco.bcos.web3j.protocol.core.methods.response.AbiDefinition;
 import org.fisco.bcos.web3j.protocol.core.methods.response.AbiDefinition.NamedType;
-
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.webank.webase.transaction.base.ResponseEntity;
@@ -38,33 +35,41 @@ import com.webank.webase.transaction.base.exception.BaseException;
  * 
  */
 public class ContractAbiUtil {
-	
-	public static void saveSolFile(String toolDir, String contractName, byte[] contractArr) throws Exception {
-		File file = new File("");
-		if (file.exists()) {
-			file.delete();
-			file.createNewFile();
-		} else {
-			file.createNewFile();
-		}
-		
-		FileOutputStream outputStream = new FileOutputStream(file);
-		outputStream.write(contractArr);
-		outputStream.flush();
-		outputStream.close();
-		return;
-	}
 
-	/**
+    /**
+     * saveSolFile.
+     * 
+     * @param toolDir path
+     * @param contractName name
+     * @param contractArr content
+     */
+    public static void saveSolFile(String toolDir, String contractName, byte[] contractArr)
+            throws Exception {
+        File file = new File("");
+        if (file.exists()) {
+            file.delete();
+            file.createNewFile();
+        } else {
+            file.createNewFile();
+        }
+
+        FileOutputStream outputStream = new FileOutputStream(file);
+        outputStream.write(contractArr);
+        outputStream.flush();
+        outputStream.close();
+        return;
+    }
+
+    /**
      * get constructor abi info.
      * 
      * @param contractAbi contractAbi
      * @return
      */
     public static AbiDefinition getAbiDefinition(String contractAbi) {
-    	JSONArray abiArr = JSONArray.parseArray(contractAbi);
-    	AbiDefinition result = null;
-    	for (Object object : abiArr) {
+        JSONArray abiArr = JSONArray.parseArray(contractAbi);
+        AbiDefinition result = null;
+        for (Object object : abiArr) {
             AbiDefinition abiDefinition = JSON.parseObject(object.toString(), AbiDefinition.class);
             if (ConstantProperties.TYPE_CONSTRUCTOR.equals(abiDefinition.getType())) {
                 result = abiDefinition;
@@ -73,7 +78,7 @@ public class ContractAbiUtil {
         }
         return result;
     }
-    
+
     /**
      * get function abi info.
      * 
@@ -82,19 +87,19 @@ public class ContractAbiUtil {
      * @return
      */
     public static AbiDefinition getAbiDefinition(String name, String contractAbi) {
-    	JSONArray abiArr = JSONArray.parseArray(contractAbi);
-    	AbiDefinition result = null;
-    	for (Object object : abiArr) {
-    		AbiDefinition abiDefinition = JSON.parseObject(object.toString(), AbiDefinition.class);
-    		if (ConstantProperties.TYPE_FUNCTION.equals(abiDefinition.getType())
-    				&& name.equals(abiDefinition.getName())) {
-    			result = abiDefinition;
-    			break;
-    		}
-    	}
-    	return result;
+        JSONArray abiArr = JSONArray.parseArray(contractAbi);
+        AbiDefinition result = null;
+        for (Object object : abiArr) {
+            AbiDefinition abiDefinition = JSON.parseObject(object.toString(), AbiDefinition.class);
+            if (ConstantProperties.TYPE_FUNCTION.equals(abiDefinition.getType())
+                    && name.equals(abiDefinition.getName())) {
+                result = abiDefinition;
+                break;
+            }
+        }
+        return result;
     }
-    
+
     /**
      * getFuncInputType.
      * 
@@ -102,16 +107,16 @@ public class ContractAbiUtil {
      * @return
      */
     public static List<String> getFuncInputType(AbiDefinition abiDefinition) {
-    	List<String> inputList = new ArrayList<>();
-    	if (abiDefinition != null) {
-    		List<NamedType> inputs = abiDefinition.getInputs();
-    		for (NamedType input : inputs) {
-    			inputList.add(input.getType());
-    		}
-    	}
+        List<String> inputList = new ArrayList<>();
+        if (abiDefinition != null) {
+            List<NamedType> inputs = abiDefinition.getInputs();
+            for (NamedType input : inputs) {
+                inputList.add(input.getType());
+            }
+        }
         return inputList;
     }
-    
+
     /**
      * getFuncOutputType.
      * 
@@ -119,14 +124,14 @@ public class ContractAbiUtil {
      * @return
      */
     public static List<String> getFuncOutputType(AbiDefinition abiDefinition) {
-    	List<String> outputList = new ArrayList<>();
-    	List<NamedType> outputs = abiDefinition.getOutputs();
+        List<String> outputList = new ArrayList<>();
+        List<NamedType> outputs = abiDefinition.getOutputs();
         for (NamedType output : outputs) {
             outputList.add(output.getType());
         }
-    	return outputList;
+        return outputList;
     }
-    
+
     /**
      * input parameter format.
      * 
@@ -163,7 +168,7 @@ public class ContractAbiUtil {
         }
         return finalInputs;
     }
-    
+
     /**
      * output parameter format.
      * 
@@ -188,7 +193,7 @@ public class ContractAbiUtil {
         }
         return finalOutputs;
     }
-    
+
     /**
      * ethCall Result Parse.
      * 
