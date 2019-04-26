@@ -10,7 +10,7 @@
         </Console>
 
         <RollingFile name="transaction" fileName="${logPath}/webase-transaction.log"
-            filePattern="${logPath}/$${date:yyyy-MM}/webase-transaction.%d{yyyy-MM-dd}.%i.log.gz">
+            filePattern="${logPath}/$${date:yyyy-MM}/webase-transaction.log.%d{yyyy-MM-dd}.%i.log.gz">
             <PatternLayout
                 pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5p %c{1}(%L) - %m%n" />
             <Policies>
@@ -19,14 +19,14 @@
             </Policies>
             <DefaultRolloverStrategy max="24" >
                 <Delete basePath="${logPath}/" >
-                    <IfFileName glob="webase-transaction.*.log.gz" />
+                    <IfFileName glob="webase-transaction.log.*.log.gz" />
                     <IfLastModified age="15d" />
                 </Delete>
             </DefaultRolloverStrategy>
         </RollingFile>
         
         <RollingFile name="web3sdk" fileName="${logPath}/web3sdk.log"
-                     filePattern="${logPath}/web3sdk.%d{yyyy-MM-dd}.%i.log.gz">
+                     filePattern="${logPath}/web3sdk.log.%d{yyyy-MM-dd}.%i.log.gz">
             <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5p %c{1}(%L) - %m%n" />
             <Policies>
                 <TimeBasedTriggeringPolicy />
@@ -34,14 +34,14 @@
             </Policies>
             <DefaultRolloverStrategy max="24" >
                 <Delete basePath="${logPath}/" >
-                    <IfFileName glob="web3sdk.*.log.gz" />
+                    <IfFileName glob="web3sdk.log.*.log.gz" />
                     <IfLastModified age="15d" />
                 </Delete>
             </DefaultRolloverStrategy>
         </RollingFile>
         
         <RollingFile name="monitorBusiness" fileName="${logPath}/monitor-business.log" 
-                     filePattern="${logPath}/monitor-business.%d{yyyy-MM-dd}.log.gz">
+                     filePattern="${logPath}/monitor-business.log.%d{yyyy-MM-dd}.log.gz">
 			<PatternLayout pattern="[%-5p][%d{yyyy-MM-dd HH:mm:ss.SSS}][%t][TRANS][123][123][LOG_POINT]%m%n" />
 			<Policies>
 				<TimeBasedTriggeringPolicy />
@@ -49,14 +49,14 @@
 			</Policies>
 			<DefaultRolloverStrategy max="24" >
                 <Delete basePath="${logPath}/" >
-                    <IfFileName glob="monitor-business.*.log.gz" />
+                    <IfFileName glob="monitor-business.log.*.log.gz" />
                     <IfLastModified age="15d" />
                 </Delete>
             </DefaultRolloverStrategy>
 		</RollingFile>
 		
         <RollingFile name="monitorAbnormal" fileName="${logPath}/monitor-abnormal.log" 
-                     filePattern="${logPath}/$${date:yyyy-MM}/monitor-abnormal.%d{yyyy-MM-dd}.log.gz">
+                     filePattern="${logPath}/$${date:yyyy-MM}/monitor-abnormal.log.%d{yyyy-MM-dd}.log.gz">
 			<PatternLayout pattern="[%-5p][%d{yyyy-MM-dd HH:mm:ss.SSS}][%t][TRANS][123][123][LOG_POINT]%m%n" />
 			<Policies>
 				<TimeBasedTriggeringPolicy />
@@ -64,7 +64,7 @@
 			</Policies>
 			<DefaultRolloverStrategy max="24" >
                 <Delete basePath="${logPath}/" >
-                    <IfFileName glob="monitor-abnormal.*.log.gz" />
+                    <IfFileName glob="monitor-abnormal.log.*.log.gz" />
                     <IfLastModified age="15d" />
                 </Delete>
             </DefaultRolloverStrategy>
