@@ -152,6 +152,9 @@ public class TransService {
         } catch (DuplicateKeyException e) {
             log.error("save groupId:{} uuid:{} DuplicateKeyException:{}", groupId, uuid,
                     e);
+            long endTime = System.currentTimeMillis();
+            LogUtils.monitorBusinessLogger().info(ConstantProperties.CODE_BUSINESS_10004, 
+            		endTime - startTime, ConstantProperties.MSG_BUSINESS_10004);
             throw new BaseException(ConstantCode.UUID_IS_EXISTS);
         }
         log.info("save end. groupId:{} uuid:{}", groupId, uuid);
