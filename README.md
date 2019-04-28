@@ -40,7 +40,7 @@
 ## 3.1 拉取代码
 执行命令：
 ```
-git clone https://github.com/WeBankFinTech/webase-transcation.git
+git clone https://github.com/WeBankFinTech/webase-transaction.git
 ```
 
 ## 3.2 编译代码
