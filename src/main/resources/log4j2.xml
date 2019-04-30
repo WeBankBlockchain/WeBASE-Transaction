@@ -10,7 +10,7 @@
         </Console>
 
         <RollingFile name="transaction" fileName="${logPath}/webase-transaction.log"
-            filePattern="${logPath}/$${date:yyyy-MM}/webase-transaction.log.%d{yyyy-MM-dd}.%i.log.gz">
+            filePattern="${logPath}/webase-transaction.log.%d{yyyy-MM-dd}.%i.log.gz">
             <PatternLayout
                 pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5p %c{1}(%L) - %m%n" />
             <Policies>
@@ -44,7 +44,7 @@
         </RollingFile>
         
         <RollingFile name="monitorAbnormal" fileName="${logPath}/monitor-abnormal.log" 
-                     filePattern="${logPath}/$${date:yyyy-MM}/monitor-abnormal.log.%d{yyyy-MM-dd}.log.gz">
+                     filePattern="${logPath}/monitor-abnormal.log.%d{yyyy-MM-dd}.log.gz">
             <PatternLayout pattern="[%-5p][%d{yyyy-MM-dd HH:mm:ss.SSS}][%t][TRANS][123][123][LOG_POINT]%m%n" />
             <Policies>
                 <TimeBasedTriggeringPolicy />

@@ -46,9 +46,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
-import com.webank.webase.transaction.base.ResponseEntity;
 import com.webank.webase.transaction.base.ConstantCode;
 import com.webank.webase.transaction.base.ConstantProperties;
+import com.webank.webase.transaction.base.ResponseEntity;
 import com.webank.webase.transaction.base.exception.BaseException;
 import com.webank.webase.transaction.keystore.EncodeInfo;
 import com.webank.webase.transaction.keystore.KeyStoreInfo;
@@ -192,10 +192,48 @@ public class ContractService {
         // check if contract has been deployed
         String contractAddress = contractMapper.selectContractAddress(groupId, uuidDeploy);
         if (StringUtils.isBlank(contractAddress)) {
-            log.warn("getAddress fail. contract has not been deployed", contractAddress);
+            log.warn("getAddress fail. contract has not been deployed uuidDeploy:{}.", uuidDeploy);
             throw new BaseException(ConstantCode.CONTRACT_NOT_DEPLOED);
         }
         response.setData(contractAddress);
+        return response;
+    }
+    
+    /**
+     * getEvent.
+     * 
+     * @param groupId groupId
+     * @param uuidDeploy uuid
+     * @return
+     */
+    public ResponseEntity getEvent(int groupId, String uuidDeploy) throws BaseException {
+        ResponseEntity response = new ResponseEntity(ConstantCode.RET_SUCCEED);
+        // check if contract has been deployed
+        String transHash = contractMapper.selectTxHash(groupId, uuidDeploy);
+        if (StringUtils.isBlank(transHash)) {
+            log.warn("getEvent fail. contract has not been deployed uuidDeploy:{}.", uuidDeploy);
+            throw new BaseException(ConstantCode.CONTRACT_NOT_DEPLOED);
+        }
+        String contractAbi = contractMapper.selectContractAbi(groupId, uuidDeploy);
+        if (StringUtils.isBlank(contractAbi)) {
+            log.warn("getEvent fail. uuidDeploy:{} abi is not exists", uuidDeploy);
+            throw new BaseException(ConstantCode.CONTRACT_ABI_EMPTY);
+        }
+        List<AbiDefinition> abiList = ContractAbiUtil.getEventAbiDefinitions(contractAbi);
+        if (abiList.isEmpty()) {
+            log.warn("getEvent fail. uuidDeploy:{} event is not exists", uuidDeploy);
+            throw new BaseException(ConstantCode.EVENT_NOT_EXISTS);
+        }
+        try {
+            // get TransactionReceipt 
+            TransactionReceipt receipt = web3jMap.get(groupId).getTransactionReceipt(transHash)
+                    .send().getTransactionReceipt().get();
+            Object result = ContractAbiUtil.receiptParse(receipt, abiList);
+            response.setData(result);
+        } catch (IOException e) {
+            log.error("getEvent getTransactionReceipt fail. transHash:{} ", transHash);
+            throw new BaseException(ConstantCode.NODE_REQUEST_FAILED);
+        }
         return response;
     }
 
@@ -231,7 +269,7 @@ public class ContractService {
     public void deploySend(DeployInfoDto deployInfoDto) {
         log.debug("deploySend deployInfoDto:{}", JSON.toJSONString(deployInfoDto));
         Long id = deployInfoDto.getId();
-        log.debug("deploySend id:{}", id);
+        log.info("deploySend id:{}", id);
         int groupId = deployInfoDto.getGroupId();
         int requestCount = deployInfoDto.getRequestCount();
         int signType = deployInfoDto.getSignType();

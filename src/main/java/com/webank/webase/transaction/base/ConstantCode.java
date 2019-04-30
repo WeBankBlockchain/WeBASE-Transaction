@@ -35,15 +35,18 @@ public interface ConstantCode {
     RetCode GET_SIGN_DATA_ERROR = RetCode.mark(303002, "get sign data from sign service error");
     RetCode IN_FUNCPARAM_ERROR = RetCode.mark(303003, "contract funcParam is error");
     RetCode SIGN_TYPE_ERROR = RetCode.mark(303004, "sign type is not exists");
-    RetCode CONTRACT_ABI_ERROR = RetCode.mark(303005, "contract abi is not exists");
+    RetCode CONTRACT_ABI_EMPTY = RetCode.mark(303005, "contract abi is empty");
     RetCode FUNCTION_NOT_CONSTANT = RetCode.mark(303006, "request function can not be constant");
     RetCode FUNCTION_MUST_CONSTANT = RetCode.mark(303007, "query function must be constant");
-    RetCode DEPLOY_FAILED = RetCode.mark(303008, "deploy failed");
-    RetCode TRANSACTION_QUERY_FAILED = RetCode.mark(303009, "query data from chain failed");
-    RetCode FILE_IS_EMPTY = RetCode.mark(303010, "file cannot be empty");
-    RetCode NOT_A_ZIP_FILE = RetCode.mark(303011, "it is not a zip file");
+    RetCode TRANSACTION_QUERY_FAILED = RetCode.mark(303008, "query data from chain failed");
+    RetCode FILE_IS_EMPTY = RetCode.mark(303009, "file cannot be empty");
+    RetCode NOT_A_ZIP_FILE = RetCode.mark(303010, "it is not a zip file");
     RetCode CONTRACT_NOT_DEPLOED = RetCode.mark(303011, "contract has not been deployed");
-    RetCode CONTRACT_COMPILE_ERROR = RetCode.mark(303011, "contract compile error");
+    RetCode CONTRACT_COMPILE_ERROR = RetCode.mark(303012, "contract compile error");
+    RetCode NODE_REQUEST_FAILED = RetCode.mark(303013, "node request failed");
+    RetCode EVENT_NOT_EXISTS = RetCode.mark(303014, "there is not event");
+    RetCode TRANS_NOT_SENT = RetCode.mark(303015, "trans has not been sent to the chain");
+    RetCode ADDRESS_ABI_EMPTY = RetCode.mark(303016, "if deploy uuid is empty, contract address and contract abi cannot be empty");
 
     // system error
     RetCode SYSTEM_ERROR = RetCode.mark(103001, "system error");

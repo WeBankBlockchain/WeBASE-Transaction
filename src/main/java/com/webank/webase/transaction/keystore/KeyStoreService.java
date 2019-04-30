@@ -14,6 +14,7 @@
 
 package com.webank.webase.transaction.keystore;
 
+import org.fisco.bcos.web3j.crypto.Credentials;
 import org.fisco.bcos.web3j.crypto.ECKeyPair;
 import org.fisco.bcos.web3j.crypto.Keys;
 import org.fisco.bcos.web3j.utils.Numeric;
@@ -66,6 +67,22 @@ public class KeyStoreService {
             return keyStoreInfo;
         } catch (Exception e) {
             log.error("createEcKeyPair fail.");
+            throw new BaseException(ConstantCode.SYSTEM_ERROR);
+        }
+    }
+    
+    /**
+     * getAddress.
+     * 
+     * @return
+     */
+    public String getAddress() throws BaseException {
+        try {
+            String privateKey = properties.getPrivateKey();
+            Credentials credentials = Credentials.create(privateKey);
+            return credentials.getAddress();
+        } catch (Exception e) {
+            log.error("getAddress fail.");
             throw new BaseException(ConstantCode.SYSTEM_ERROR);
         }
     }

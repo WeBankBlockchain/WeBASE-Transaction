@@ -47,9 +47,9 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
-import com.webank.webase.transaction.base.ResponseEntity;
 import com.webank.webase.transaction.base.ConstantCode;
 import com.webank.webase.transaction.base.ConstantProperties;
+import com.webank.webase.transaction.base.ResponseEntity;
 import com.webank.webase.transaction.base.exception.BaseException;
 import com.webank.webase.transaction.contract.ContractMapper;
 import com.webank.webase.transaction.keystore.EncodeInfo;
@@ -90,9 +90,11 @@ public class TransService {
     public ResponseEntity save(ReqTransSendInfo req) throws BaseException {
         long startTime = System.currentTimeMillis();
         int groupId = req.getGroupId();
-        String uuid = req.getUuidStateless();
-        String funcName = req.getFuncName();
+        String uuidStateless = req.getUuidStateless();
+        String uuidDeploy = req.getUuidDeploy();
+        String contractAddress = req.getContractAddress();
         List<Object> abiList = req.getContractAbi();
+        String funcName = req.getFuncName();
         List<Object> params = req.getFuncParam();
         try {
             // check sign type
@@ -100,20 +102,26 @@ public class TransService {
                 log.warn("save fail. signType:{} is not existed", req.getSignType());
                 throw new BaseException(ConstantCode.SIGN_TYPE_ERROR);
             }
+            // check request style
+            if (StringUtils.isBlank(uuidDeploy) && (StringUtils.isBlank(contractAddress) 
+                    || abiList.isEmpty())) {
+                throw new BaseException(ConstantCode.ADDRESS_ABI_EMPTY);
+            }
             // check if contract has been deployed
-            String contractAddress =
-                    contractMapper.selectContractAddress(groupId, req.getUuidDeploy());
             if (StringUtils.isBlank(contractAddress)) {
-                log.warn("save fail. contract has not been deployed", contractAddress);
+                contractAddress = contractMapper.selectContractAddress(groupId, uuidDeploy);
+            }
+            if (StringUtils.isBlank(contractAddress)) {
+                log.warn("save fail. contract has not been deployed");
                 throw new BaseException(ConstantCode.CONTRACT_NOT_DEPLOED);
             }
             // check contractAbi
             String contractAbi = "";
-            if (abiList == null || abiList.size() == 0) {
-                contractAbi = contractMapper.selectContractAbi(groupId, contractAddress);
+            if (abiList.isEmpty()) {
+                contractAbi = contractMapper.selectContractAbi(groupId, uuidDeploy);
                 if (StringUtils.isBlank(contractAbi)) {
-                    log.warn("save fail. contractAddress:{} abi is not exists", contractAddress);
-                    throw new BaseException(ConstantCode.CONTRACT_ABI_ERROR);
+                    log.warn("save fail. uuidDeploy:{} abi is not exists", uuidDeploy);
+                    throw new BaseException(ConstantCode.CONTRACT_ABI_EMPTY);
                 }
             } else {
                 contractAbi = JSON.toJSONString(abiList);
@@ -138,8 +146,8 @@ public class TransService {
             // insert db
             TransInfoDto transInfoDto = new TransInfoDto();
             transInfoDto.setGroupId(groupId);
-            transInfoDto.setUuidStateless(uuid);
-            transInfoDto.setUuidDeploy(req.getUuidDeploy());
+            transInfoDto.setUuidStateless(uuidStateless);
+            transInfoDto.setUuidDeploy(uuidDeploy);
             transInfoDto.setContractAbi(contractAbi);
             transInfoDto.setContractAddress(contractAddress);
             transInfoDto.setFuncName(funcName);
@@ -147,13 +155,13 @@ public class TransService {
             transInfoDto.setSignType(req.getSignType());
             transMapper.insertTransInfo(transInfoDto);
         } catch (DuplicateKeyException e) {
-            log.error("save groupId:{} uuid:{} DuplicateKeyException:{}", groupId, uuid, e);
+            log.error("save groupId:{} uuidStateless:{} DuplicateKeyException:{}", groupId, uuidStateless, e);
             long endTime = System.currentTimeMillis();
             LogUtils.monitorBusinessLogger().info(ConstantProperties.CODE_BUSINESS_10004,
                     endTime - startTime, ConstantProperties.MSG_BUSINESS_10004);
             throw new BaseException(ConstantCode.UUID_IS_EXISTS);
         }
-        log.info("save end. groupId:{} uuid:{}", groupId, uuid);
+        log.info("save end. groupId:{} uuidStateless:{}", groupId, uuidStateless);
         ResponseEntity response = new ResponseEntity(ConstantCode.RET_SUCCEED);
         long endTime = System.currentTimeMillis();
         LogUtils.monitorBusinessLogger().info(ConstantProperties.CODE_BUSINESS_10002,
@@ -169,24 +177,32 @@ public class TransService {
      */
     public ResponseEntity call(ReqTransCallInfo req) throws BaseException {
         int groupId = req.getGroupId();
-        String funcName = req.getFuncName();
+        String uuidDeploy = req.getUuidDeploy();
+        String contractAddress = req.getContractAddress();
         List<Object> abiList = req.getContractAbi();
+        String funcName = req.getFuncName();
         List<Object> params = req.getFuncParam();
         try {
+            // check request style
+            if (StringUtils.isBlank(uuidDeploy) && (StringUtils.isBlank(contractAddress) 
+                    || abiList.isEmpty())) {
+                throw new BaseException(ConstantCode.ADDRESS_ABI_EMPTY);
+            }
             // check if contract has been deployed
-            String contractAddress =
-                    contractMapper.selectContractAddress(groupId, req.getUuidDeploy());
             if (StringUtils.isBlank(contractAddress)) {
-                log.warn("save fail. contract is not deploed", contractAddress);
+                contractAddress = contractMapper.selectContractAddress(groupId, uuidDeploy);
+            }
+            if (StringUtils.isBlank(contractAddress)) {
+                log.warn("save fail. contract has not been deployed");
                 throw new BaseException(ConstantCode.CONTRACT_NOT_DEPLOED);
             }
             // check contractAbi
             String contractAbi = "";
-            if (abiList == null || abiList.size() == 0) {
-                contractAbi = contractMapper.selectContractAbi(groupId, contractAddress);
+            if (abiList.isEmpty()) {
+                contractAbi = contractMapper.selectContractAbi(groupId, uuidDeploy);
                 if (StringUtils.isBlank(contractAbi)) {
-                    log.warn("call fail. contractAddress:{} abi is not exists", contractAddress);
-                    throw new BaseException(ConstantCode.CONTRACT_ABI_ERROR);
+                    log.warn("save fail. uuidDeploy:{} abi is not exists", uuidDeploy);
+                    throw new BaseException(ConstantCode.CONTRACT_ABI_EMPTY);
                 }
             } else {
                 contractAbi = JSON.toJSONString(abiList);
@@ -211,16 +227,15 @@ public class TransService {
             // encode function
             Function function = new Function(funcName, finalInputs, finalOutputs);
             String encodedFunction = FunctionEncoder.encode(function);
-            KeyStoreInfo keyStoreInfo = keyStoreService.getKey();
             String callOutput = web3jMap.get(groupId)
-                    .call(Transaction.createEthCallTransaction(keyStoreInfo.getAddress(),
+                    .call(Transaction.createEthCallTransaction(keyStoreService.getAddress(),
                             contractAddress, encodedFunction), DefaultBlockParameterName.LATEST)
                     .send().getValue().getOutput();
             List<Type> typeList =
                     FunctionReturnDecoder.decode(callOutput, function.getOutputParameters());
             ResponseEntity response = new ResponseEntity(ConstantCode.RET_SUCCEED);
             if (typeList.size() > 0) {
-                response = ContractAbiUtil.callResultParse(funOutputTypes, typeList, response);
+                response.setData(ContractAbiUtil.callResultParse(funOutputTypes, typeList));
             } else {
                 response.setData(typeList);
             }
@@ -229,6 +244,44 @@ public class TransService {
             log.error("call funcName:{} Exception:{}", funcName, e);
             throw new BaseException(ConstantCode.TRANSACTION_QUERY_FAILED);
         }
+    }
+    
+    /**
+     * getEvent.
+     * 
+     * @param groupId groupId
+     * @param uuidStateless uuid
+     * @return
+     */
+    public ResponseEntity getEvent(int groupId, String uuidStateless) throws BaseException {
+        ResponseEntity response = new ResponseEntity(ConstantCode.RET_SUCCEED);
+        // check if contract has been deployed
+        String transHash = transMapper.selectTxHash(groupId, uuidStateless);
+        if (StringUtils.isBlank(transHash)) {
+            log.warn("getEvent fail. trans has not been sent to the chain uuidStateless:{}.", uuidStateless);
+            throw new BaseException(ConstantCode.TRANS_NOT_SENT);
+        }
+        String contractAbi = transMapper.selectContractAbi(groupId, uuidStateless);
+        if (StringUtils.isBlank(contractAbi)) {
+            log.warn("getEvent fail. uuidStateless:{} abi is not exists", uuidStateless);
+            throw new BaseException(ConstantCode.CONTRACT_ABI_EMPTY);
+        }
+        List<AbiDefinition> abiList = ContractAbiUtil.getEventAbiDefinitions(contractAbi);
+        if (abiList.isEmpty()) {
+            log.warn("getEvent fail. uuidStateless:{} event is not exists", uuidStateless);
+            throw new BaseException(ConstantCode.EVENT_NOT_EXISTS);
+        }
+        try {
+            // get TransactionReceipt 
+            TransactionReceipt receipt = web3jMap.get(groupId).getTransactionReceipt(transHash)
+                    .send().getTransactionReceipt().get();
+            Object result = ContractAbiUtil.receiptParse(receipt, abiList);
+            response.setData(result);
+        } catch (IOException e) {
+            log.error("getEvent getTransactionReceipt fail. transHash:{} ", transHash);
+            throw new BaseException(ConstantCode.NODE_REQUEST_FAILED);
+        }
+        return response;
     }
 
     /**

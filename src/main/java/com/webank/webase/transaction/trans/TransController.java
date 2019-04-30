@@ -17,6 +17,8 @@ package com.webank.webase.transaction.trans;
 import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -27,6 +29,7 @@ import com.webank.webase.transaction.base.ResponseEntity;
 import com.webank.webase.transaction.base.exception.BaseException;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 
@@ -67,11 +70,33 @@ public class TransController extends BaseController {
      * @param result checkResult
      * @return
      */
+    @ApiOperation(value = "transaction call", notes = "transaction call")
+    @ApiImplicitParam(name = "req", value = "req info", required = true,
+            dataType = "ReqTransCallInfo")
     @PostMapping("/call")
     public ResponseEntity call(@Valid @RequestBody ReqTransCallInfo req, BindingResult result)
             throws BaseException {
         log.info("call start. req:{}", JSON.toJSONString(req));
         checkParamResult(result);
         return transService.call(req);
+    }
+    
+    /**
+     * getEvent.
+     * 
+     * @param groupId id 
+     * @param uuidStateless uuid
+     * @return
+     */
+    @ApiOperation(value = "getEvent", notes = "Get trans event")
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = "groupId", value = "groupId", required = true,
+                dataType = "int", paramType = "path"),
+        @ApiImplicitParam(name = "uuidStateless", value = "uuidStateless", required = true,
+        dataType = "String", paramType = "path")})
+    @GetMapping("/event/{groupId}/{uuidStateless}")
+    public ResponseEntity getEvent(@PathVariable("groupId") int groupId,
+            @PathVariable("uuidStateless") String uuidStateless) throws BaseException {
+        return transService.getEvent(groupId, uuidStateless);
     }
 }
