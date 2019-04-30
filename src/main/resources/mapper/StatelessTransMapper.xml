@@ -7,7 +7,7 @@
             id bigint UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '自增编号',
             group_id int(11) NOT NULL COMMENT '群组编号',
             uuid_stateless varchar(64) NOT NULL COMMENT '合约无状态交易业务流水号',
-            uuid_deploy varchar(64) NOT NULL COMMENT '部署交易业务流水号',
+            uuid_deploy varchar(64) COMMENT '部署交易业务流水号',
             contract_abi text NOT NULL COMMENT '合约abi',
             contract_address varchar(64) NOT NULL COMMENT '合约地址',
             func_name varchar(32) NOT NULL COMMENT '调用的合约方法名',
@@ -62,6 +62,20 @@
             DATE_SUB(NOW(),INTERVAL 1 DAY)
         )
     </insert>
+    
+    <select id="selectTxHash" resultType="java.lang.String">
+        select trans_hash
+        from tb_stateless_transaction
+        where group_id = #{groupId}
+          and uuid_stateless = #{uuidStateless}
+    </select>
+    
+    <select id="selectContractAbi" resultType="java.lang.String">
+        select contract_abi
+        from tb_stateless_transaction
+        where group_id = #{groupId}
+          and uuid_stateless = #{uuidStateless}
+    </select>
     
     <select id="selectUnStatTrans" resultType="com.webank.webase.transaction.trans.TransInfoDto">
         select <include refid="TRANS_COLUMN" />

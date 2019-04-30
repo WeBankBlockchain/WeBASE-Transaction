@@ -66,11 +66,18 @@
           and uuid_deploy = #{uuidDeploy}
     </select>
     
+    <select id="selectTxHash" resultType="java.lang.String">
+        select trans_hash
+        from tb_deploy_transaction
+        where group_id = #{groupId}
+          and uuid_deploy = #{uuidDeploy}
+    </select>
+    
     <select id="selectContractAbi" resultType="java.lang.String">
         select contract_abi
         from tb_deploy_transaction
         where group_id = #{groupId}
-          and contract_address = #{contractAddress}
+          and uuid_deploy = #{uuidDeploy}
     </select>
     
     <select id="selectUnStatTrans" resultType="com.webank.webase.transaction.contract.DeployInfoDto">
