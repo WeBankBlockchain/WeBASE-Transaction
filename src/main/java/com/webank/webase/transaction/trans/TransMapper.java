@@ -28,6 +28,12 @@ public interface TransMapper {
     void createTbStatelessTrans();
 
     void insertTransInfo(TransInfoDto transInfoDto);
+    
+    String selectTxHash(@Param("groupId") int groupId,
+            @Param("uuidStateless") String uuidStateless);
+    
+    String selectContractAbi(@Param("groupId") int groupId,
+            @Param("uuidStateless") String uuidStateless);
 
     List<TransInfoDto> selectUnStatTrans(@Param("requestCountMax") int requestCountMax,
             @Param("selectCount") int selectCount, @Param("intervalTime") int intervalTime);

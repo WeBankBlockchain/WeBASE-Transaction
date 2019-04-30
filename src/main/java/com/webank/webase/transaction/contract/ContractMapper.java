@@ -31,9 +31,12 @@ public interface ContractMapper {
 
     String selectContractAddress(@Param("groupId") int groupId,
             @Param("uuidDeploy") String uuidDeploy);
+    
+    String selectTxHash(@Param("groupId") int groupId,
+            @Param("uuidDeploy") String uuidDeploy);
 
     String selectContractAbi(@Param("groupId") int groupId,
-            @Param("contractAddress") String contractAddress);
+            @Param("uuidDeploy") String uuidDeploy);
 
     List<DeployInfoDto> selectUnStatTrans(@Param("requestCountMax") int requestCountMax,
             @Param("selectCount") int selectCount, @Param("intervalTime") int intervalTime);
