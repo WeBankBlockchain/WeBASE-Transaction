@@ -567,6 +567,6 @@ b.异常返回结果示例（信息详情请参看附录1）
 | 303011  | contract has not been deployed        | 合约还没有部署            |
 | 303012  | contract compile error                | 合约编译错误            |
 | 303013  | node request failed                   | 节点请求失败            |
-| 303014  | there is not event                    | 不存在even      |
+| 303014  | there is not event                    | 不存在event      |
 | 303015  | trans has not been sent to the chain  | 交易还没有上链            |
 | 303016  | if deploy uuid is empty, contract address and contract abi cannot be empty                 | 部署业务流水号为空时，合约地址和abi不能为空           |
