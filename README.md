@@ -256,7 +256,7 @@ mysql -utest -ptest1234 -h 127.0.0.1 -P 3306
 mysql > create database testdb;
 ```
 
-## 5.1 Zookeeper环境部署
+## 5.3 Zookeeper环境部署
 
 此处给出简单步骤，供快速查阅。详情请参考[官网](https://zookeeper.apache.org/)。
 
