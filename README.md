@@ -31,8 +31,8 @@
 | 环境     | 版本              |
 | ------ | --------------- |
 | Java   | jdk1.8.0_121或以上版本    |
-| zookeeper | zookeeper-3.4.10或以上版本 |
 | 数据库    | mysql-5.6或以上版本  |
+| zookeeper | zookeeper-3.4.10或以上版本 |
 备注：安装说明请参看附录，不使用分布式任务可以不部署zookeeper。
 
 # 3. <a id="chapter-3"></a>部署说明
