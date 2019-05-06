@@ -33,5 +33,6 @@ public class TransInfoDto {
     private int signType;
     private int requestCount;
     private String transHash;
+    private String transOutput;
     private boolean receiptStatus;
 }

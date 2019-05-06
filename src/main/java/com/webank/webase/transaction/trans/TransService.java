@@ -255,13 +255,18 @@ public class TransService {
      */
     public ResponseEntity getEvent(int groupId, String uuidStateless) throws BaseException {
         ResponseEntity response = new ResponseEntity(ConstantCode.RET_SUCCEED);
-        // check if contract has been deployed
-        String transHash = transMapper.selectTxHash(groupId, uuidStateless);
+        TransInfoDto transInfo = transMapper.selectTransInfo(groupId, uuidStateless);
+        if (transInfo == null) {
+            log.warn("getOutput fail. trans is not exist uuidStateless:{}.", uuidStateless);
+            throw new BaseException(ConstantCode.TRANS_NOT_EXIST);
+        }
+        String transHash = transInfo.getTransHash();
+        // check if trans has been sent
         if (StringUtils.isBlank(transHash)) {
             log.warn("getEvent fail. trans has not been sent to the chain uuidStateless:{}.", uuidStateless);
             throw new BaseException(ConstantCode.TRANS_NOT_SENT);
         }
-        String contractAbi = transMapper.selectContractAbi(groupId, uuidStateless);
+        String contractAbi = transInfo.getContractAbi();
         if (StringUtils.isBlank(contractAbi)) {
             log.warn("getEvent fail. uuidStateless:{} abi is not exists", uuidStateless);
             throw new BaseException(ConstantCode.CONTRACT_ABI_EMPTY);
@@ -280,6 +285,48 @@ public class TransService {
         } catch (IOException e) {
             log.error("getEvent getTransactionReceipt fail. transHash:{} ", transHash);
             throw new BaseException(ConstantCode.NODE_REQUEST_FAILED);
+        }
+        return response;
+    }
+
+    /**
+     * getOutput.
+     * 
+     * @param groupId groupId
+     * @param uuidStateless uuid
+     * @return
+     */
+    public ResponseEntity getOutput(int groupId, String uuidStateless) throws BaseException {
+        ResponseEntity response = new ResponseEntity(ConstantCode.RET_SUCCEED);
+        TransInfoDto transInfo = transMapper.selectTransInfo(groupId, uuidStateless);
+        if (transInfo == null) {
+            log.warn("getOutput fail. trans is not exist uuidStateless:{}.", uuidStateless);
+            throw new BaseException(ConstantCode.TRANS_NOT_EXIST);
+        }
+        String transOutput = transInfo.getTransOutput();
+        // check if trans has been sent
+        if (StringUtils.isBlank(transOutput)) {
+            log.warn("getOutput fail. trans output is empty uuidStateless:{}.", uuidStateless);
+            throw new BaseException(ConstantCode.TRANS_OUTPUT_EMPTY);
+        }
+        String contractAbi = transInfo.getContractAbi();
+        if (StringUtils.isBlank(contractAbi)) {
+            log.warn("getOutput fail. uuidStateless:{} abi is not exists", uuidStateless);
+            throw new BaseException(ConstantCode.CONTRACT_ABI_EMPTY);
+        }
+        // get AbiDefinition
+        AbiDefinition abiDefinition = ContractAbiUtil.getAbiDefinition(transInfo.getFuncName(), contractAbi);
+        // check output format
+        List<String> funOutputTypes = ContractAbiUtil.getFuncOutputType(abiDefinition);
+        List<TypeReference<?>> finalOutputs = ContractAbiUtil.outputFormat(funOutputTypes);
+        // encode function
+        Function function = new Function(transInfo.getFuncName(), null, finalOutputs);
+        List<Type> typeList =
+                FunctionReturnDecoder.decode(transInfo.getTransOutput(), function.getOutputParameters());
+        if (typeList.size() > 0) {
+            response.setData(ContractAbiUtil.callResultParse(funOutputTypes, typeList));
+        } else {
+            response.setData(typeList);
         }
         return response;
     }
@@ -389,6 +436,7 @@ public class TransService {
             TransactionReceipt receipt =
                     transFuture.get(properties.getTransMaxWait(), TimeUnit.SECONDS);
             transInfoDto.setTransHash(receipt.getTransactionHash());
+            transInfoDto.setTransOutput(receipt.getOutput());
             transInfoDto.setReceiptStatus(receipt.isStatusOK());
             transMapper.updateHandleStatus(transInfoDto);
         } catch (Exception e) {

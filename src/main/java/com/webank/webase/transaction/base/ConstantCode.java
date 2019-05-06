@@ -47,6 +47,8 @@ public interface ConstantCode {
     RetCode EVENT_NOT_EXISTS = RetCode.mark(303014, "there is not event");
     RetCode TRANS_NOT_SENT = RetCode.mark(303015, "trans has not been sent to the chain");
     RetCode ADDRESS_ABI_EMPTY = RetCode.mark(303016, "if deploy uuid is empty, contract address and contract abi cannot be empty");
+    RetCode TRANS_OUTPUT_EMPTY = RetCode.mark(303017, "trans output is empty");
+    RetCode TRANS_NOT_EXIST = RetCode.mark(303018, "trans is not exist");
 
     // system error
     RetCode SYSTEM_ERROR = RetCode.mark(103001, "system error");
