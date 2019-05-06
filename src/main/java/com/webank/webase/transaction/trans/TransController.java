@@ -99,4 +99,23 @@ public class TransController extends BaseController {
             @PathVariable("uuidStateless") String uuidStateless) throws BaseException {
         return transService.getEvent(groupId, uuidStateless);
     }
+    
+    /**
+     * getOutput.
+     * 
+     * @param groupId id 
+     * @param uuidStateless uuid
+     * @return
+     */
+    @ApiOperation(value = "getOutput", notes = "Get trans output")
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = "groupId", value = "groupId", required = true,
+                dataType = "int", paramType = "path"),
+        @ApiImplicitParam(name = "uuidStateless", value = "uuidStateless", required = true,
+        dataType = "String", paramType = "path")})
+    @GetMapping("/output/{groupId}/{uuidStateless}")
+    public ResponseEntity getOutput(@PathVariable("groupId") int groupId,
+            @PathVariable("uuidStateless") String uuidStateless) throws BaseException {
+        return transService.getOutput(groupId, uuidStateless);
+    }
 }

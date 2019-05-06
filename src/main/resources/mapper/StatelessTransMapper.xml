@@ -16,6 +16,7 @@
             request_count tinyint(4) DEFAULT '0' COMMENT '请求次数',
             handle_status tinyint(4) DEFAULT '0' COMMENT '处理状态(0-待处理，1-处理成功)',
             trans_hash varchar(128) COMMENT '交易hash值',
+            trans_output text COMMENT '交易返回值',
             receipt_status varchar(16) COMMENT '交易回执状态',
             gmt_create datetime DEFAULT NULL COMMENT '创建时间',
             gmt_modify datetime DEFAULT NULL COMMENT '修改时间',
@@ -63,15 +64,11 @@
         )
     </insert>
     
-    <select id="selectTxHash" resultType="java.lang.String">
-        select trans_hash
-        from tb_stateless_transaction
-        where group_id = #{groupId}
-          and uuid_stateless = #{uuidStateless}
-    </select>
-    
-    <select id="selectContractAbi" resultType="java.lang.String">
-        select contract_abi
+    <select id="selectTransInfo" resultType="com.webank.webase.transaction.trans.TransInfoDto">
+        select trans_hash as transHash,
+               contract_abi as contractAbi,
+               func_name as funcName,
+               trans_output as transOutput
         from tb_stateless_transaction
         where group_id = #{groupId}
           and uuid_stateless = #{uuidStateless}
@@ -110,6 +107,7 @@
     <update id="updateHandleStatus">
         update tb_stateless_transaction 
         set trans_hash = #{transHash},
+            trans_output = #{transOutput},
             receipt_status = #{receiptStatus},
             handle_status=1,
             gmt_modify=NOW() 

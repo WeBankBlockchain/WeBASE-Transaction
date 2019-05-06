@@ -29,10 +29,7 @@ public interface TransMapper {
 
     void insertTransInfo(TransInfoDto transInfoDto);
     
-    String selectTxHash(@Param("groupId") int groupId,
-            @Param("uuidStateless") String uuidStateless);
-    
-    String selectContractAbi(@Param("groupId") int groupId,
+    TransInfoDto selectTransInfo(@Param("groupId") int groupId,
             @Param("uuidStateless") String uuidStateless);
 
     List<TransInfoDto> selectUnStatTrans(@Param("requestCountMax") int requestCountMax,
