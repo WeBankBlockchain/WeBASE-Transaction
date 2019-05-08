@@ -24,12 +24,15 @@ import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang3.StringUtils;
 import org.fisco.bcos.channel.client.TransactionSucCallback;
+import org.fisco.bcos.channel.handler.ChannelConnections;
 import org.fisco.bcos.web3j.abi.FunctionEncoder;
 import org.fisco.bcos.web3j.abi.FunctionReturnDecoder;
 import org.fisco.bcos.web3j.abi.TypeReference;
 import org.fisco.bcos.web3j.abi.datatypes.Function;
 import org.fisco.bcos.web3j.abi.datatypes.Type;
 import org.fisco.bcos.web3j.crypto.Credentials;
+import org.fisco.bcos.web3j.crypto.ExtendedRawTransaction;
+import org.fisco.bcos.web3j.crypto.ExtendedTransactionEncoder;
 import org.fisco.bcos.web3j.crypto.RawTransaction;
 import org.fisco.bcos.web3j.crypto.Sign.SignatureData;
 import org.fisco.bcos.web3j.crypto.TransactionEncoder;
@@ -47,10 +50,12 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.webank.webase.transaction.base.ConstantCode;
 import com.webank.webase.transaction.base.ConstantProperties;
 import com.webank.webase.transaction.base.ResponseEntity;
 import com.webank.webase.transaction.base.exception.BaseException;
+import com.webank.webase.transaction.config.Web3Config;
 import com.webank.webase.transaction.contract.ContractMapper;
 import com.webank.webase.transaction.keystore.EncodeInfo;
 import com.webank.webase.transaction.keystore.KeyStoreInfo;
@@ -70,6 +75,8 @@ import lombok.extern.slf4j.Slf4j;
 public class TransService {
     @Autowired
     Map<Integer, Web3j> web3jMap;
+    @Autowired
+    Web3Config web3Config;
     @Autowired
     private TransMapper transMapper;
     @Autowired
@@ -97,14 +104,19 @@ public class TransService {
         String funcName = req.getFuncName();
         List<Object> params = req.getFuncParam();
         try {
+            // check groupId
+            if (!checkGroupId(groupId)) {
+                log.warn("save fail. groupId:{} has not been configured", groupId);
+                throw new BaseException(ConstantCode.GROUPID_NOT_CONFIGURED);
+            }
             // check sign type
             if (!SignType.isInclude(req.getSignType())) {
                 log.warn("save fail. signType:{} is not existed", req.getSignType());
                 throw new BaseException(ConstantCode.SIGN_TYPE_ERROR);
             }
             // check request style
-            if (StringUtils.isBlank(uuidDeploy) && (StringUtils.isBlank(contractAddress) 
-                    || abiList.isEmpty())) {
+            if (StringUtils.isBlank(uuidDeploy)
+                    && (StringUtils.isBlank(contractAddress) || abiList.isEmpty())) {
                 throw new BaseException(ConstantCode.ADDRESS_ABI_EMPTY);
             }
             // check if contract has been deployed
@@ -155,7 +167,7 @@ public class TransService {
             transInfoDto.setSignType(req.getSignType());
             transMapper.insertTransInfo(transInfoDto);
         } catch (DuplicateKeyException e) {
-            log.error("save groupId:{} uuidStateless:{} DuplicateKeyException:{}", groupId, uuidStateless, e);
+            log.error("save groupId:{} uuidStateless:{}", groupId, uuidStateless, e);
             long endTime = System.currentTimeMillis();
             LogUtils.monitorBusinessLogger().info(ConstantProperties.CODE_BUSINESS_10004,
                     endTime - startTime, ConstantProperties.MSG_BUSINESS_10004);
@@ -170,7 +182,7 @@ public class TransService {
     }
 
     /**
-     * transaction query
+     * transaction query.
      * 
      * @param req parameter
      * @return
@@ -183,9 +195,14 @@ public class TransService {
         String funcName = req.getFuncName();
         List<Object> params = req.getFuncParam();
         try {
+            // check groupId
+            if (!checkGroupId(groupId)) {
+                log.warn("call fail. groupId:{} has not been configured", groupId);
+                throw new BaseException(ConstantCode.GROUPID_NOT_CONFIGURED);
+            }
             // check request style
-            if (StringUtils.isBlank(uuidDeploy) && (StringUtils.isBlank(contractAddress) 
-                    || abiList.isEmpty())) {
+            if (StringUtils.isBlank(uuidDeploy)
+                    && (StringUtils.isBlank(contractAddress) || abiList.isEmpty())) {
                 throw new BaseException(ConstantCode.ADDRESS_ABI_EMPTY);
             }
             // check if contract has been deployed
@@ -245,7 +262,7 @@ public class TransService {
             throw new BaseException(ConstantCode.TRANSACTION_QUERY_FAILED);
         }
     }
-    
+
     /**
      * getEvent.
      * 
@@ -263,7 +280,7 @@ public class TransService {
         String transHash = transInfo.getTransHash();
         // check if trans has been sent
         if (StringUtils.isBlank(transHash)) {
-            log.warn("getEvent fail. trans has not been sent to the chain uuidStateless:{}.", uuidStateless);
+            log.warn("getEvent fail. trans not sent to the chain uuidStateless:{}.", uuidStateless);
             throw new BaseException(ConstantCode.TRANS_NOT_SENT);
         }
         String contractAbi = transInfo.getContractAbi();
@@ -277,7 +294,7 @@ public class TransService {
             throw new BaseException(ConstantCode.EVENT_NOT_EXISTS);
         }
         try {
-            // get TransactionReceipt 
+            // get TransactionReceipt
             TransactionReceipt receipt = web3jMap.get(groupId).getTransactionReceipt(transHash)
                     .send().getTransactionReceipt().get();
             Object result = ContractAbiUtil.receiptParse(receipt, abiList);
@@ -315,14 +332,15 @@ public class TransService {
             throw new BaseException(ConstantCode.CONTRACT_ABI_EMPTY);
         }
         // get AbiDefinition
-        AbiDefinition abiDefinition = ContractAbiUtil.getAbiDefinition(transInfo.getFuncName(), contractAbi);
+        AbiDefinition abiDefinition =
+                ContractAbiUtil.getAbiDefinition(transInfo.getFuncName(), contractAbi);
         // check output format
         List<String> funOutputTypes = ContractAbiUtil.getFuncOutputType(abiDefinition);
         List<TypeReference<?>> finalOutputs = ContractAbiUtil.outputFormat(funOutputTypes);
         // encode function
         Function function = new Function(transInfo.getFuncName(), null, finalOutputs);
-        List<Type> typeList =
-                FunctionReturnDecoder.decode(transInfo.getTransOutput(), function.getOutputParameters());
+        List<Type> typeList = FunctionReturnDecoder.decode(transInfo.getTransOutput(),
+                function.getOutputParameters());
         if (typeList.size() > 0) {
             response.setData(ContractAbiUtil.callResultParse(funOutputTypes, typeList));
         } else {
@@ -395,16 +413,47 @@ public class TransService {
             // encode function
             Function function = new Function(funcName, finalInputs, finalOutputs);
             String encodedFunction = FunctionEncoder.encode(function);
-            // create transaction
-            Random r = new Random();
-            BigInteger randomid = new BigInteger(250, r);
-            BigInteger blockLimit = web3jMap.get(groupId).getBlockNumberCache();
+            // data sign
+            String signMsg = signMessage(groupId, signType, contractAddress, encodedFunction);
+            if (StringUtils.isBlank(signMsg)) {
+                return;
+            }
+            // send transaction
+            final CompletableFuture<TransactionReceipt> transFuture = new CompletableFuture<>();
+            sendMessage(groupId, signMsg, transFuture);
+            TransactionReceipt receipt =
+                    transFuture.get(properties.getTransMaxWait(), TimeUnit.SECONDS);
+            transInfoDto.setTransHash(receipt.getTransactionHash());
+            transInfoDto.setTransOutput(receipt.getOutput());
+            transInfoDto.setReceiptStatus(receipt.isStatusOK());
+            transMapper.updateHandleStatus(transInfoDto);
+        } catch (Exception e) {
+            log.error("fail transSend id:{}", id, e);
+            LogUtils.monitorAbnormalLogger().error(ConstantProperties.CODE_ABNORMAL_S0002,
+                    ConstantProperties.MSG_ABNORMAL_S0002);
+        }
+    }
+
+    /**
+     * signMessage.
+     * 
+     * @param groupId id
+     * @param signType type
+     * @param contractAddress info
+     * @param data info
+     * @return
+     */
+    public String signMessage(int groupId, int signType, String contractAddress, String data)
+            throws IOException, BaseException {
+        Random r = new Random();
+        BigInteger randomid = new BigInteger(250, r);
+        BigInteger blockLimit = web3jMap.get(groupId).getBlockNumberCache();
+        String versionContent = web3jMap.get(groupId).getNodeVersion().sendForReturnString();
+        String signMsg = "";
+        if (versionContent.contains("2.0.0-rc1")) {
             RawTransaction rawTransaction = RawTransaction.createTransaction(randomid,
                     ConstantProperties.GAS_PRICE, ConstantProperties.GAS_LIMIT, blockLimit,
-                    contractAddress, BigInteger.ZERO, encodedFunction);
-
-            // get sign data
-            String signMsg = "";
+                    contractAddress, BigInteger.ZERO, data);
             if (signType == SignType.LOCALCONFIG.getValue()) {
                 Credentials credentials = Credentials.create(properties.getPrivateKey());
                 byte[] signedMessage = TransactionEncoder.signMessage(rawTransaction, credentials);
@@ -422,28 +471,52 @@ public class TransService {
                 encodeInfo.setEncodedDataStr(encodedDataStr);
                 String signDataStr = keyStoreService.getSignDate(encodeInfo);
                 if (StringUtils.isBlank(signDataStr)) {
-                    log.warn("transSend get sign data error.");
-                    return;
+                    log.warn("deploySend get sign data error.");
+                    return null;
                 }
 
                 SignatureData signData = CommonUtils.stringToSignatureData(signDataStr);
                 byte[] signedMessage = TransactionEncoder.encode(rawTransaction, signData);
                 signMsg = Numeric.toHexString(signedMessage);
             }
-            // send transaction
-            final CompletableFuture<TransactionReceipt> transFuture = new CompletableFuture<>();
-            sendMessage(groupId, signMsg, transFuture);
-            TransactionReceipt receipt =
-                    transFuture.get(properties.getTransMaxWait(), TimeUnit.SECONDS);
-            transInfoDto.setTransHash(receipt.getTransactionHash());
-            transInfoDto.setTransOutput(receipt.getOutput());
-            transInfoDto.setReceiptStatus(receipt.isStatusOK());
-            transMapper.updateHandleStatus(transInfoDto);
-        } catch (Exception e) {
-            log.error("fail transSend id:{}", id, e);
-            LogUtils.monitorAbnormalLogger().error(ConstantProperties.CODE_ABNORMAL_S0002,
-                    ConstantProperties.MSG_ABNORMAL_S0002);
+        } else {
+            String chainId = (String) JSONObject.parseObject(versionContent).get("Chain Id");
+            ExtendedRawTransaction extendedRawTransaction =
+                    ExtendedRawTransaction.createTransaction(randomid, ConstantProperties.GAS_PRICE,
+                            ConstantProperties.GAS_LIMIT, blockLimit, contractAddress,
+                            BigInteger.ZERO, data, new BigInteger(chainId),
+                            BigInteger.valueOf(groupId), "");
+            if (signType == SignType.LOCALCONFIG.getValue()) {
+                Credentials credentials = Credentials.create(properties.getPrivateKey());
+                byte[] signedMessage =
+                        ExtendedTransactionEncoder.signMessage(extendedRawTransaction, credentials);
+                signMsg = Numeric.toHexString(signedMessage);
+            } else if (signType == SignType.LOCALRANDOM.getValue()) {
+                KeyStoreInfo keyStoreInfo = keyStoreService.getKey();
+                Credentials credentials = Credentials.create(keyStoreInfo.getPrivateKey());
+                byte[] signedMessage =
+                        ExtendedTransactionEncoder.signMessage(extendedRawTransaction, credentials);
+                signMsg = Numeric.toHexString(signedMessage);
+            } else if (signType == SignType.CLOUDCALL.getValue()) {
+                byte[] encodedTransaction =
+                        ExtendedTransactionEncoder.encode(extendedRawTransaction);
+                String encodedDataStr = new String(encodedTransaction);
+
+                EncodeInfo encodeInfo = new EncodeInfo();
+                encodeInfo.setEncodedDataStr(encodedDataStr);
+                String signDataStr = keyStoreService.getSignDate(encodeInfo);
+                if (StringUtils.isBlank(signDataStr)) {
+                    log.warn("deploySend get sign data error.");
+                    return null;
+                }
+
+                SignatureData signData = CommonUtils.stringToSignatureData(signDataStr);
+                byte[] signedMessage =
+                        ExtendedTransactionEncoder.encode(extendedRawTransaction, signData);
+                signMsg = Numeric.toHexString(signedMessage);
+            }
         }
+        return signMsg;
     }
 
     /**
@@ -465,5 +538,21 @@ public class TransService {
             }
         });
         request.send();
+    }
+
+    /**
+     * checkGroupId.
+     * 
+     * @param groupId info
+     * @return
+     */
+    public boolean checkGroupId(int groupId) {
+        List<ChannelConnections> connList = web3Config.getGroupConfig().getAllChannelConnections();
+        for (ChannelConnections conn : connList) {
+            if (groupId == conn.getGroupId()) {
+                return true;
+            }
+        }
+        return false;
     }
 }

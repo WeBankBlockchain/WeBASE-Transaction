@@ -109,7 +109,6 @@ public class ContractAbiUtil {
     /**
      * get event abi info.
      * 
-     * @param name name
      * @param contractAbi contractAbi
      * @return
      */
