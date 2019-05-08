@@ -28,6 +28,9 @@ public interface TransMapper {
     void createTbStatelessTrans();
 
     void insertTransInfo(TransInfoDto transInfoDto);
+    
+    TransInfoDto selectTransInfo(@Param("groupId") int groupId,
+            @Param("uuidStateless") String uuidStateless);
 
     List<TransInfoDto> selectUnStatTrans(@Param("requestCountMax") int requestCountMax,
             @Param("selectCount") int selectCount, @Param("intervalTime") int intervalTime);

@@ -82,6 +82,13 @@ public class ContractController extends BaseController {
         return contractService.deploy(req);
     }
 
+    /**
+     * getAddress.
+     * 
+     * @param groupId id
+     * @param uuidDeploy uuid
+     * @return
+     */
     @ApiOperation(value = "getAddress", notes = "Get contract address")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "groupId", value = "groupId", required = true,
@@ -92,5 +99,24 @@ public class ContractController extends BaseController {
     public ResponseEntity getAddress(@PathVariable("groupId") int groupId,
             @PathVariable("uuidDeploy") String uuidDeploy) throws BaseException {
         return contractService.getAddress(groupId, uuidDeploy);
+    }
+    
+    /**
+     * getEvent.
+     * 
+     * @param groupId id
+     * @param uuidDeploy uuid
+     * @return
+     */
+    @ApiOperation(value = "getEvent", notes = "Get deploy event")
+    @ApiImplicitParams({
+        @ApiImplicitParam(name = "groupId", value = "groupId", required = true,
+                dataType = "int", paramType = "path"),
+        @ApiImplicitParam(name = "uuidDeploy", value = "uuidDeploy", required = true,
+        dataType = "String", paramType = "path")})
+    @GetMapping("/event/{groupId}/{uuidDeploy}")
+    public ResponseEntity getEvent(@PathVariable("groupId") int groupId,
+            @PathVariable("uuidDeploy") String uuidDeploy) throws BaseException {
+        return contractService.getEvent(groupId, uuidDeploy);
     }
 }

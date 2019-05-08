@@ -27,11 +27,11 @@ public class ReqTransSendInfo {
     private int groupId;
     @NotBlank(message = ConstantCode.UUID_TRANS_IS_EMPTY)
     private String uuidStateless;
-    @NotBlank(message = ConstantCode.UUID_DEPLOY_IS_EMPTY)
     private String uuidDeploy;
     @NotNull(message = ConstantCode.SIGN_TYPE_IS_EMPTY)
     private int signType;
-    private List<Object> contractAbi;
+    private List<Object> contractAbi = new ArrayList<>();
+    private String contractAddress;
     @NotBlank(message = ConstantCode.FUNCTION_NAME_IS_EMPTY)
     private String funcName;
     private List<Object> funcParam = new ArrayList<>();

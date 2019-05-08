@@ -14,6 +14,7 @@
 
 package com.webank.webase.transaction.keystore;
 
+import org.fisco.bcos.web3j.crypto.Credentials;
 import org.fisco.bcos.web3j.crypto.ECKeyPair;
 import org.fisco.bcos.web3j.crypto.Keys;
 import org.fisco.bcos.web3j.utils.Numeric;
@@ -69,6 +70,22 @@ public class KeyStoreService {
             throw new BaseException(ConstantCode.SYSTEM_ERROR);
         }
     }
+    
+    /**
+     * getAddress.
+     * 
+     * @return
+     */
+    public String getAddress() throws BaseException {
+        try {
+            String privateKey = properties.getPrivateKey();
+            Credentials credentials = Credentials.create(privateKey);
+            return credentials.getAddress();
+        } catch (Exception e) {
+            log.error("getAddress fail.");
+            throw new BaseException(ConstantCode.SYSTEM_ERROR);
+        }
+    }
 
     /**
      * getSignDate from sign service.
@@ -76,7 +93,7 @@ public class KeyStoreService {
      * @param params params
      * @return
      */
-    public String getSignDate(EncodeInfo params) throws BaseException {
+    public String getSignDate(EncodeInfo params) {
         try {
             SignInfo signInfo = new SignInfo();
             String url = properties.getSignServiceUrl();
