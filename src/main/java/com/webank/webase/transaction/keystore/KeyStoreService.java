@@ -93,7 +93,7 @@ public class KeyStoreService {
      * @param params params
      * @return
      */
-    public String getSignDate(EncodeInfo params) throws BaseException {
+    public String getSignDate(EncodeInfo params) {
         try {
             SignInfo signInfo = new SignInfo();
             String url = properties.getSignServiceUrl();

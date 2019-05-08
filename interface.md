@@ -632,3 +632,4 @@ b.异常返回结果示例（信息详情请参看附录1）
 | 303016  | if deploy uuid is empty, contract address and contract abi cannot be empty                 | 部署业务流水号为空时，合约地址和abi不能为空           |
 | 303017  | trans output is empty  | 交易返回值为空            |
 | 303018  | trans is not exist  | 交易不存在            |
+| 303019  | request group id has not been configured  | 请求的 群组编号未配置          |

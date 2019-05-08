@@ -16,21 +16,15 @@ package com.webank.webase.transaction.contract;
 
 import java.io.File;
 import java.io.IOException;
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang3.StringUtils;
 import org.fisco.bcos.web3j.abi.FunctionEncoder;
 import org.fisco.bcos.web3j.abi.datatypes.Type;
-import org.fisco.bcos.web3j.crypto.Credentials;
-import org.fisco.bcos.web3j.crypto.RawTransaction;
-import org.fisco.bcos.web3j.crypto.Sign.SignatureData;
-import org.fisco.bcos.web3j.crypto.TransactionEncoder;
 import org.fisco.bcos.web3j.protocol.Web3j;
 import org.fisco.bcos.web3j.protocol.core.methods.response.AbiDefinition;
 import org.fisco.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
@@ -38,7 +32,6 @@ import org.fisco.bcos.web3j.solidity.compiler.CompilationResult;
 import org.fisco.bcos.web3j.solidity.compiler.CompilationResult.ContractMetadata;
 import org.fisco.bcos.web3j.solidity.compiler.SolidityCompiler;
 import org.fisco.bcos.web3j.solidity.compiler.SolidityCompiler.Options;
-import org.fisco.bcos.web3j.utils.Numeric;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -50,9 +43,7 @@ import com.webank.webase.transaction.base.ConstantCode;
 import com.webank.webase.transaction.base.ConstantProperties;
 import com.webank.webase.transaction.base.ResponseEntity;
 import com.webank.webase.transaction.base.exception.BaseException;
-import com.webank.webase.transaction.keystore.EncodeInfo;
-import com.webank.webase.transaction.keystore.KeyStoreInfo;
-import com.webank.webase.transaction.keystore.KeyStoreService;
+import com.webank.webase.transaction.config.Web3Config;
 import com.webank.webase.transaction.keystore.SignType;
 import com.webank.webase.transaction.trans.TransService;
 import com.webank.webase.transaction.util.CommonUtils;
@@ -77,8 +68,6 @@ public class ContractService {
     private ThreadPoolTaskExecutor transExecutor;
     @Autowired
     private ConstantProperties properties;
-    @Autowired
-    private KeyStoreService keyStoreService;
 
     /**
      * contract compile.
@@ -132,7 +121,6 @@ public class ContractService {
      * 
      * @param req parameter
      * @return
-     * @throws BaseException
      */
     public ResponseEntity deploy(ReqDeployInfo req) throws BaseException {
         long startTime = System.currentTimeMillis();
@@ -142,6 +130,11 @@ public class ContractService {
         String contractBin = req.getContractBin();
         List<Object> params = req.getFuncParam();
         try {
+            // check groupId
+            if (!transService.checkGroupId(groupId)) {
+                log.warn("deploy fail. groupId:{} has not been configured", groupId);
+                throw new BaseException(ConstantCode.GROUPID_NOT_CONFIGURED);
+            }
             // check sign type
             if (!SignType.isInclude(req.getSignType())) {
                 log.warn("deploy fail. signType:{} is not existed", req.getSignType());
@@ -298,41 +291,11 @@ public class ContractService {
                 List<Type> finalInputs = ContractAbiUtil.inputFormat(funcInputTypes, params);
                 encodedConstructor = FunctionEncoder.encodeConstructor(finalInputs);
             }
-            // create transaction
+            // data sign
             String data = contractBin + encodedConstructor;
-            Random r = new Random();
-            BigInteger randomid = new BigInteger(250, r);
-            BigInteger blockLimit = web3jMap.get(groupId).getBlockNumberCache();
-            RawTransaction rawTransaction =
-                    RawTransaction.createTransaction(randomid, ConstantProperties.GAS_PRICE,
-                            ConstantProperties.GAS_LIMIT, blockLimit, "", BigInteger.ZERO, data);
-
-            // get sign data
-            String signMsg = "";
-            if (signType == SignType.LOCALCONFIG.getValue()) {
-                Credentials credentials = Credentials.create(properties.getPrivateKey());
-                byte[] signedMessage = TransactionEncoder.signMessage(rawTransaction, credentials);
-                signMsg = Numeric.toHexString(signedMessage);
-            } else if (signType == SignType.LOCALRANDOM.getValue()) {
-                KeyStoreInfo keyStoreInfo = keyStoreService.getKey();
-                Credentials credentials = Credentials.create(keyStoreInfo.getPrivateKey());
-                byte[] signedMessage = TransactionEncoder.signMessage(rawTransaction, credentials);
-                signMsg = Numeric.toHexString(signedMessage);
-            } else if (signType == SignType.CLOUDCALL.getValue()) {
-                byte[] encodedTransaction = TransactionEncoder.encode(rawTransaction);
-                String encodedDataStr = new String(encodedTransaction);
-
-                EncodeInfo encodeInfo = new EncodeInfo();
-                encodeInfo.setEncodedDataStr(encodedDataStr);
-                String signDataStr = keyStoreService.getSignDate(encodeInfo);
-                if (StringUtils.isBlank(signDataStr)) {
-                    log.warn("deploySend get sign data error.");
-                    return;
-                }
-
-                SignatureData signData = CommonUtils.stringToSignatureData(signDataStr);
-                byte[] signedMessage = TransactionEncoder.encode(rawTransaction, signData);
-                signMsg = Numeric.toHexString(signedMessage);
+            String signMsg = transService.signMessage(groupId, signType, "", data);
+            if (StringUtils.isBlank(signMsg)) {
+                return;
             }
             // send transaction
             final CompletableFuture<TransactionReceipt> transFuture = new CompletableFuture<>();
