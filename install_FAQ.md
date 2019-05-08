@@ -5,7 +5,7 @@
 
    答：chmod +x 给文件增加权限
    
-* 2: gradle build -x test 失败,不能编译Lombok注解
+* 2: gradle build -x test 失败，不能编译Lombok注解
 ```
 ...
 /data/trans/webase-transcation/src/main/java/com/webank/webase/transaction/trans/TransService.java:175: error: cannot find symbol

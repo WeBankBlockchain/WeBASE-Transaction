@@ -29,6 +29,7 @@ public class ConstantProperties {
 
     public static final String TYPE_CONSTRUCTOR = "constructor";
     public static final String TYPE_FUNCTION = "function";
+    public static final String TYPE_EVENT = "event";
 
     // monitor business log format
     public static final String MONITOR_BUSINESS_FORMAT =

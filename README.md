@@ -31,8 +31,8 @@
 | 环境     | 版本              |
 | ------ | --------------- |
 | Java   | jdk1.8.0_121或以上版本    |
-| zookeeper | zookeeper-3.4.10或以上版本 |
 | 数据库    | mysql-5.6或以上版本  |
+| zookeeper | zookeeper-3.4.10或以上版本 |
 备注：安装说明请参看附录，不使用分布式任务可以不部署zookeeper。
 
 # 3. <a id="chapter-3"></a>部署说明
@@ -162,7 +162,7 @@ tail -f log/webase-transcation.log
 
 ## 5.1 Java环境部署
 
-此处给出简单步骤，供快速查阅。更详细的步骤，请参考[官网](http://www.oracle.com/technetwork/java/javase/downloads/index.html)。
+此处给出简单步骤，供快速查阅。详情请参考[官网](http://www.oracle.com/technetwork/java/javase/downloads/index.html)。
 
 （1）从[官网](http://www.oracle.com/technetwork/java/javase/downloads/index.html)下载对应版本的java安装包，并解压到相应目录
 
@@ -256,3 +256,17 @@ mysql -utest -ptest1234 -h 127.0.0.1 -P 3306
 mysql > create database testdb;
 ```
 
+## 5.3 Zookeeper环境部署
+
+此处给出简单步骤，供快速查阅。详情请参考[官网](https://zookeeper.apache.org/)。
+
+（1）从[官网](https://zookeeper.apache.org/releases.html)下载对应版本的安装包，并解压到相应目录
+
+```shell
+mkdir /software
+tar -zxvf zookeeper-XXX.tar.gz /software/
+```
+
+（2）配置和启动
+
+ZooKeeper的安装包括单机模式安装，以及集群模式安装。具体步骤请上网查询。
