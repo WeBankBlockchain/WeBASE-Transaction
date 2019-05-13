@@ -12,7 +12,7 @@
 
 获取安装包：
 ```shell
-wget https://github.com/FISCO-BCOS/webase-transcation/releases/download/webase-transcation.zip
+wget https://github.com/mingzhenliu/webase-transcation/releases/download/testV0.7/webase-transcation.zip
 ```
 解压安装包：
 ```shell
