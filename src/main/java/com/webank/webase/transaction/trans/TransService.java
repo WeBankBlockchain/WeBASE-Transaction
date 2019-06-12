@@ -450,7 +450,7 @@ public class TransService {
         BigInteger blockLimit = web3jMap.get(groupId).getBlockNumberCache();
         String versionContent = web3jMap.get(groupId).getNodeVersion().sendForReturnString();
         String signMsg = "";
-        if (versionContent.contains("2.0.0-rc1")) {
+        if (versionContent.contains("2.0.0-rc1") || versionContent.contains("release-2.0.1")) {
             RawTransaction rawTransaction = RawTransaction.createTransaction(randomid,
                     ConstantProperties.GAS_PRICE, ConstantProperties.GAS_LIMIT, blockLimit,
                     contractAddress, BigInteger.ZERO, data);
