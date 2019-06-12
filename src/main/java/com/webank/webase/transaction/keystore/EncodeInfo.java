@@ -22,6 +22,7 @@ import lombok.Data;
  */
 @Data
 public class EncodeInfo {
+    private String userName;
     private String encodedDataStr;
     private String desc;
 }
