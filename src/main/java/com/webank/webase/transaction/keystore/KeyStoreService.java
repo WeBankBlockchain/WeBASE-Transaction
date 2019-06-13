@@ -97,6 +97,7 @@ public class KeyStoreService {
         try {
             SignInfo signInfo = new SignInfo();
             String url = properties.getSignServiceUrl();
+            params.setUserName(properties.getSignUserName());
             log.info("getSignDate url:{}", url);
             HttpHeaders headers = CommonUtils.buildHeaders();
             HttpEntity<String> formEntity =

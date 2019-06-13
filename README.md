@@ -9,22 +9,23 @@
 
 # 1. <a id="chapter-1"></a>功能说明
 
-本工程为交易服务子系统。功能：合约编译；交易请求处理，交易分为合约部署和普通的合约调用请求。<br>
+本工程为交易服务子系统。功能：合约编译；交易请求处理，交易分为合约部署和普通的合约调用请求。
 
-合约编译：上传合约文件zip压缩包（压缩包里的每个合约的文件名要和合约名一致，合约引用需使用“./xxx.sol”），返回合约编译信息。<br>
+合约编译：上传合约文件zip压缩包（压缩包里的每个合约的文件名要和合约名一致，合约引用需使用“./xxx.sol”），返回合约编译信息。
 
-合约部署：交易服务子系统会将合约部署请求信息缓存到数据库，通过轮询服务向节点发送交易请求，确保合约成功部署。<br>
+合约部署：交易服务子系统会将合约部署请求信息缓存到数据库，通过轮询服务向节点发送交易请求，确保合约成功部署。
 
-合约调用：分为无状态交易上链（非constant方法）和交易结果查询（constant方法）。<br>
-无状态交易上链是交易服务子系统会将交易请求信息缓存到数据库，通过轮询服务向节点发送交易请求，确保交易成功上链。<br>
-交易结果查询是交易服务子系统会同步向节点发送交易请求，返回结果。<br>
+合约调用：分为无状态交易上链（非constant方法）和交易结果查询（constant方法）。
+无状态交易上链是交易服务子系统会将交易请求信息缓存到数据库，通过轮询服务向节点发送交易请求，确保交易成功上链。
+交易结果查询是交易服务子系统会同步向节点发送交易请求，返回结果。
 
-无状态交易上链数据签名支持以下模式：<br>
-1、本地配置私钥签名<br>
-2、本地随机私钥签名<br>
-3、调用签名服务签名<br>
+无状态交易上链数据签名支持以下三种模式：
 
-本工程支持单机部署，也支持分布式任务多活部署（使用分布式任务的话需部署zookeeper）。<br>
+* 本地配置私钥签名
+* 本地随机私钥签名
+* 调用签名服务签名（webase-sign）
+
+本工程支持单机部署，也支持分布式任务多活部署（使用分布式任务的话需部署zookeeper）。
 
 # 2. <a id="chapter-2"></a>前提条件
 
@@ -80,11 +81,11 @@ server:
 spring: 
   datasource: 
     # 数据库连接信息
-    url: jdbc:mysql://127.0.0.1:3306/testdb?useUnicode=true&characterEncoding=utf8
+    url: jdbc:mysql://127.0.0.1:3306/webase_transaction?useUnicode=true&characterEncoding=utf8
     # 数据库用户名
-    username: root
+    username: dbUsername
     # 数据库密码
-    password: 123456
+    password: dbPassword
     driver-class-name: com.mysql.jdbc.Driver
 
 sdk:
@@ -105,7 +106,9 @@ sdk:
 
 constant: 
   # 签名服务url，需要调用签名服务进行签名的话则对应修改，使用本地签名的话可以不修改
-  signServiceUrl: http://127.0.0.1:8085/webase-sign/sign
+  signServiceUrl: http://127.0.0.1:8085/webase-sign/sign/sign
+  # 签名服务用户名，需要调用签名服务进行签名的话则对应修改，使用本地签名的话可以不修改
+  signUserName: testUser
   # 本地配置私钥进行签名，使用这种模式则对应修改
   privateKey: edf02a4a69b14ee6b1650a95de71d5f50496ef62ae4213026bd8d6651d030995
   cronTrans: 0/1 * * * * ?
@@ -253,7 +256,7 @@ mysql -utest -ptest1234 -h 127.0.0.1 -P 3306
 创建数据库
 
 ```sql
-mysql > create database testdb;
+mysql > create database webase_transaction;
 ```
 
 ## 5.3 Zookeeper环境部署
