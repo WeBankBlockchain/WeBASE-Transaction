@@ -19,17 +19,11 @@ import org.fisco.bcos.web3j.crypto.ECKeyPair;
 import org.fisco.bcos.web3j.crypto.Keys;
 import org.fisco.bcos.web3j.utils.Numeric;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import com.alibaba.fastjson.JSON;
-import com.webank.webase.transaction.base.ResponseEntity;
 import com.webank.webase.transaction.base.ConstantCode;
 import com.webank.webase.transaction.base.ConstantProperties;
 import com.webank.webase.transaction.base.exception.BaseException;
-import com.webank.webase.transaction.util.CommonUtils;
-import com.webank.webase.transaction.util.LogUtils;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -87,33 +81,4 @@ public class KeyStoreService {
         }
     }
 
-    /**
-     * getSignDate from sign service.
-     * 
-     * @param params params
-     * @return
-     */
-    public String getSignDate(EncodeInfo params) {
-        try {
-            SignInfo signInfo = new SignInfo();
-            String url = properties.getSignServiceUrl();
-            params.setUserName(properties.getSignUserName());
-            log.info("getSignDate url:{}", url);
-            HttpHeaders headers = CommonUtils.buildHeaders();
-            HttpEntity<String> formEntity =
-                    new HttpEntity<String>(JSON.toJSONString(params), headers);
-            ResponseEntity response =
-                    restTemplate.postForObject(url, formEntity, ResponseEntity.class);
-            log.info("getSignDate response:{}", JSON.toJSONString(response));
-            if (response.getCode() == 0) {
-                signInfo = CommonUtils.object2JavaBean(response.getData(), SignInfo.class);
-            }
-            return signInfo.getSignDataStr();
-        } catch (Exception e) {
-            log.error("getSignDate exception", e);
-            LogUtils.monitorAbnormalLogger().error(ConstantProperties.CODE_ABNORMAL_S0005,
-                    ConstantProperties.MSG_ABNORMAL_S0005);
-        }
-        return null;
-    }
 }
