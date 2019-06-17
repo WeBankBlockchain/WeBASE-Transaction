@@ -68,8 +68,6 @@ public class ConstantProperties {
 
     // constant configuration from file
     public static final String CONSTANT_PREFIX = "constant";
-    private String signServiceUrl = "http://127.0.0.1:8085/sign-service/sign/sign";
-    private String signUserName = "testUser";
     private String privateKey = "edf02a4a69b14ee6b1650a95de71d5f50496ef62ae4213026bd8d6651d030995";
     private String cronTrans = "0/1 * * * * ?";
     private int requestCountMax = 6;
