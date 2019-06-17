@@ -19,7 +19,7 @@ package com.webank.webase.transaction.keystore;
  *
  */
 public enum SignType {
-    LOCALCONFIG(0), LOCALRANDOM(1), CLOUDCALL(2);
+    LOCALCONFIG(0), LOCALRANDOM(1);
 
     private int value;
 
