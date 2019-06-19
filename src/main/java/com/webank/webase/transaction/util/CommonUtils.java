@@ -16,6 +16,7 @@ package com.webank.webase.transaction.util;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -68,29 +69,53 @@ public class CommonUtils {
             file.getParentFile().mkdirs();
         }
         zipFile.transferTo(file);
-        ZipFile zf = new ZipFile(file);
-        for (Enumeration entries = zf.entries(); entries.hasMoreElements();) {
-            ZipEntry entry = (ZipEntry) entries.nextElement();
-            String zipEntryName = entry.getName();
-            if (!zipEntryName.endsWith(".sol")) {
-                continue;
-            }
-            InputStream in = zf.getInputStream(entry);
-            String outPath = (path + zipEntryName).replaceAll("\\*", "/");
-            log.info("unZipFiles outPath:{}", outPath);
+        ZipFile zf = null;
+        try {
+            zf = new ZipFile(file);
+            for (Enumeration entries = zf.entries(); entries.hasMoreElements();) {
+                ZipEntry entry = (ZipEntry) entries.nextElement();
+                String zipEntryName = entry.getName();
+                if (!zipEntryName.endsWith(".sol")) {
+                    continue;
+                }
+                InputStream inputStream = null;
+                OutputStream outputStream = null;
+                try {
+                    inputStream = zf.getInputStream(entry);
+                    String outPath = (path + zipEntryName).replaceAll("\\*", "/");
+                    log.info("unZipFiles outPath:{}", outPath);
 
-            OutputStream out = new FileOutputStream(outPath);
-            byte[] buf1 = new byte[1024];
-            int len;
-            while ((len = in.read(buf1)) > 0) {
-                out.write(buf1, 0, len);
+                    outputStream = new FileOutputStream(outPath);
+                    byte[] buf1 = new byte[1024];
+                    int len;
+                    while ((len = inputStream.read(buf1)) > 0) {
+                        outputStream.write(buf1, 0, len);
+                    }
+                    outputStream.flush();
+                } catch (IOException e) {
+                    System.out.println("unZipFiles IOException:" + e.toString());
+                } finally {
+                    close(outputStream);
+                    close(inputStream);
+                }
             }
-            in.close();
-            out.close();
+        } catch (IOException e) {
+            System.out.println("unZipFiles IOException:" + e.toString());
+        } finally {
+            close(zf);
         }
-        zf.close();
         if (file.exists()) {
             file.delete();
+        }
+    }
+    
+    private static void close(Closeable closeable) {
+        if (closeable != null) {
+            try {
+                closeable.close();
+            } catch (IOException e) {
+                System.out.println("close IOException:" + e.toString());
+            }
         }
     }
 
