@@ -16,6 +16,7 @@ package com.webank.webase.transaction.util;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -50,7 +51,7 @@ public class ContractAbiUtil {
      * @param contractArr content
      */
     public static void saveSolFile(String toolDir, String contractName, byte[] contractArr)
-            throws Exception {
+            throws IOException {
         File file = new File("");
         if (file.exists()) {
             file.delete();
@@ -59,10 +60,23 @@ public class ContractAbiUtil {
             file.createNewFile();
         }
 
-        FileOutputStream outputStream = new FileOutputStream(file);
-        outputStream.write(contractArr);
-        outputStream.flush();
-        outputStream.close();
+        FileOutputStream outputStream = null;
+        try {
+            outputStream = new FileOutputStream(file);
+            outputStream.write(contractArr);
+            outputStream.flush();
+        } catch (IOException e) {
+            System.out.println("saveSolFile IOException:" + e.toString());
+            throw e;
+        } finally {
+            try {
+                if (outputStream != null) {
+                    outputStream.close();
+                }
+            } catch (IOException ex) {
+                System.out.println("saveSolFile IOException:" + ex.toString());
+            }
+        }
         return;
     }
 
