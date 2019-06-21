@@ -9,7 +9,7 @@
                 pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5p %c{1}(%F:%L) - %m%n" />
         </Console>
 
-        <RollingFile name="transaction" fileName="${logPath}/webase-transaction.log"
+        <RollingFile name="transaction" fileName="${logPath}/transaction.log"
             filePattern="${logPath}/webase-transaction.log.%d{yyyy-MM-dd}.%i.log.gz">
             <PatternLayout
                 pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5p %c{1}(%L) - %m%n" />
