@@ -1,4 +1,4 @@
-# 交易服务子系统说明
+# 交易上链代理子系统说明
 
 # 目录
 > * [功能说明](#chapter-1)
@@ -9,7 +9,7 @@
 
 # 1. <a id="chapter-1"></a>功能说明
 
-​	本系统为交易上链代理服务系统。主要接收无状态交易请求，缓存到数据库中，再异步上链。本系统可大幅提升吞吐量，解决区块链的tps瓶颈。
+​	本系统为交易上链代理子系统。主要接收无状态交易请求，缓存到数据库中，再异步上链。本系统可大幅提升吞吐量，解决区块链的tps瓶颈。
 
 ![架构图](./architecture.png)
 
@@ -44,13 +44,20 @@
 ## 3.1 拉取代码
 执行命令：
 ```
-git clone https://github.com/WeBankFinTech/webase-transaction.git
+git clone https://github.com/WeBankFinTech/WeBASE-Transaction.git
+```
+
+进入目录：
+
+```
+cd WeBASE-Transaction
 ```
 
 ## 3.2 编译代码
 
-在代码的根目录webase-transcation编译，如果出现问题可以查看[常见问题解答](install_FAQ.md)</br>
+使用以下方式编译构建，如果出现问题可以查看[常见问题](install_FAQ.md)</br>
 方式一：如果服务器已安装gradle，且版本为gradle-4.10或以上
+
 ```shell
 gradle build -x test
 ```
@@ -58,11 +65,11 @@ gradle build -x test
 ```shell
 ./gradlew build -x test
 ```
-构建完成后，会在根目录webase-transcation下生成已编译的代码目录dist。
+构建完成后，会在根目录WeBASE-Transaction下生成已编译的代码目录dist。
 
 ## 3.3 修改配置
 
-（1）进入目录：
+（1）进入配置文件目录：
 ```shell
 cd dist/conf
 ```
@@ -84,7 +91,7 @@ server:
 spring: 
   datasource: 
     # 数据库连接信息
-    url: jdbc:mysql://127.0.0.1:3306/webase_transaction?useUnicode=true&characterEncoding=utf8
+    url: jdbc:mysql://127.0.0.1:3306/db_transaction?useUnicode=true&characterEncoding=utf8
     # 数据库用户名
     username: dbUsername
     # 数据库密码
@@ -139,6 +146,7 @@ cd dist
 检查：sh status.sh
 ```
 **备注**：如果脚本执行错误，尝试以下命令:
+
 ```
 赋权限：chmod + *.sh
 转格式：dos2unix *.sh
@@ -146,18 +154,14 @@ cd dist
 
 ## 3.5 查看日志
 
-进入到已编译的代码根目录：
+在已编译的代码根目录dist查看：
 ```shell
-cd dist
+交易服务日志：tail -f log/transcation.log
+web3连接日志：tail -f log/web3sdk.log
 ```
+# 4. <a id="chapter-4"></a>接口API
 
-查看
-```shell
-tail -f log/webase-transcation.log
-```
-# 4. <a id="chapter-4"></a>接口说明
-
-- [接口说明请点击](interface.md)
+- [接口API说明请点击](interface.md)
 
 
 # 5. <a id="chapter-5"></a>附录
@@ -255,7 +259,7 @@ mysql -utest -ptest1234 -h 127.0.0.1 -P 3306
 创建数据库
 
 ```sql
-mysql > create database webase_transaction;
+mysql > create database db_transaction;
 ```
 
 ## 5.3 Zookeeper环境部署
@@ -271,4 +275,7 @@ tar -zxvf zookeeper-XXX.tar.gz /software/
 
 （2）配置和启动
 
-ZooKeeper的安装包括单机模式安装，以及集群模式安装。具体步骤请上网查询。
+  ZooKeeper的安装包括单机模式安装，以及集群模式安装。具体步骤请参考官网说明：
+
+\- [集群部署](https://zookeeper.apache.org/doc/r3.4.13/zookeeperAdmin.html#sc_zkMulitServerSetup) 
+\- [单机部署](https://zookeeper.apache.org/doc/r3.4.13/zookeeperAdmin.html#sc_singleAndDevSetup)  
