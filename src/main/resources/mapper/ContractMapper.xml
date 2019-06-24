@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"   
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.webank.webase.transaction.contract.ContractMapper">
+    <update id="createTbDeployTrans">
+        CREATE TABLE IF NOT EXISTS tb_deploy_transaction (
+            id bigint UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '自增编号',
+            group_id int(11) NOT NULL COMMENT '群组编号',
+            uuid_deploy varchar(64) NOT NULL COMMENT '部署交易业务流水号',
+            contract_bin text NOT NULL COMMENT '合约bin',
+            contract_abi text NOT NULL COMMENT '合约abi',
+            contract_address varchar(64) COMMENT '合约地址',
+            func_param text COMMENT '构造方法的入参json',
+            sign_type tinyint(4) DEFAULT '0' COMMENT '签名 类型(0-本地配置私钥，1-本地随机私钥，2-调用签名服务)',
+            request_count tinyint(4) DEFAULT '0' COMMENT '请求次数',
+            handle_status tinyint(4) DEFAULT '0' COMMENT '处理状态(0-待处理，1-处理成功)',
+            trans_hash varchar(128) COMMENT '交易hash值',
+            receipt_status varchar(16) COMMENT '交易回执状态',
+            gmt_create datetime DEFAULT NULL COMMENT '创建时间',
+            gmt_modify datetime DEFAULT NULL COMMENT '修改时间',
+            PRIMARY KEY (id),
+            UNIQUE KEY idx_gu_01 (group_id,uuid_deploy),
+            UNIQUE KEY idx_gc_02 (group_id,contract_address),
+            KEY idx_gi_03 (group_id),
+            KEY idx_ts_04 (handle_status)
+        ) COMMENT='部署交易信息表' ENGINE=InnoDB CHARSET=utf8
+    </update>
+    
+    <sql id="DEPLOY_COLUMN">
+        id,
+        group_id as groupId,
+        contract_abi as contractAbi,
+        contract_bin as contractBin,
+        contract_address as contractAddress,
+        func_param as funcParam,
+        request_count as requestCount,
+        sign_type as signType
+    </sql>
+    
+    <insert id="insertDeployInfo" parameterType="com.webank.webase.transaction.contract.DeployInfoDto">
+        insert into tb_deploy_transaction(
+            `group_id`,
+            `uuid_deploy`,
+            `contract_bin`,
+            `contract_abi`,
+            `func_param`,
+            `sign_type`,
+            `gmt_create`,
+            `gmt_modify`
+        ) values (
+            #{groupId},
+            #{uuidDeploy},
+            #{contractBin},
+            #{contractAbi},
+            #{funcParam},
+            #{signType},
+            NOW(),
+            DATE_SUB(NOW(),INTERVAL 1 DAY)
+        )
+    </insert>
+    
+    <select id="selectContractAddress" resultType="java.lang.String">
+        select contract_address
+        from tb_deploy_transaction
+        where group_id = #{groupId}
+          and uuid_deploy = #{uuidDeploy}
+    </select>
+    
+    <select id="selectTxHash" resultType="java.lang.String">
+        select trans_hash
+        from tb_deploy_transaction
+        where group_id = #{groupId}
+          and uuid_deploy = #{uuidDeploy}
+    </select>
+    
+    <select id="selectContractAbi" resultType="java.lang.String">
+        select contract_abi
+        from tb_deploy_transaction
+        where group_id = #{groupId}
+          and uuid_deploy = #{uuidDeploy}
+    </select>
+    
+    <select id="selectUnStatTrans" resultType="com.webank.webase.transaction.contract.DeployInfoDto">
+        select <include refid="DEPLOY_COLUMN" />
+        from tb_deploy_transaction
+        where handle_status = 0
+        <![CDATA[
+          and request_count <= #{requestCountMax}
+          and TIMESTAMPDIFF(SECOND,gmt_modify,NOW()) >= #{intervalTime}
+        ]]>
+        limit 0,#{selectCount}
+    </select>
+    
+    <select id="selectUnStatTransByJob" resultType="com.webank.webase.transaction.contract.DeployInfoDto">
+        select <include refid="DEPLOY_COLUMN" />
+        from tb_deploy_transaction
+        where handle_status = 0
+        and MOD(id,#{shardingTotalCount}) = #{shardingItem}
+        <![CDATA[
+          and request_count <= #{requestCountMax}
+          and TIMESTAMPDIFF(SECOND,gmt_modify,NOW()) >= #{intervalTime}
+        ]]>
+        limit 0,#{selectCount}
+    </select>
+    
+    <update id="updateRequestCount">
+        update tb_deploy_transaction 
+        set request_count=#{requestCount},
+            gmt_modify=NOW() 
+        where id = #{id}
+    </update>
+    
+    <update id="updateHandleStatus" parameterType="com.webank.webase.transaction.contract.DeployInfoDto">
+        update tb_deploy_transaction 
+        set contract_address = #{contractAddress},
+            trans_hash = #{transHash},
+            receipt_status = #{receiptStatus},
+            handle_status = 1,
+            gmt_modify = NOW() 
+        where id = #{id}
+    </update>
+</mapper>
