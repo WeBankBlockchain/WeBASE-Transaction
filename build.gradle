@@ -73,7 +73,7 @@ List zookeeper = [
 ]
 
 List web3sdk = [
-    'org.fisco-bcos:web3sdk:2.0.0-rc2',
+    'org.fisco-bcos:web3sdk:2.0.4',
     'org.ethereum:solcJ-all:0.4.25',
     'org.apache.httpcomponents:httpclient:4.5.2',
     'org.bouncycastle:bcprov-jdk15on:1.54',
@@ -88,7 +88,7 @@ dependencies {
     compile "org.apache.commons:commons-lang3:3.6"
     compile "commons-io:commons-io:2.4"
     compile "commons-fileupload:commons-fileupload:1.4"
-    compile "com.alibaba:fastjson:1.2.29"
+    compile "com.alibaba:fastjson:1.2.58"
     compile 'org.projectlombok:lombok:1.18.2'
     //annotationProcessor 'org.projectlombok:lombok:1.18.2'
 }
