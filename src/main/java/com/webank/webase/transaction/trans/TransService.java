@@ -34,6 +34,7 @@ import org.fisco.bcos.web3j.crypto.Credentials;
 import org.fisco.bcos.web3j.crypto.ExtendedRawTransaction;
 import org.fisco.bcos.web3j.crypto.ExtendedTransactionEncoder;
 import org.fisco.bcos.web3j.crypto.RawTransaction;
+import org.fisco.bcos.web3j.crypto.Sign.SignatureData;
 import org.fisco.bcos.web3j.crypto.TransactionEncoder;
 import org.fisco.bcos.web3j.protocol.Web3j;
 import org.fisco.bcos.web3j.protocol.core.DefaultBlockParameterName;
@@ -56,9 +57,11 @@ import com.webank.webase.transaction.base.ResponseEntity;
 import com.webank.webase.transaction.base.exception.BaseException;
 import com.webank.webase.transaction.config.Web3Config;
 import com.webank.webase.transaction.contract.ContractMapper;
+import com.webank.webase.transaction.keystore.EncodeInfo;
 import com.webank.webase.transaction.keystore.KeyStoreInfo;
 import com.webank.webase.transaction.keystore.KeyStoreService;
 import com.webank.webase.transaction.keystore.SignType;
+import com.webank.webase.transaction.util.CommonUtils;
 import com.webank.webase.transaction.util.ContractAbiUtil;
 import com.webank.webase.transaction.util.LogUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -460,6 +463,21 @@ public class TransService {
                 Credentials credentials = Credentials.create(keyStoreInfo.getPrivateKey());
                 byte[] signedMessage = TransactionEncoder.signMessage(rawTransaction, credentials);
                 signMsg = Numeric.toHexString(signedMessage);
+            } else if (signType == SignType.CLOUDCALL.getValue()) {
+                byte[] encodedTransaction = TransactionEncoder.encode(rawTransaction);
+                String encodedDataStr = new String(encodedTransaction);
+
+                EncodeInfo encodeInfo = new EncodeInfo();
+                encodeInfo.setEncodedDataStr(encodedDataStr);
+                String signDataStr = keyStoreService.getSignDate(encodeInfo);
+                if (StringUtils.isBlank(signDataStr)) {
+                    log.warn("deploySend get sign data error.");
+                    return null;
+                }
+
+                SignatureData signData = CommonUtils.stringToSignatureData(signDataStr);
+                byte[] signedMessage = TransactionEncoder.encode(rawTransaction, signData);
+                signMsg = Numeric.toHexString(signedMessage);
             }
         } else {
             String chainId = (String) JSONObject.parseObject(versionContent).get("Chain Id");
@@ -478,6 +496,23 @@ public class TransService {
                 Credentials credentials = Credentials.create(keyStoreInfo.getPrivateKey());
                 byte[] signedMessage =
                         ExtendedTransactionEncoder.signMessage(extendedRawTransaction, credentials);
+                signMsg = Numeric.toHexString(signedMessage);
+            } else if (signType == SignType.CLOUDCALL.getValue()) {
+                byte[] encodedTransaction =
+                        ExtendedTransactionEncoder.encode(extendedRawTransaction);
+                String encodedDataStr = new String(encodedTransaction);
+
+                EncodeInfo encodeInfo = new EncodeInfo();
+                encodeInfo.setEncodedDataStr(encodedDataStr);
+                String signDataStr = keyStoreService.getSignDate(encodeInfo);
+                if (StringUtils.isBlank(signDataStr)) {
+                    log.warn("deploySend get sign data error.");
+                    return null;
+                }
+
+                SignatureData signData = CommonUtils.stringToSignatureData(signDataStr);
+                byte[] signedMessage =
+                        ExtendedTransactionEncoder.encode(extendedRawTransaction, signData);
                 signMsg = Numeric.toHexString(signedMessage);
             }
         }
