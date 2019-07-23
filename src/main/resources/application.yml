@@ -1,12 +1,12 @@
 server: 
   # 本工程服务端口，端口被占用则修改
-  port: 8082
-  context-path: /webase-transaction
+  port: 5003
+  context-path: /WeBASE-Transcation
 
 spring: 
   datasource: 
     # 数据库连接信息
-    url: jdbc:mysql://127.0.0.1:3306/db_transaction?useUnicode=true&characterEncoding=utf8
+    url: jdbc:mysql://127.0.0.1:3306/webase_node_manager_db?useUnicode=true&characterEncoding=utf8
     # 数据库用户名
     username: dbUsername
     # 数据库密码
@@ -31,7 +31,7 @@ sdk:
 
 constant: 
   # 签名服务url，需要调用签名服务进行签名的话则对应修改，使用本地签名的话可以不修改
-  signServiceUrl: http://127.0.0.1:8085/WeBASE-Sign/sign
+  signServiceUrl: http://127.0.0.1:5004/WeBASE-Sign/sign
   # 签名服务用户编号，需要调用签名服务进行签名的话则对应修改，使用本地签名的话可以不修改
   signUserId: 100001
   # 本地配置私钥进行签名，使用这种模式则对应修改
