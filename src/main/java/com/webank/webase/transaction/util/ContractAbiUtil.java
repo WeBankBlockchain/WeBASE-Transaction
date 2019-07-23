@@ -187,10 +187,10 @@ public class ContractAbiUtil {
                     && funcInputTypes.get(i).indexOf("]") != -1) {
                 List<Object> arrList =
                         new ArrayList<>(Arrays.asList(params.get(i).toString().split(",")));
+                inputType = ContractTypeUtil.getType(
+                        funcInputTypes.get(i).substring(0, funcInputTypes.get(i).indexOf("[")));
                 List<Type> arrParams = new ArrayList<>();
                 for (int j = 0; j < arrList.size(); j++) {
-                    inputType = ContractTypeUtil.getType(
-                            funcInputTypes.get(i).substring(0, funcInputTypes.get(i).indexOf("[")));
                     input = ContractTypeUtil.parseByType(
                             funcInputTypes.get(i).substring(0, funcInputTypes.get(i).indexOf("[")),
                             arrList.get(j).toString());
