@@ -73,7 +73,7 @@ List zookeeper = [
 ]
 
 List web3sdk = [
-    'org.fisco-bcos:web3sdk:2.0.4',
+    'org.fisco-bcos:web3sdk:2.0.5',
     'org.ethereum:solcJ-all:0.4.25',
     'org.apache.httpcomponents:httpclient:4.5.2',
     'org.bouncycastle:bcprov-jdk15on:1.54',
@@ -115,6 +115,7 @@ clean {
     delete 'dist'
     delete 'build'
     delete 'log'
+    delete 'temp'
 }
 
 jar {
@@ -126,7 +127,7 @@ jar {
     doLast {
         copy {
             from file('src/main/resources/')
-            into 'dist/conf'
+            into 'dist/conf_template'
         }
         copy {
             from configurations.runtime
