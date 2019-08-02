@@ -14,37 +14,13 @@
 
 package com.webank.webase.transaction.keystore;
 
+import lombok.Data;
+
 /**
- * SignType.
- *
+ * SignInfo.
+ * 
  */
-public enum SignType {
-    LOCALCONFIG(0), LOCALRANDOM(1), CLOUDCALL(2);
-
-    private int value;
-
-    private SignType(int value) {
-        this.value = value;
-    }
-
-    public int getValue() {
-        return value;
-    }
-
-    /**
-     * isInclude.
-     * 
-     * @param key value
-     * @return
-     */
-    public static boolean isInclude(int key) {
-        boolean include = false;
-        for (SignType e : SignType.values()) {
-            if (e.getValue() == key) {
-                include = true;
-                break;
-            }
-        }
-        return include;
-    }
+@Data
+public class SignInfo {
+    private String signDataStr;
 }
