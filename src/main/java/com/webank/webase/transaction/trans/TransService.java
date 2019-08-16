@@ -465,7 +465,7 @@ public class TransService {
                 signMsg = Numeric.toHexString(signedMessage);
             } else if (signType == SignType.CLOUDCALL.getValue()) {
                 byte[] encodedTransaction = TransactionEncoder.encode(rawTransaction);
-                String encodedDataStr = new String(encodedTransaction);
+                String encodedDataStr = Numeric.toHexString(encodedTransaction);
 
                 EncodeInfo encodeInfo = new EncodeInfo();
                 encodeInfo.setEncodedDataStr(encodedDataStr);
@@ -500,7 +500,7 @@ public class TransService {
             } else if (signType == SignType.CLOUDCALL.getValue()) {
                 byte[] encodedTransaction =
                         ExtendedTransactionEncoder.encode(extendedRawTransaction);
-                String encodedDataStr = new String(encodedTransaction);
+                String encodedDataStr = Numeric.toHexString(encodedTransaction);
 
                 EncodeInfo encodeInfo = new EncodeInfo();
                 encodeInfo.setEncodedDataStr(encodedDataStr);
