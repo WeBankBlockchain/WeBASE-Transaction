@@ -114,6 +114,18 @@ public class TransService {
                 log.warn("save fail. signType:{} is not existed", req.getSignType());
                 throw new BaseException(ConstantCode.SIGN_TYPE_ERROR);
             }
+            // check sign user id
+            if (SignType.CLOUDCALL.getValue() == req.getSignType()) {
+                if (req.getSignUserId() == null) {
+                    log.warn("deploy fail. sign user id is empty");
+                    throw new BaseException(ConstantCode.SIGN_USERID_EMPTY);
+                } else {
+                    boolean result = keyStoreService.checkSignUserId(req.getSignUserId());
+                    if (!result) {
+                        throw new BaseException(ConstantCode.SIGN_USERID_ERROR);
+                    }
+                }
+            }
             // check request style
             if (StringUtils.isBlank(uuidDeploy)
                     && (StringUtils.isBlank(contractAddress) || abiList.isEmpty())) {
@@ -165,6 +177,7 @@ public class TransService {
             transInfoDto.setFuncName(funcName);
             transInfoDto.setFuncParam(JSON.toJSONString(params));
             transInfoDto.setSignType(req.getSignType());
+            transInfoDto.setSignUserId(req.getSignUserId());
             transMapper.insertTransInfo(transInfoDto);
         } catch (DuplicateKeyException e) {
             log.error("save groupId:{} uuidStateless:{}", groupId, uuidStateless, e);
@@ -414,7 +427,7 @@ public class TransService {
             Function function = new Function(funcName, finalInputs, finalOutputs);
             String encodedFunction = FunctionEncoder.encode(function);
             // data sign
-            String signMsg = signMessage(groupId, signType, contractAddress, encodedFunction);
+            String signMsg = signMessage(groupId, signType, transInfoDto.getSignUserId(), contractAddress, encodedFunction);
             if (StringUtils.isBlank(signMsg)) {
                 return;
             }
@@ -443,7 +456,7 @@ public class TransService {
      * @param data info
      * @return
      */
-    public String signMessage(int groupId, int signType, String contractAddress, String data)
+    public String signMessage(int groupId, int signType, int signUserId, String contractAddress, String data)
             throws IOException, BaseException {
         Random r = new Random();
         BigInteger randomid = new BigInteger(250, r);
@@ -469,6 +482,7 @@ public class TransService {
 
                 EncodeInfo encodeInfo = new EncodeInfo();
                 encodeInfo.setEncodedDataStr(encodedDataStr);
+                encodeInfo.setUserId(signUserId);
                 String signDataStr = keyStoreService.getSignDate(encodeInfo);
                 if (StringUtils.isBlank(signDataStr)) {
                     log.warn("deploySend get sign data error.");
@@ -504,6 +518,7 @@ public class TransService {
 
                 EncodeInfo encodeInfo = new EncodeInfo();
                 encodeInfo.setEncodedDataStr(encodedDataStr);
+                encodeInfo.setUserId(signUserId);
                 String signDataStr = keyStoreService.getSignDate(encodeInfo);
                 if (StringUtils.isBlank(signDataStr)) {
                     log.warn("deploySend get sign data error.");
