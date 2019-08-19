@@ -43,7 +43,7 @@ import com.webank.webase.transaction.base.ConstantCode;
 import com.webank.webase.transaction.base.ConstantProperties;
 import com.webank.webase.transaction.base.ResponseEntity;
 import com.webank.webase.transaction.base.exception.BaseException;
-import com.webank.webase.transaction.config.Web3Config;
+import com.webank.webase.transaction.keystore.KeyStoreService;
 import com.webank.webase.transaction.keystore.SignType;
 import com.webank.webase.transaction.trans.TransService;
 import com.webank.webase.transaction.util.CommonUtils;
@@ -68,6 +68,8 @@ public class ContractService {
     private ThreadPoolTaskExecutor transExecutor;
     @Autowired
     private ConstantProperties properties;
+    @Autowired
+    private KeyStoreService keyStoreService;
 
     /**
      * contract compile.
@@ -140,6 +142,18 @@ public class ContractService {
                 log.warn("deploy fail. signType:{} is not existed", req.getSignType());
                 throw new BaseException(ConstantCode.SIGN_TYPE_ERROR);
             }
+            // check sign user id
+            if (SignType.CLOUDCALL.getValue() == req.getSignType()) {
+                if (req.getSignUserId() == null) {
+                    log.warn("deploy fail. sign user id is empty");
+                    throw new BaseException(ConstantCode.SIGN_USERID_EMPTY);
+                } else {
+                    boolean result = keyStoreService.checkSignUserId(req.getSignUserId());
+                    if (!result) {
+                        throw new BaseException(ConstantCode.SIGN_USERID_ERROR);
+                    }
+                }
+            }
             // check parameters
             AbiDefinition abiDefinition = ContractAbiUtil.getAbiDefinition(contractAbi);
             List<String> funcInputTypes = ContractAbiUtil.getFuncInputType(abiDefinition);
@@ -157,6 +171,7 @@ public class ContractService {
             deployInfoDto.setContractAbi(contractAbi);
             deployInfoDto.setFuncParam(JSON.toJSONString(params));
             deployInfoDto.setSignType(req.getSignType());
+            deployInfoDto.setSignUserId(req.getSignUserId());
             contractMapper.insertDeployInfo(deployInfoDto);
         } catch (DuplicateKeyException e) {
             log.error("save groupId:{} uuid:{} DuplicateKeyException:{}", groupId, uuid, e);
@@ -293,7 +308,7 @@ public class ContractService {
             }
             // data sign
             String data = contractBin + encodedConstructor;
-            String signMsg = transService.signMessage(groupId, signType, "", data);
+            String signMsg = transService.signMessage(groupId, signType, deployInfoDto.getSignUserId(), "", data);
             if (StringUtils.isBlank(signMsg)) {
                 return;
             }
