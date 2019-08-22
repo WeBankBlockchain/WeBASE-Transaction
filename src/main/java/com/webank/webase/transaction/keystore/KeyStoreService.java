@@ -45,6 +45,8 @@ public class KeyStoreService {
     private ConstantProperties properties;
 
     private static final int PUBLIC_KEY_LENGTH_IN_HEX = 128;
+    private static final String SIGN_ADDSIGN_URL = "http://%s/WeBASE-Sign/sign";
+    private static final String SIGN_USERINFO_URL = "http://%s/WeBASE-Sign/user/%s/userInfo";
 
     /**
      * getKey.
@@ -96,8 +98,7 @@ public class KeyStoreService {
     public String getSignDate(EncodeInfo params) {
         try {
             SignInfo signInfo = new SignInfo();
-            String url = properties.getSignServiceUrl();
-            params.setUserId(properties.getSignUserId());
+            String url = String.format(SIGN_ADDSIGN_URL, properties.getSignServer());
             log.info("getSignDate url:{}", url);
             HttpHeaders headers = CommonUtils.buildHeaders();
             HttpEntity<String> formEntity =
@@ -115,5 +116,27 @@ public class KeyStoreService {
                     ConstantProperties.MSG_ABNORMAL_S0005);
         }
         return null;
+    }
+    
+    /**
+     * checkSignUserId.
+     * 
+     * @param userId userId
+     * @return
+     */
+    public boolean checkSignUserId(int userId) {
+        try {
+            String url = String.format(SIGN_USERINFO_URL, properties.getSignServer(), userId);
+            log.info("checkSignUserId url:{}", url);
+            ResponseEntity response =
+                    restTemplate.getForObject(url, ResponseEntity.class);
+            log.info("checkSignUserId response:{}", JSON.toJSONString(response));
+            if (response.getCode() == 0) {
+                return true;
+            }
+        } catch (Exception e) {
+            log.error("checkSignUserId exception", e);
+        }
+        return false;
     }
 }
