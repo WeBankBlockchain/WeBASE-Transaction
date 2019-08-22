@@ -13,6 +13,7 @@
             func_name varchar(32) NOT NULL COMMENT '调用的合约方法名',
             func_param text COMMENT '合约方法的入参json',
             sign_type tinyint(4) DEFAULT '0' COMMENT '签名 类型(0-本地配置私钥，1-本地随机私钥，2-调用签名服务)',
+            sign_user_id int(11) COMMENT '调用签名服务的用户编号',
             request_count tinyint(4) DEFAULT '0' COMMENT '请求次数',
             handle_status tinyint(4) DEFAULT '0' COMMENT '处理状态(0-待处理，1-处理成功)',
             trans_hash varchar(128) COMMENT '交易hash值',
@@ -35,7 +36,8 @@
         func_name as funcName,
         func_param as funcParam,
         request_count as requestCount,
-        sign_type as signType
+        sign_type as signType,
+        sign_user_id as signUserId
     </sql>
     
     <insert id="insertTransInfo" parameterType="com.webank.webase.transaction.trans.TransInfoDto">
@@ -48,6 +50,7 @@
             `func_name`,
             `func_param`,
             `sign_type`,
+            `sign_user_id`,
             `gmt_create`,
             `gmt_modify`
         ) values (
@@ -59,6 +62,7 @@
             #{funcName},
             #{funcParam},
             #{signType},
+            #{signUserId},
             NOW(),
             DATE_SUB(NOW(),INTERVAL 1 DAY)
         )
