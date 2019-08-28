@@ -72,8 +72,15 @@ List web3sdk = [
     'com.github.jnr:jnr-unixsocket:0.15'
 ]
 
+List jaxb = [
+     "javax.xml.bind:jaxb-api:2.3.0",
+     "com.sun.xml.bind:jaxb-impl:2.3.0",
+     "com.sun.xml.bind:jaxb-core:2.3.0",
+     "javax.activation:activation:1.1.1"
+]
+
 dependencies {
-    compile spring_boot,mysql,swagger,web3sdk,logger,netty,dangdang,zookeeper
+    compile spring_boot,mysql,swagger,web3sdk,logger,netty,dangdang,zookeeper,jaxb
     compile "org.apache.commons:commons-lang3:3.6"
     compile "commons-io:commons-io:2.4"
     compile "commons-fileupload:commons-fileupload:1.4"
