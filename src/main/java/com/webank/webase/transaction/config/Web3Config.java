@@ -27,12 +27,14 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * init web3sdk.
  *
  */
 @Data
+@Slf4j
 @Configuration
 @ConfigurationProperties(prefix = "sdk")
 public class Web3Config {
@@ -59,10 +61,13 @@ public class Web3Config {
         List<ChannelConnections> channelConnectList = groupConfig.getAllChannelConnections();
         for (ChannelConnections connect : channelConnectList) {
             int groupId = connect.getGroupId();
+            log.info("init groupId:{}", groupId);
             ChannelEthereumService channelEthereumService = new ChannelEthereumService();
             channelEthereumService.setTimeout(timeout);
             channelEthereumService.setChannelService(service);
-            web3jMap.put(groupId, Web3j.build(channelEthereumService, groupId));
+            Web3j web3j = Web3j.build(channelEthereumService, groupId);
+            web3j.getGroupList().send().getGroupList();
+            web3jMap.put(groupId, web3j);
         }
         return web3jMap;
     }
