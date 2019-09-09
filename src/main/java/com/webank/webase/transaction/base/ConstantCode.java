@@ -51,6 +51,7 @@ public interface ConstantCode {
     RetCode GROUPID_NOT_CONFIGURED = RetCode.mark(303019, "request group id has not been configured");
     RetCode SIGN_USERID_EMPTY = RetCode.mark(303020, "sign user id cannot be empty while sign type is 2");
     RetCode SIGN_USERID_ERROR = RetCode.mark(303021, "sign user id check failed");
+    RetCode FUNCTION_NOT_EXISTS = RetCode.mark(303004, "function is not exists");
 
     // system error
     RetCode SYSTEM_ERROR = RetCode.mark(103001, "system error");

@@ -152,6 +152,10 @@ public class TransService {
             }
             // check function
             AbiDefinition abiDefinition = ContractAbiUtil.getAbiDefinition(funcName, contractAbi);
+            if (abiDefinition == null) {
+                log.warn("save fail. func:{} is not exists", funcName);
+                throw new BaseException(ConstantCode.FUNCTION_NOT_EXISTS);
+            }
             if (abiDefinition.isConstant()) {
                 log.warn("save fail. func:{} is constant", funcName);
                 throw new BaseException(ConstantCode.FUNCTION_NOT_CONSTANT);
@@ -239,6 +243,10 @@ public class TransService {
             }
             // check function
             AbiDefinition abiDefinition = ContractAbiUtil.getAbiDefinition(funcName, contractAbi);
+            if (abiDefinition == null) {
+                log.warn("call fail. func:{} is not exists", funcName);
+                throw new BaseException(ConstantCode.FUNCTION_NOT_EXISTS);
+            }
             if (!abiDefinition.isConstant()) {
                 log.warn("call fail. func:{} is not constant", funcName);
                 throw new BaseException(ConstantCode.FUNCTION_MUST_CONSTANT);
