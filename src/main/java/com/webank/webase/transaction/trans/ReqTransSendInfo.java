@@ -24,12 +24,13 @@ import org.hibernate.validator.constraints.NotBlank;
 @Data
 public class ReqTransSendInfo {
     @NotNull(message = ConstantCode.GROUP_ID_IS_EMPTY)
-    private int groupId;
+    private Integer groupId;
     @NotBlank(message = ConstantCode.UUID_TRANS_IS_EMPTY)
     private String uuidStateless;
     private String uuidDeploy;
     @NotNull(message = ConstantCode.SIGN_TYPE_IS_EMPTY)
-    private int signType;
+    private Integer signType;
+    private Integer signUserId;
     private List<Object> contractAbi = new ArrayList<>();
     private String contractAddress;
     @NotBlank(message = ConstantCode.FUNCTION_NAME_IS_EMPTY)

@@ -29,11 +29,12 @@ import org.hibernate.validator.constraints.NotEmpty;
 @Data
 public class ReqDeployInfo {
     @NotNull(message = ConstantCode.GROUP_ID_IS_EMPTY)
-    private int groupId;
+    private Integer groupId;
     @NotBlank(message = ConstantCode.UUID_DEPLOY_IS_EMPTY)
     private String uuidDeploy;
     @NotNull(message = ConstantCode.SIGN_TYPE_IS_EMPTY)
-    private int signType;
+    private Integer signType;
+    private Integer signUserId;
     @NotBlank(message = ConstantCode.CONTRACT_BIN_IS_EMPTY)
     private String contractBin;
     @NotEmpty(message = ConstantCode.CONTRACT_ABI_IS_EMPTY)
