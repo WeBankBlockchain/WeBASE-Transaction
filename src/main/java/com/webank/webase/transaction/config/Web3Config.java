@@ -53,15 +53,16 @@ public class Web3Config {
 
         Service service = new Service();
         service.setOrgID(orgName);
-        service.setGroupId(1);
         service.setThreadPool(sdkThreadPool());
         service.setAllChannelConnections(groupConfig);
-        service.run();
 
         List<ChannelConnections> channelConnectList = groupConfig.getAllChannelConnections();
         for (ChannelConnections connect : channelConnectList) {
             int groupId = connect.getGroupId();
             log.info("init groupId:{}", groupId);
+            // set groupId
+            service.setGroupId(groupId);
+            service.run();
             ChannelEthereumService channelEthereumService = new ChannelEthereumService();
             channelEthereumService.setTimeout(timeout);
             channelEthereumService.setChannelService(service);

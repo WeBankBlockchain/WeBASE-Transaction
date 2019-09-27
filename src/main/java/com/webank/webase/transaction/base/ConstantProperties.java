@@ -76,5 +76,8 @@ public class ConstantProperties {
     private int intervalTime = 600;
     private int sleepTime = 30;
     private int transMaxWait = 20;
+    private boolean ifDeleteData = false;
+    private String cronDeleteData = "0 0 1 * * ?";
+    private int keepDays = 360;
     private boolean ifDistributedTask = false;
 }

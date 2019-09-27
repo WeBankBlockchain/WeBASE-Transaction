@@ -16,6 +16,7 @@ package com.webank.webase.transaction.scheduler;
 
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import com.webank.webase.transaction.base.ConstantProperties;
 import com.webank.webase.transaction.contract.ContractMapper;
@@ -60,5 +61,15 @@ public class ScheduleService {
                 transMapper.selectUnStatTrans(properties.getRequestCountMax(),
                         properties.getSelectCount(), properties.getIntervalTime());
         transService.handleTransInfo(transInfoList);
+    }
+    
+    /**
+     * deleteDataSchedule.
+     */
+    @Async
+    public void deleteDataSchedule() {
+        log.debug("deleteDataSchedule start...");
+        contractService.deleteDataSchedule();
+        transService.deleteDataSchedule();
     }
 }
