@@ -14,6 +14,7 @@
 
 package com.webank.webase.transaction.contract;
 
+import java.util.Date;
 import lombok.Data;
 
 /**
@@ -32,6 +33,8 @@ public class DeployInfoDto {
     private int signType;
     private int signUserId;
     private int requestCount;
+    private int handleStatus = 0;
     private String transHash;
     private boolean receiptStatus;
+    private Date gmtCreate;
 }

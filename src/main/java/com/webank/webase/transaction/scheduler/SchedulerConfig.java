@@ -32,6 +32,11 @@ public class SchedulerConfig implements SchedulingConfigurer {
 
     @Override
     public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {
+        if (constants.isIfDeleteData()) {
+            taskRegistrar.addTriggerTask(() -> scheduleService.deleteDataSchedule(),
+                    (context) -> new CronTrigger(constants.getCronDeleteData())
+                    .nextExecutionTime(context));
+        }
         if (!constants.isIfDistributedTask()) {
             taskRegistrar.addTriggerTask(() -> scheduleService.deploySchedule(),
                 (context) -> new CronTrigger(constants.getCronTrans())

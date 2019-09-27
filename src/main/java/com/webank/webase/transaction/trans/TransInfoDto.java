@@ -14,6 +14,7 @@
 
 package com.webank.webase.transaction.trans;
 
+import java.util.Date;
 import lombok.Data;
 
 /**
@@ -33,7 +34,9 @@ public class TransInfoDto {
     private int signType;
     private int signUserId;
     private int requestCount;
+    private int handleStatus = 0;
     private String transHash;
     private String transOutput;
     private boolean receiptStatus;
+    private Date gmtCreate;
 }

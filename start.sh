@@ -6,14 +6,20 @@ CURRENT_DIR=`pwd`
 LOG_DIR=${CURRENT_DIR}/log
 CONF_DIR=${CURRENT_DIR}/conf
 
-SERVER_PORT=$(cat $CONF_DIR/application.yml| grep "port" | awk '{print $2}'| sed 's/\r//')
+SERVER_PORT=$(cat $CONF_DIR/application.properties| grep "server.port" | awk -F'=' '{print $2}'| sed 's/\r//')
 if [ ${SERVER_PORT}"" = "" ];then
-    echo "$CONF_DIR/application.yml server port has not been configured"
+    echo "$CONF_DIR/application.properties server port has not been configured"
+    exit -1
+fi
+
+if [ ${JAVA_HOME}"" = "" ];then
+    echo "JAVA_HOME has not been configured"
     exit -1
 fi
 
 mkdir -p log
 
+startWaitTime=20
 processPid=0
 processStatus=0
 server_pid=0
@@ -53,7 +59,7 @@ start(){
         
         count=1
         result=0
-        while [ $count -lt 20 ] ; do
+        while [ $count -lt $startWaitTime ] ; do
            checkProcess
            if [ $processPid -ne 0 ]; then
                result=1
@@ -68,13 +74,16 @@ start(){
            echo "PID($processPid) [Success]"
            echo "==============================================================================================="
        else
+           message=""
            for subPid in ${server_pid[@]} ; do
                checkResult=`netstat -tunpl 2>&1|grep $subPid|awk '{printf $7}'|cut -d/ -f1`
                if [ -z "$checkResult" ]; then
                    kill -9 $subPid
+                   message="Because port $SERVER_PORT not up in $startWaitTime seconds.Script finally killed the process."
                fi
            done
            echo "[Failed]. Please view log file (default path:./log/)."
+           echo $message
            echo "==============================================================================================="
        fi
     fi
