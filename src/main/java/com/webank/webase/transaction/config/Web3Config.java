@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2019 the original author or authors.
+ * Copyright 2014-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -53,15 +53,16 @@ public class Web3Config {
 
         Service service = new Service();
         service.setOrgID(orgName);
-        service.setGroupId(1);
         service.setThreadPool(sdkThreadPool());
         service.setAllChannelConnections(groupConfig);
-        service.run();
 
         List<ChannelConnections> channelConnectList = groupConfig.getAllChannelConnections();
         for (ChannelConnections connect : channelConnectList) {
             int groupId = connect.getGroupId();
             log.info("init groupId:{}", groupId);
+            // set groupId
+            service.setGroupId(groupId);
+            service.run();
             ChannelEthereumService channelEthereumService = new ChannelEthereumService();
             channelEthereumService.setTimeout(timeout);
             channelEthereumService.setChannelService(service);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2019 the original author or authors.
+ * Copyright 2014-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -76,5 +76,8 @@ public class ConstantProperties {
     private int intervalTime = 600;
     private int sleepTime = 30;
     private int transMaxWait = 20;
+    private boolean ifDeleteData = false;
+    private String cronDeleteData = "0 0 1 * * ?";
+    private int keepDays = 360;
     private boolean ifDistributedTask = false;
 }

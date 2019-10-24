@@ -31,7 +31,7 @@ public class TableInitConfig implements InitializingBean {
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        contractMapper.createTbDeployTrans();;
-        transMapper.createTbStatelessTrans();;
+        contractMapper.createTbDeployTrans();
+        transMapper.createTbStatelessTrans();
     }
 }

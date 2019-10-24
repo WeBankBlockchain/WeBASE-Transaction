@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2019 the original author or authors.
+ * Copyright 2014-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -20,8 +20,7 @@ public interface ConstantCode {
 
     // paramaters check
     String GROUP_ID_IS_EMPTY = "{\"code\":203001,\"msg\":\"group id cannot be empty\"}";
-    String UUID_DEPLOY_IS_EMPTY = "{\"code\":203002,\"msg\":\"deploy uuid cannot be empty\"}";
-    String UUID_TRANS_IS_EMPTY = "{\"code\":203002,\"msg\":\"trans uuid cannot be empty\"}";
+    String UUID_IS_EMPTY = "{\"code\":203002,\"msg\":\"uuid cannot be empty\"}";
     String SIGN_TYPE_IS_EMPTY = "{\"code\":203003,\"msg\":\"sign type cannot be empty\"}";
     String CONTRACT_BIN_IS_EMPTY = "{\"code\":203004,\"msg\":\"contract bin cannot be empty\"}";
     String CONTRACT_ABI_IS_EMPTY = "{\"code\":203005,\"msg\":\"contract abi cannot be empty\"}";
@@ -29,7 +28,6 @@ public interface ConstantCode {
     String FUNCTION_NAME_IS_EMPTY = "{\"code\":203007,\"msg\":\"function name cannot be empty\"}";
 
     // general error
-    RetCode UUID_DEPLOY_IS_EXISTS = RetCode.mark(303001, "deploy uuid is already exists");
     RetCode UUID_IS_EXISTS = RetCode.mark(303001, "uuid is already exists");
     RetCode GET_SIGN_DATA_ERROR = RetCode.mark(303002, "get sign data from sign service error");
     RetCode IN_FUNCPARAM_ERROR = RetCode.mark(303003, "contract funcParam is error");

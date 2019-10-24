@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2019 the original author or authors.
+ * Copyright 2014-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -14,15 +14,11 @@
 
 package com.webank.webase.transaction.util;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.util.Enumeration;
 import java.util.zip.ZipEntry;
@@ -83,9 +79,9 @@ public class CommonUtils {
                 try {
                     inputStream = zf.getInputStream(entry);
                     String outPath = (path + zipEntryName).replaceAll("\\*", "/");
-                    log.info("unZipFiles outPath:{}", outPath);
+                    log.info("unZipFiles outPath:{}", cleanString(outPath));
 
-                    outputStream = new FileOutputStream(outPath);
+                    outputStream = new FileOutputStream(cleanString(outPath));
                     byte[] buf1 = new byte[1024];
                     int len;
                     while ((len = inputStream.read(buf1)) > 0) {
@@ -107,6 +103,46 @@ public class CommonUtils {
         if (file.exists()) {
             file.delete();
         }
+    }
+    
+    private static String cleanString(String aString) {
+        if (aString == null) return null;
+        String cleanString = "";
+        for (int i = 0; i < aString.length(); ++i) {
+            cleanString += cleanChar(aString.charAt(i));
+        }
+        return cleanString;
+    }
+
+    private static char cleanChar(char aChar) {
+        // 0 - 9
+        for (int i = 48; i < 58; ++i) {
+            if (aChar == i) return (char) i;
+        }
+        // 'A' - 'Z'
+        for (int i = 65; i < 91; ++i) {
+            if (aChar == i) return (char) i;
+        }
+        // 'a' - 'z'
+        for (int i = 97; i < 123; ++i) {
+            if (aChar == i) return (char) i;
+        }
+        // other valid characters
+        switch (aChar) {
+            case '\\':
+                return '\\';
+            case '/':
+                return '/';
+            case ':':
+                return ':';
+            case '.':
+                return '.';
+            case '-':
+                return '-';
+            case '_':
+                return '_';
+        }
+        return ' ';
     }
     
     private static void close(Closeable closeable) {
@@ -160,67 +196,6 @@ public class CommonUtils {
         System.arraycopy(signatureData.getS(), 0, byteArr, signatureData.getR().length + 1,
                 signatureData.getS().length);
         return Numeric.toHexString(byteArr, 0, byteArr.length, false);
-    }
-
-    /**
-     * serializeToString.
-     * 
-     * @param object object
-     * @return
-     */
-    public static String serializeToString(Object object) {
-        ObjectOutputStream oos = null;
-        ByteArrayOutputStream bos = null;
-        try {
-            bos = new ByteArrayOutputStream();
-            oos = new ObjectOutputStream(bos);
-            oos.writeObject(object);
-            return bos.toString("ISO-8859-1");
-        } catch (IOException e) {
-            System.out.println("Exception:" + e.toString());
-            return null;
-        } finally {
-            try {
-                if (oos != null) {
-                    oos.close();
-                }
-                if (bos != null) {
-                    bos.close();
-                }
-            } catch (IOException ex) {
-                System.out.println("io could not close:" + ex.toString());
-            }
-        }
-    }
-
-    /**
-     * deserializeToObject.
-     * 
-     * @param str str
-     * @return
-     */
-    public static Object deserializeToObject(String str) {
-        ByteArrayInputStream bais = null;
-        ObjectInputStream ois = null;
-        try {
-            bais = new ByteArrayInputStream(str.getBytes("ISO-8859-1"));
-            ois = new ObjectInputStream(bais);
-            return ois.readObject();
-        } catch (IOException | ClassNotFoundException e) {
-            System.out.println("bytes Could not deserialize:" + e.toString());
-            return null;
-        } finally {
-            try {
-                if (bais != null) {
-                    bais.close();
-                }
-                if (ois != null) {
-                    ois.close();
-                }
-            } catch (IOException ex) {
-                System.out.println("LogManage Could not serialize:" + ex.toString());
-            }
-        }
     }
 
     /**

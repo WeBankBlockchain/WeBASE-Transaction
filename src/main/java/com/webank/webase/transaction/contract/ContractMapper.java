@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2019 the original author or authors.
+ * Copyright 2014-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -14,6 +14,7 @@
 
 package com.webank.webase.transaction.contract;
 
+import java.util.Date;
 import java.util.List;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Service;
@@ -29,6 +30,9 @@ public interface ContractMapper {
 
     void insertDeployInfo(DeployInfoDto deployInfoDto);
 
+    DeployInfoDto selectDeployInfo(@Param("groupId") int groupId,
+            @Param("uuidDeploy") String uuidDeploy);
+    
     String selectContractAddress(@Param("groupId") int groupId,
             @Param("uuidDeploy") String uuidDeploy);
     
@@ -46,7 +50,9 @@ public interface ContractMapper {
             @Param("shardingTotalCount") int shardingTotalCount,
             @Param("shardingItem") int shardingItem);
 
-    void updateRequestCount(@Param("id") Long id, @Param("requestCount") int requestCount);
+    void updateRequestCount(@Param("id") Long id, @Param("requestCount") int requestCount, @Param("gmtCreate") Date gmtCreate);
 
     void updateHandleStatus(DeployInfoDto deployInfoDto);
+    
+    void deletePartData(@Param(value = "keepDays") int keepDays);
 }

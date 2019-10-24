@@ -4,9 +4,9 @@ APP_MAIN=com.webank.webase.transaction.Application
 CURRENT_DIR=`pwd`
 CONF_DIR=${CURRENT_DIR}/conf
 
-SERVER_PORT=$(cat $CONF_DIR/application.yml| grep "port" | awk '{print $2}'| sed 's/\r//')
+SERVER_PORT=$(cat $CONF_DIR/application.properties| grep "server.port" | awk -F'=' '{print $2}'| sed 's/\r//')
 if [ ${SERVER_PORT}"" = "" ];then
-    echo "$CONF_DIR/application.yml server port has not been configured"
+    echo "$CONF_DIR/application.properties server port has not been configured"
     exit -1
 fi
 

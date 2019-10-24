@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2019 the original author or authors.
+ * Copyright 2014-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -16,6 +16,7 @@ package com.webank.webase.transaction.trans;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -45,7 +46,6 @@ import org.fisco.bcos.web3j.protocol.core.methods.response.SendTransaction;
 import org.fisco.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.fisco.bcos.web3j.utils.Numeric;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DuplicateKeyException;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import com.alibaba.fastjson.JSON;
@@ -103,93 +103,97 @@ public class TransService {
         List<Object> abiList = req.getContractAbi();
         String funcName = req.getFuncName();
         List<Object> params = req.getFuncParam();
-        try {
-            // check groupId
-            if (!checkGroupId(groupId)) {
-                log.warn("save fail. groupId:{} has not been configured", groupId);
-                throw new BaseException(ConstantCode.GROUPID_NOT_CONFIGURED);
-            }
-            // check sign type
-            if (!SignType.isInclude(req.getSignType())) {
-                log.warn("save fail. signType:{} is not existed", req.getSignType());
-                throw new BaseException(ConstantCode.SIGN_TYPE_ERROR);
-            }
-            // check sign user id
-            if (SignType.CLOUDCALL.getValue() == req.getSignType()) {
-                if (req.getSignUserId() == null) {
-                    log.warn("deploy fail. sign user id is empty");
-                    throw new BaseException(ConstantCode.SIGN_USERID_EMPTY);
-                } else {
-                    boolean result = keyStoreService.checkSignUserId(req.getSignUserId());
-                    if (!result) {
-                        throw new BaseException(ConstantCode.SIGN_USERID_ERROR);
-                    }
-                }
-            }
-            // check request style
-            if (StringUtils.isBlank(uuidDeploy)
-                    && (StringUtils.isBlank(contractAddress) || abiList.isEmpty())) {
-                throw new BaseException(ConstantCode.ADDRESS_ABI_EMPTY);
-            }
-            // check if contract has been deployed
-            if (StringUtils.isBlank(contractAddress)) {
-                contractAddress = contractMapper.selectContractAddress(groupId, uuidDeploy);
-            }
-            if (StringUtils.isBlank(contractAddress)) {
-                log.warn("save fail. contract has not been deployed");
-                throw new BaseException(ConstantCode.CONTRACT_NOT_DEPLOED);
-            }
-            // check contractAbi
-            String contractAbi = "";
-            if (abiList.isEmpty()) {
-                contractAbi = contractMapper.selectContractAbi(groupId, uuidDeploy);
-                if (StringUtils.isBlank(contractAbi)) {
-                    log.warn("save fail. uuidDeploy:{} abi is not exists", uuidDeploy);
-                    throw new BaseException(ConstantCode.CONTRACT_ABI_EMPTY);
-                }
-            } else {
-                contractAbi = JSON.toJSONString(abiList);
-            }
-            // check function
-            AbiDefinition abiDefinition = ContractAbiUtil.getAbiDefinition(funcName, contractAbi);
-            if (abiDefinition == null) {
-                log.warn("save fail. func:{} is not exists", funcName);
-                throw new BaseException(ConstantCode.FUNCTION_NOT_EXISTS);
-            }
-            if (abiDefinition.isConstant()) {
-                log.warn("save fail. func:{} is constant", funcName);
-                throw new BaseException(ConstantCode.FUNCTION_NOT_CONSTANT);
-            }
-            // check function parameter
-            List<String> funcInputTypes = ContractAbiUtil.getFuncInputType(abiDefinition);
-            if (funcInputTypes.size() != params.size()) {
-                log.warn("save fail. funcInputTypes:{}, params:{}", funcInputTypes, params);
-                throw new BaseException(ConstantCode.IN_FUNCPARAM_ERROR);
-            }
-            // check input format
-            ContractAbiUtil.inputFormat(funcInputTypes, params);
-            // check output format
-            List<String> funOutputTypes = ContractAbiUtil.getFuncOutputType(abiDefinition);
-            ContractAbiUtil.outputFormat(funOutputTypes);
-            // insert db
-            TransInfoDto transInfoDto = new TransInfoDto();
-            transInfoDto.setGroupId(groupId);
-            transInfoDto.setUuidStateless(uuidStateless);
-            transInfoDto.setUuidDeploy(uuidDeploy);
-            transInfoDto.setContractAbi(contractAbi);
-            transInfoDto.setContractAddress(contractAddress);
-            transInfoDto.setFuncName(funcName);
-            transInfoDto.setFuncParam(JSON.toJSONString(params));
-            transInfoDto.setSignType(req.getSignType());
-            transInfoDto.setSignUserId(req.getSignUserId());
-            transMapper.insertTransInfo(transInfoDto);
-        } catch (DuplicateKeyException e) {
-            log.error("save groupId:{} uuidStateless:{}", groupId, uuidStateless, e);
+        
+        // check groupId
+        if (!checkGroupId(groupId)) {
+            log.warn("save fail. groupId:{} has not been configured", groupId);
+            throw new BaseException(ConstantCode.GROUPID_NOT_CONFIGURED);
+        }
+        // check stateless uuid
+        TransInfoDto transInfo = transMapper.selectTransInfo(groupId, uuidStateless);
+        if (transInfo != null) {
+            log.error("save groupId:{} uuidStateless:{} exists", groupId, uuidStateless);
             long endTime = System.currentTimeMillis();
             LogUtils.monitorBusinessLogger().info(ConstantProperties.CODE_BUSINESS_10004,
                     endTime - startTime, ConstantProperties.MSG_BUSINESS_10004);
             throw new BaseException(ConstantCode.UUID_IS_EXISTS);
         }
+        // check sign type
+        if (!SignType.isInclude(req.getSignType())) {
+            log.warn("save fail. signType:{} is not existed", req.getSignType());
+            throw new BaseException(ConstantCode.SIGN_TYPE_ERROR);
+        }
+        // check sign user id
+        if (SignType.CLOUDCALL.getValue() == req.getSignType()) {
+            if (req.getSignUserId() == null) {
+                log.warn("deploy fail. sign user id is empty");
+                throw new BaseException(ConstantCode.SIGN_USERID_EMPTY);
+            } else {
+                boolean result = keyStoreService.checkSignUserId(req.getSignUserId());
+                if (!result) {
+                    throw new BaseException(ConstantCode.SIGN_USERID_ERROR);
+                }
+            }
+        }
+        // check request style
+        if (StringUtils.isBlank(uuidDeploy)
+                && (StringUtils.isBlank(contractAddress) || abiList.isEmpty())) {
+            throw new BaseException(ConstantCode.ADDRESS_ABI_EMPTY);
+        }
+        // check if contract has been deployed
+        if (StringUtils.isBlank(contractAddress)) {
+            contractAddress = contractMapper.selectContractAddress(groupId, uuidDeploy);
+        }
+        if (StringUtils.isBlank(contractAddress)) {
+            log.warn("save fail. contract has not been deployed");
+            throw new BaseException(ConstantCode.CONTRACT_NOT_DEPLOED);
+        }
+        // check contractAbi
+        String contractAbi = "";
+        if (abiList.isEmpty()) {
+            contractAbi = contractMapper.selectContractAbi(groupId, uuidDeploy);
+            if (StringUtils.isBlank(contractAbi)) {
+                log.warn("save fail. uuidDeploy:{} abi is not exists", uuidDeploy);
+                throw new BaseException(ConstantCode.CONTRACT_ABI_EMPTY);
+            }
+        } else {
+            contractAbi = JSON.toJSONString(abiList);
+        }
+        // check function
+        AbiDefinition abiDefinition = ContractAbiUtil.getAbiDefinition(funcName, contractAbi);
+        if (abiDefinition == null) {
+            log.warn("save fail. func:{} is not exists", funcName);
+            throw new BaseException(ConstantCode.FUNCTION_NOT_EXISTS);
+        }
+        if (abiDefinition.isConstant()) {
+            log.warn("save fail. func:{} is constant", funcName);
+            throw new BaseException(ConstantCode.FUNCTION_NOT_CONSTANT);
+        }
+        // check function parameter
+        List<String> funcInputTypes = ContractAbiUtil.getFuncInputType(abiDefinition);
+        if (funcInputTypes.size() != params.size()) {
+            log.warn("save fail. funcInputTypes:{}, params:{}", funcInputTypes, params);
+            throw new BaseException(ConstantCode.IN_FUNCPARAM_ERROR);
+        }
+        // check input format
+        ContractAbiUtil.inputFormat(funcInputTypes, params);
+        // check output format
+        List<String> funOutputTypes = ContractAbiUtil.getFuncOutputType(abiDefinition);
+        ContractAbiUtil.outputFormat(funOutputTypes);
+        // insert db
+        TransInfoDto transInfoDto = new TransInfoDto();
+        transInfoDto.setGroupId(groupId);
+        transInfoDto.setUuidStateless(uuidStateless);
+        transInfoDto.setUuidDeploy(uuidDeploy);
+        transInfoDto.setContractAbi(contractAbi);
+        transInfoDto.setContractAddress(contractAddress);
+        transInfoDto.setFuncName(funcName);
+        transInfoDto.setFuncParam(JSON.toJSONString(params));
+        transInfoDto.setSignType(req.getSignType());
+        transInfoDto.setSignUserId(req.getSignUserId());
+        transInfoDto.setGmtCreate(new Date());
+        transMapper.insertTransInfo(transInfoDto);
+        
         log.info("save end. groupId:{} uuidStateless:{}", groupId, uuidStateless);
         ResponseEntity response = new ResponseEntity(ConstantCode.RET_SUCCEED);
         long endTime = System.currentTimeMillis();
@@ -408,7 +412,7 @@ public class TransService {
         int signType = transInfoDto.getSignType();
         try {
             // requestCount + 1
-            transMapper.updateRequestCount(id, requestCount + 1);
+            transMapper.updateRequestCount(id, requestCount + 1, transInfoDto.getGmtCreate());
             // check requestCount
             if (requestCount == properties.getRequestCountMax()) {
                 log.warn("transSend id:{} has reached limit:{}", id,
@@ -447,6 +451,9 @@ public class TransService {
             transInfoDto.setTransHash(receipt.getTransactionHash());
             transInfoDto.setTransOutput(receipt.getOutput());
             transInfoDto.setReceiptStatus(receipt.isStatusOK());
+            if (receipt.isStatusOK()) {
+                transInfoDto.setHandleStatus(1);
+            }
             transMapper.updateHandleStatus(transInfoDto);
         } catch (Exception e) {
             log.error("fail transSend id:{}", id, e);
@@ -577,5 +584,12 @@ public class TransService {
             }
         }
         return false;
+    }
+    
+    /**
+     * deleteDataSchedule.
+     */
+    public void deleteDataSchedule() {
+        transMapper.deletePartData(properties.getKeepDays());
     }
 }
