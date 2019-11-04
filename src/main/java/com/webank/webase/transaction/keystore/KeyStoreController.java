@@ -41,7 +41,7 @@ public class KeyStoreController extends BaseController {
      * 
      * @return
      */
-    @ApiOperation(value = "get address", notes = "get address")
+    @ApiOperation(value = "get address", notes = "get user address")
     @GetMapping("/address")
     public ResponseEntity getAddress() throws BaseException {
         ResponseEntity response = new ResponseEntity(ConstantCode.RET_SUCCEED);
