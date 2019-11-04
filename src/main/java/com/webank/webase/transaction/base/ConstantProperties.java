@@ -14,11 +14,15 @@
 
 package com.webank.webase.transaction.base;
 
-import lombok.Data;
 import java.math.BigInteger;
+import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
+/**
+ * ConstantProperties.
+ *
+ */
 @Data
 @Configuration
 @ConfigurationProperties(prefix = ConstantProperties.CONSTANT_PREFIX)

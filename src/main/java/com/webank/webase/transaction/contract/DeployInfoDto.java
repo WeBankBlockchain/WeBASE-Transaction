@@ -18,7 +18,7 @@ import java.util.Date;
 import lombok.Data;
 
 /**
- * TransInfoDto.
+ * DeployInfoDto.
  * 
  */
 @Data

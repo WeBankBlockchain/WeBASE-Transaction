@@ -14,15 +14,6 @@
 
 package com.webank.webase.transaction.trans;
 
-import javax.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 import com.alibaba.fastjson.JSON;
 import com.webank.webase.transaction.base.BaseController;
 import com.webank.webase.transaction.base.ResponseEntity;
@@ -31,10 +22,19 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
+import javax.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
- * TransController.
+ * Transaction Controller.
  * 
  */
 @Api(value = "/trans", tags = "transaction interface")
@@ -64,7 +64,7 @@ public class TransController extends BaseController {
     }
 
     /**
-     * call.
+     * transaction call.
      * 
      * @param req parameter
      * @param result checkResult
@@ -80,39 +80,39 @@ public class TransController extends BaseController {
         checkParamResult(result);
         return transService.call(req);
     }
-    
+
     /**
-     * getEvent.
+     * get transaction event.
      * 
-     * @param groupId id 
+     * @param groupId id
      * @param uuidStateless uuid
      * @return
      */
     @ApiOperation(value = "getEvent", notes = "Get trans event")
     @ApiImplicitParams({
-        @ApiImplicitParam(name = "groupId", value = "groupId", required = true,
-                dataType = "int", paramType = "path"),
-        @ApiImplicitParam(name = "uuidStateless", value = "uuidStateless", required = true,
-        dataType = "String", paramType = "path")})
+            @ApiImplicitParam(name = "groupId", value = "groupId", required = true,
+                    dataType = "int", paramType = "path"),
+            @ApiImplicitParam(name = "uuidStateless", value = "uuidStateless", required = true,
+                    dataType = "String", paramType = "path")})
     @GetMapping("/event/{groupId}/{uuidStateless}")
     public ResponseEntity getEvent(@PathVariable("groupId") int groupId,
             @PathVariable("uuidStateless") String uuidStateless) throws BaseException {
         return transService.getEvent(groupId, uuidStateless);
     }
-    
+
     /**
-     * getOutput.
+     * get transaction output.
      * 
-     * @param groupId id 
+     * @param groupId id
      * @param uuidStateless uuid
      * @return
      */
     @ApiOperation(value = "getOutput", notes = "Get trans output")
     @ApiImplicitParams({
-        @ApiImplicitParam(name = "groupId", value = "groupId", required = true,
-                dataType = "int", paramType = "path"),
-        @ApiImplicitParam(name = "uuidStateless", value = "uuidStateless", required = true,
-        dataType = "String", paramType = "path")})
+            @ApiImplicitParam(name = "groupId", value = "groupId", required = true,
+                    dataType = "int", paramType = "path"),
+            @ApiImplicitParam(name = "uuidStateless", value = "uuidStateless", required = true,
+                    dataType = "String", paramType = "path")})
     @GetMapping("/output/{groupId}/{uuidStateless}")
     public ResponseEntity getOutput(@PathVariable("groupId") int groupId,
             @PathVariable("uuidStateless") String uuidStateless) throws BaseException {

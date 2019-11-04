@@ -14,6 +14,14 @@
 
 package com.webank.webase.transaction.keystore;
 
+import com.alibaba.fastjson.JSON;
+import com.webank.webase.transaction.base.ConstantCode;
+import com.webank.webase.transaction.base.ConstantProperties;
+import com.webank.webase.transaction.base.ResponseEntity;
+import com.webank.webase.transaction.base.exception.BaseException;
+import com.webank.webase.transaction.util.CommonUtils;
+import com.webank.webase.transaction.util.LogUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.fisco.bcos.web3j.crypto.Credentials;
 import org.fisco.bcos.web3j.crypto.ECKeyPair;
 import org.fisco.bcos.web3j.crypto.Keys;
@@ -23,14 +31,6 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import com.alibaba.fastjson.JSON;
-import com.webank.webase.transaction.base.ResponseEntity;
-import com.webank.webase.transaction.base.ConstantCode;
-import com.webank.webase.transaction.base.ConstantProperties;
-import com.webank.webase.transaction.base.exception.BaseException;
-import com.webank.webase.transaction.util.CommonUtils;
-import com.webank.webase.transaction.util.LogUtils;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * KeyStoreService.
@@ -49,7 +49,7 @@ public class KeyStoreService {
     private static final String SIGN_USERINFO_URL = "http://%s/WeBASE-Sign/user/%s/userInfo";
 
     /**
-     * getKey.
+     * get KeyStoreInfo.
      * 
      * @return
      */
@@ -72,9 +72,9 @@ public class KeyStoreService {
             throw new BaseException(ConstantCode.SYSTEM_ERROR);
         }
     }
-    
+
     /**
-     * getAddress.
+     * get user Address.
      * 
      * @return
      */
@@ -117,7 +117,7 @@ public class KeyStoreService {
         }
         return null;
     }
-    
+
     /**
      * checkSignUserId.
      * 
@@ -128,8 +128,7 @@ public class KeyStoreService {
         try {
             String url = String.format(SIGN_USERINFO_URL, properties.getSignServer(), userId);
             log.info("checkSignUserId url:{}", url);
-            ResponseEntity response =
-                    restTemplate.getForObject(url, ResponseEntity.class);
+            ResponseEntity response = restTemplate.getForObject(url, ResponseEntity.class);
             log.info("checkSignUserId response:{}", JSON.toJSONString(response));
             if (response.getCode() == 0) {
                 return true;

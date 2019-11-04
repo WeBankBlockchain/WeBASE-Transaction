@@ -14,6 +14,10 @@
 
 package com.webank.webase.transaction.base;
 
+/**
+ * ConstantCode.
+ *
+ */
 public interface ConstantCode {
     // return success
     RetCode RET_SUCCEED = RetCode.mark(0, "success");
@@ -24,7 +28,8 @@ public interface ConstantCode {
     String SIGN_TYPE_IS_EMPTY = "{\"code\":203003,\"msg\":\"sign type cannot be empty\"}";
     String CONTRACT_BIN_IS_EMPTY = "{\"code\":203004,\"msg\":\"contract bin cannot be empty\"}";
     String CONTRACT_ABI_IS_EMPTY = "{\"code\":203005,\"msg\":\"contract abi cannot be empty\"}";
-    String CONTRACT_ADDRESS_IS_EMPTY = "{\"code\":203006,\"msg\":\"contract address cannot be empty\"}";
+    String CONTRACT_ADDRESS_IS_EMPTY =
+            "{\"code\":203006,\"msg\":\"contract address cannot be empty\"}";
     String FUNCTION_NAME_IS_EMPTY = "{\"code\":203007,\"msg\":\"function name cannot be empty\"}";
 
     // general error
@@ -43,11 +48,14 @@ public interface ConstantCode {
     RetCode NODE_REQUEST_FAILED = RetCode.mark(303013, "node request failed");
     RetCode EVENT_NOT_EXISTS = RetCode.mark(303014, "there is not event");
     RetCode TRANS_NOT_SENT = RetCode.mark(303015, "trans has not been sent to the chain");
-    RetCode ADDRESS_ABI_EMPTY = RetCode.mark(303016, "if deploy uuid is empty, contract address and contract abi cannot be empty");
+    RetCode ADDRESS_ABI_EMPTY = RetCode.mark(303016,
+            "if deploy uuid is empty, contract address and contract abi cannot be empty");
     RetCode TRANS_OUTPUT_EMPTY = RetCode.mark(303017, "trans output is empty");
     RetCode TRANS_NOT_EXIST = RetCode.mark(303018, "trans is not exist");
-    RetCode GROUPID_NOT_CONFIGURED = RetCode.mark(303019, "request group id has not been configured");
-    RetCode SIGN_USERID_EMPTY = RetCode.mark(303020, "sign user id cannot be empty while sign type is 2");
+    RetCode GROUPID_NOT_CONFIGURED =
+            RetCode.mark(303019, "request group id has not been configured");
+    RetCode SIGN_USERID_EMPTY =
+            RetCode.mark(303020, "sign user id cannot be empty while sign type is 2");
     RetCode SIGN_USERID_ERROR = RetCode.mark(303021, "sign user id check failed");
     RetCode FUNCTION_NOT_EXISTS = RetCode.mark(303022, "function is not exists");
 

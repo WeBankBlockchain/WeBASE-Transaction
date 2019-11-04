@@ -23,7 +23,7 @@ import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.NotEmpty;
 
 /**
- * contract deploy parameters.
+ * contract deploy request parameters.
  * 
  */
 @Data

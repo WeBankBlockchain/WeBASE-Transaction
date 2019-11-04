@@ -14,9 +14,12 @@
 
 package com.webank.webase.transaction.util;
 
+import com.webank.webase.transaction.base.ConstantCode;
+import com.webank.webase.transaction.base.exception.BaseException;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
+import lombok.extern.slf4j.Slf4j;
 import org.fisco.bcos.web3j.abi.TypeReference;
 import org.fisco.bcos.web3j.abi.datatypes.Address;
 import org.fisco.bcos.web3j.abi.datatypes.Bool;
@@ -122,9 +125,6 @@ import org.fisco.bcos.web3j.abi.datatypes.generated.Uint8;
 import org.fisco.bcos.web3j.abi.datatypes.generated.Uint80;
 import org.fisco.bcos.web3j.abi.datatypes.generated.Uint88;
 import org.fisco.bcos.web3j.abi.datatypes.generated.Uint96;
-import com.webank.webase.transaction.base.ConstantCode;
-import com.webank.webase.transaction.base.exception.BaseException;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * ContractTypeUtil.

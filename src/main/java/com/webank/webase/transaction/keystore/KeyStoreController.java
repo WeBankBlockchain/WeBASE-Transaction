@@ -14,17 +14,21 @@
 
 package com.webank.webase.transaction.keystore;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 import com.webank.webase.transaction.base.BaseController;
 import com.webank.webase.transaction.base.ConstantCode;
 import com.webank.webase.transaction.base.ResponseEntity;
 import com.webank.webase.transaction.base.exception.BaseException;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * KeyStoreController.
+ *
+ */
 @Api(value = "/key", tags = "keystore interface")
 @RestController
 @RequestMapping(value = "/key")
@@ -33,7 +37,7 @@ public class KeyStoreController extends BaseController {
     private KeyStoreService keyStoreService;
 
     /**
-     * getAddress.
+     * get user Address.
      * 
      * @return
      */

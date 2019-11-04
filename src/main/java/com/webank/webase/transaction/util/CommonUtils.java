@@ -14,6 +14,9 @@
 
 package com.webank.webase.transaction.util;
 
+import com.alibaba.fastjson.JSON;
+import com.webank.webase.transaction.base.ConstantCode;
+import com.webank.webase.transaction.base.exception.BaseException;
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -23,15 +26,12 @@ import java.io.OutputStream;
 import java.util.Enumeration;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+import lombok.extern.slf4j.Slf4j;
 import org.fisco.bcos.web3j.crypto.Sign.SignatureData;
 import org.fisco.bcos.web3j.utils.Numeric;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.web.multipart.MultipartFile;
-import com.alibaba.fastjson.JSON;
-import com.webank.webase.transaction.base.ConstantCode;
-import com.webank.webase.transaction.base.exception.BaseException;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * CommonUtils.
@@ -43,7 +43,7 @@ public class CommonUtils {
     /**
      * unZipFiles.
      * 
-     * @param zipFile file 
+     * @param zipFile file
      * @param path path
      */
     public static void unZipFiles(MultipartFile zipFile, String path)
@@ -104,31 +104,39 @@ public class CommonUtils {
             file.delete();
         }
     }
-    
-    private static String cleanString(String aString) {
-        if (aString == null) return null;
+
+    private static String cleanString(String str) {
+        if (str == null) {
+            return null;
+        }
         String cleanString = "";
-        for (int i = 0; i < aString.length(); ++i) {
-            cleanString += cleanChar(aString.charAt(i));
+        for (int i = 0; i < str.length(); ++i) {
+            cleanString += cleanChar(str.charAt(i));
         }
         return cleanString;
     }
 
-    private static char cleanChar(char aChar) {
+    private static char cleanChar(char value) {
         // 0 - 9
         for (int i = 48; i < 58; ++i) {
-            if (aChar == i) return (char) i;
+            if (value == i) {
+                return (char) i;
+            }
         }
         // 'A' - 'Z'
         for (int i = 65; i < 91; ++i) {
-            if (aChar == i) return (char) i;
+            if (value == i) {
+                return (char) i;
+            }
         }
         // 'a' - 'z'
         for (int i = 97; i < 123; ++i) {
-            if (aChar == i) return (char) i;
+            if (value == i) {
+                return (char) i;
+            }
         }
         // other valid characters
-        switch (aChar) {
+        switch (value) {
             case '\\':
                 return '\\';
             case '/':
@@ -141,10 +149,16 @@ public class CommonUtils {
                 return '-';
             case '_':
                 return '_';
+            default:
+                return ' ';
         }
-        return ' ';
     }
-    
+
+    /**
+     * close Closeable.
+     * 
+     * @param closeable object
+     */
     private static void close(Closeable closeable) {
         if (closeable != null) {
             try {
