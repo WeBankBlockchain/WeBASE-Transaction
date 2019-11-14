@@ -14,6 +14,18 @@
 
 package com.webank.webase.transaction.contract;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.webank.webase.transaction.base.ConstantCode;
+import com.webank.webase.transaction.base.ConstantProperties;
+import com.webank.webase.transaction.base.ResponseEntity;
+import com.webank.webase.transaction.base.exception.BaseException;
+import com.webank.webase.transaction.keystore.KeyStoreService;
+import com.webank.webase.transaction.keystore.SignType;
+import com.webank.webase.transaction.trans.TransService;
+import com.webank.webase.transaction.util.CommonUtils;
+import com.webank.webase.transaction.util.ContractAbiUtil;
+import com.webank.webase.transaction.util.LogUtils;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -23,6 +35,7 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.fisco.bcos.web3j.abi.FunctionEncoder;
 import org.fisco.bcos.web3j.abi.datatypes.Type;
@@ -37,22 +50,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
-import com.webank.webase.transaction.base.ConstantCode;
-import com.webank.webase.transaction.base.ConstantProperties;
-import com.webank.webase.transaction.base.ResponseEntity;
-import com.webank.webase.transaction.base.exception.BaseException;
-import com.webank.webase.transaction.keystore.KeyStoreService;
-import com.webank.webase.transaction.keystore.SignType;
-import com.webank.webase.transaction.trans.TransService;
-import com.webank.webase.transaction.util.CommonUtils;
-import com.webank.webase.transaction.util.ContractAbiUtil;
-import com.webank.webase.transaction.util.LogUtils;
-import lombok.extern.slf4j.Slf4j;
 
 /**
- * TransService.
+ * ContractService.
  * 
  */
 @Slf4j
@@ -78,6 +78,7 @@ public class ContractService {
      * @return
      */
     public ResponseEntity compile(MultipartFile zipFile) throws BaseException, IOException {
+        ResponseEntity response = new ResponseEntity(ConstantCode.RET_SUCCEED);
         String path = new File("temp").getAbsolutePath();
         // clear temp folder
         CommonUtils.deleteFiles(path);
@@ -86,6 +87,10 @@ public class ContractService {
         // get sol files
         File solFileList = new File(path);
         File[] solFiles = solFileList.listFiles();
+        if (solFiles == null || solFiles.length == 0) {
+            return response;
+        }
+
         List<CompileInfo> compileInfos = new ArrayList<>();
         for (File solFile : solFiles) {
             if (!solFile.getName().endsWith(".sol")) {
@@ -113,7 +118,6 @@ public class ContractService {
                 compileInfos.add(compileInfo);
             }
         }
-        ResponseEntity response = new ResponseEntity(ConstantCode.RET_SUCCEED);
         response.setData(compileInfos);
         return response;
     }
@@ -126,20 +130,16 @@ public class ContractService {
      */
     public ResponseEntity deploy(ReqDeployInfo req) throws BaseException {
         long startTime = System.currentTimeMillis();
-        int groupId = req.getGroupId();
-        String uuid = req.getUuidDeploy();
-        String contractAbi = JSON.toJSONString(req.getContractAbi());
-        String contractBin = req.getContractBin();
-        List<Object> params = req.getFuncParam();
-        
         // check groupId
+        int groupId = req.getGroupId();
         if (!transService.checkGroupId(groupId)) {
             log.warn("deploy fail. groupId:{} has not been configured", groupId);
             throw new BaseException(ConstantCode.GROUPID_NOT_CONFIGURED);
         }
         // check deploy uuid
+        String uuid = req.getUuidDeploy();
         DeployInfoDto deployInfos = contractMapper.selectDeployInfo(groupId, uuid);
-        if (deployInfos != null ) {
+        if (deployInfos != null) {
             log.error("deploy groupId:{} uuid:{} is exists", groupId, uuid);
             long endTime = System.currentTimeMillis();
             LogUtils.monitorBusinessLogger().info(ConstantProperties.CODE_BUSINESS_10003,
@@ -164,6 +164,8 @@ public class ContractService {
             }
         }
         // check parameters
+        String contractAbi = JSON.toJSONString(req.getContractAbi());
+        List<Object> params = req.getFuncParam();
         AbiDefinition abiDefinition = ContractAbiUtil.getAbiDefinition(contractAbi);
         List<String> funcInputTypes = ContractAbiUtil.getFuncInputType(abiDefinition);
         if (funcInputTypes.size() != params.size()) {
@@ -176,14 +178,14 @@ public class ContractService {
         DeployInfoDto deployInfoDto = new DeployInfoDto();
         deployInfoDto.setGroupId(groupId);
         deployInfoDto.setUuidDeploy(uuid);
-        deployInfoDto.setContractBin(contractBin);
+        deployInfoDto.setContractBin(req.getContractBin());
         deployInfoDto.setContractAbi(contractAbi);
         deployInfoDto.setFuncParam(JSON.toJSONString(params));
         deployInfoDto.setSignType(req.getSignType());
         deployInfoDto.setSignUserId(req.getSignUserId());
         deployInfoDto.setGmtCreate(new Date());
         contractMapper.insertDeployInfo(deployInfoDto);
-        
+
         ResponseEntity response = new ResponseEntity(ConstantCode.RET_SUCCEED);
         log.info("deploy end. groupId:{} uuid:{}", groupId, uuid);
         long endTime = System.currentTimeMillis();
@@ -193,7 +195,7 @@ public class ContractService {
     }
 
     /**
-     * getAddress.
+     * get contract Address.
      * 
      * @param groupId groupId
      * @param uuidDeploy uuid
@@ -210,9 +212,9 @@ public class ContractService {
         response.setData(contractAddress);
         return response;
     }
-    
+
     /**
-     * getEvent.
+     * get contract Event.
      * 
      * @param groupId groupId
      * @param uuidDeploy uuid
@@ -237,7 +239,7 @@ public class ContractService {
             throw new BaseException(ConstantCode.EVENT_NOT_EXISTS);
         }
         try {
-            // get TransactionReceipt 
+            // get TransactionReceipt
             TransactionReceipt receipt = web3jMap.get(groupId).getTransactionReceipt(transHash)
                     .send().getTransactionReceipt().get();
             Object result = ContractAbiUtil.receiptParse(receipt, abiList);
@@ -312,7 +314,8 @@ public class ContractService {
             }
             // data sign
             String data = contractBin + encodedConstructor;
-            String signMsg = transService.signMessage(groupId, signType, deployInfoDto.getSignUserId(), "", data);
+            String signMsg = transService.signMessage(groupId, signType,
+                    deployInfoDto.getSignUserId(), "", data);
             if (StringUtils.isBlank(signMsg)) {
                 return;
             }
@@ -334,9 +337,9 @@ public class ContractService {
                     ConstantProperties.MSG_ABNORMAL_S0001);
         }
     }
-    
+
     /**
-     * deleteDataSchedule.
+     * delete contract deploy data.
      */
     public void deleteDataSchedule() {
         contractMapper.deletePartData(properties.getKeepDays());

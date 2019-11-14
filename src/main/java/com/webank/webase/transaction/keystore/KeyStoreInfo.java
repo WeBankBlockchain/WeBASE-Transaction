@@ -16,6 +16,10 @@ package com.webank.webase.transaction.keystore;
 
 import lombok.Data;
 
+/**
+ * KeyStoreInfo.
+ *
+ */
 @Data
 public class KeyStoreInfo {
     private String publicKey;

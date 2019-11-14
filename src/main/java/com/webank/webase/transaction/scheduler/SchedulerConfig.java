@@ -22,6 +22,10 @@ import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 import org.springframework.scheduling.support.CronTrigger;
 import org.springframework.stereotype.Component;
 
+/**
+ * SchedulerConfig.
+ *
+ */
 @Component
 @EnableScheduling
 public class SchedulerConfig implements SchedulingConfigurer {
@@ -34,16 +38,16 @@ public class SchedulerConfig implements SchedulingConfigurer {
     public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {
         if (constants.isIfDeleteData()) {
             taskRegistrar.addTriggerTask(() -> scheduleService.deleteDataSchedule(),
-                    (context) -> new CronTrigger(constants.getCronDeleteData())
+                (context) -> new CronTrigger(constants.getCronDeleteData())
                     .nextExecutionTime(context));
         }
         if (!constants.isIfDistributedTask()) {
             taskRegistrar.addTriggerTask(() -> scheduleService.deploySchedule(),
                 (context) -> new CronTrigger(constants.getCronTrans())
-                        .nextExecutionTime(context));
+                    .nextExecutionTime(context));
             taskRegistrar.addTriggerTask(() -> scheduleService.transSchedule(),
                 (context) -> new CronTrigger(constants.getCronTrans())
-                        .nextExecutionTime(context));
+                    .nextExecutionTime(context));
         }
     }
 

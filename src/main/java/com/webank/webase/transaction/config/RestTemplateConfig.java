@@ -21,16 +21,26 @@ import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 
+/**
+ * RestTemplateConfig.
+ *
+ */
 @Data
 @Configuration
 public class RestTemplateConfig {
+    /**
+     * new RestTemplate.
+     * 
+     * @param factory object
+     * @return
+     */
     @Bean
     public RestTemplate restTemplate(ClientHttpRequestFactory factory) {
         return new RestTemplate(factory);
     }
 
     /**
-     * httpRequestFactory.
+     * init httpRequestFactory.
      * 
      * @return
      */

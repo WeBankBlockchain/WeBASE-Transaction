@@ -14,14 +14,14 @@
 
 package com.webank.webase.transaction.base;
 
-import java.util.List;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.validation.BindingResult;
-import org.springframework.validation.ObjectError;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.webank.webase.transaction.base.exception.BaseException;
+import java.util.List;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.ObjectError;
 
 /**
  * BaseController.
@@ -30,7 +30,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public abstract class BaseController {
     /**
-     * checkParamResult.
+     * Parameters check Result handle.
      * 
      * @param bindingResult checkResult
      */
@@ -57,6 +57,12 @@ public abstract class BaseController {
         throw new BaseException(retCode);
     }
 
+    /**
+     * Parameters check message format.
+     * 
+     * @param bindingResult checkResult
+     * @return
+     */
     private String getParamValidFaildMessage(BindingResult bindingResult) {
         List<ObjectError> errorList = bindingResult.getAllErrors();
         log.info("errorList:{}", JSON.toJSONString(errorList));

@@ -14,6 +14,22 @@
 
 package com.webank.webase.transaction.trans;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import com.webank.webase.transaction.base.ConstantCode;
+import com.webank.webase.transaction.base.ConstantProperties;
+import com.webank.webase.transaction.base.ResponseEntity;
+import com.webank.webase.transaction.base.exception.BaseException;
+import com.webank.webase.transaction.config.Web3Config;
+import com.webank.webase.transaction.contract.ContractMapper;
+import com.webank.webase.transaction.keystore.EncodeInfo;
+import com.webank.webase.transaction.keystore.KeyStoreInfo;
+import com.webank.webase.transaction.keystore.KeyStoreService;
+import com.webank.webase.transaction.keystore.SignType;
+import com.webank.webase.transaction.util.CommonUtils;
+import com.webank.webase.transaction.util.ContractAbiUtil;
+import com.webank.webase.transaction.util.LogUtils;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Date;
@@ -23,6 +39,7 @@ import java.util.Random;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.fisco.bcos.channel.client.TransactionSucCallback;
 import org.fisco.bcos.channel.handler.ChannelConnections;
@@ -48,23 +65,6 @@ import org.fisco.bcos.web3j.utils.Numeric;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
-import com.webank.webase.transaction.base.ConstantCode;
-import com.webank.webase.transaction.base.ConstantProperties;
-import com.webank.webase.transaction.base.ResponseEntity;
-import com.webank.webase.transaction.base.exception.BaseException;
-import com.webank.webase.transaction.config.Web3Config;
-import com.webank.webase.transaction.contract.ContractMapper;
-import com.webank.webase.transaction.keystore.EncodeInfo;
-import com.webank.webase.transaction.keystore.KeyStoreInfo;
-import com.webank.webase.transaction.keystore.KeyStoreService;
-import com.webank.webase.transaction.keystore.SignType;
-import com.webank.webase.transaction.util.CommonUtils;
-import com.webank.webase.transaction.util.ContractAbiUtil;
-import com.webank.webase.transaction.util.LogUtils;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * TransService.
@@ -96,20 +96,14 @@ public class TransService {
      */
     public ResponseEntity save(ReqTransSendInfo req) throws BaseException {
         long startTime = System.currentTimeMillis();
-        int groupId = req.getGroupId();
-        String uuidStateless = req.getUuidStateless();
-        String uuidDeploy = req.getUuidDeploy();
-        String contractAddress = req.getContractAddress();
-        List<Object> abiList = req.getContractAbi();
-        String funcName = req.getFuncName();
-        List<Object> params = req.getFuncParam();
-        
         // check groupId
+        int groupId = req.getGroupId();
         if (!checkGroupId(groupId)) {
             log.warn("save fail. groupId:{} has not been configured", groupId);
             throw new BaseException(ConstantCode.GROUPID_NOT_CONFIGURED);
         }
         // check stateless uuid
+        String uuidStateless = req.getUuidStateless();
         TransInfoDto transInfo = transMapper.selectTransInfo(groupId, uuidStateless);
         if (transInfo != null) {
             log.error("save groupId:{} uuidStateless:{} exists", groupId, uuidStateless);
@@ -135,6 +129,9 @@ public class TransService {
                 }
             }
         }
+        String uuidDeploy = req.getUuidDeploy();
+        String contractAddress = req.getContractAddress();
+        List<Object> abiList = req.getContractAbi();
         // check request style
         if (StringUtils.isBlank(uuidDeploy)
                 && (StringUtils.isBlank(contractAddress) || abiList.isEmpty())) {
@@ -160,6 +157,7 @@ public class TransService {
             contractAbi = JSON.toJSONString(abiList);
         }
         // check function
+        String funcName = req.getFuncName();
         AbiDefinition abiDefinition = ContractAbiUtil.getAbiDefinition(funcName, contractAbi);
         if (abiDefinition == null) {
             log.warn("save fail. func:{} is not exists", funcName);
@@ -170,6 +168,7 @@ public class TransService {
             throw new BaseException(ConstantCode.FUNCTION_NOT_CONSTANT);
         }
         // check function parameter
+        List<Object> params = req.getFuncParam();
         List<String> funcInputTypes = ContractAbiUtil.getFuncInputType(abiDefinition);
         if (funcInputTypes.size() != params.size()) {
             log.warn("save fail. funcInputTypes:{}, params:{}", funcInputTypes, params);
@@ -193,7 +192,7 @@ public class TransService {
         transInfoDto.setSignUserId(req.getSignUserId());
         transInfoDto.setGmtCreate(new Date());
         transMapper.insertTransInfo(transInfoDto);
-        
+
         log.info("save end. groupId:{} uuidStateless:{}", groupId, uuidStateless);
         ResponseEntity response = new ResponseEntity(ConstantCode.RET_SUCCEED);
         long endTime = System.currentTimeMillis();
@@ -289,7 +288,7 @@ public class TransService {
     }
 
     /**
-     * getEvent.
+     * get transaction event.
      * 
      * @param groupId groupId
      * @param uuidStateless uuid
@@ -332,7 +331,7 @@ public class TransService {
     }
 
     /**
-     * getOutput.
+     * get transaction output.
      * 
      * @param groupId groupId
      * @param uuidStateless uuid
@@ -399,9 +398,9 @@ public class TransService {
     }
 
     /**
-     * transSend.
+     * transaction send.
      * 
-     * @param transInfoDto transInfoDto
+     * @param transInfoDto transaction info
      */
     public void transSend(TransInfoDto transInfoDto) {
         log.debug("transSend transInfoDto:{}", JSON.toJSONString(transInfoDto));
@@ -439,7 +438,8 @@ public class TransService {
             Function function = new Function(funcName, finalInputs, finalOutputs);
             String encodedFunction = FunctionEncoder.encode(function);
             // data sign
-            String signMsg = signMessage(groupId, signType, transInfoDto.getSignUserId(), contractAddress, encodedFunction);
+            String signMsg = signMessage(groupId, signType, transInfoDto.getSignUserId(),
+                    contractAddress, encodedFunction);
             if (StringUtils.isBlank(signMsg)) {
                 return;
             }
@@ -463,7 +463,7 @@ public class TransService {
     }
 
     /**
-     * signMessage.
+     * data sign.
      * 
      * @param groupId id
      * @param signType type
@@ -471,8 +471,8 @@ public class TransService {
      * @param data info
      * @return
      */
-    public String signMessage(int groupId, int signType, int signUserId, String contractAddress, String data)
-            throws IOException, BaseException {
+    public String signMessage(int groupId, int signType, int signUserId, String contractAddress,
+            String data) throws IOException, BaseException {
         Random r = new Random();
         BigInteger randomid = new BigInteger(250, r);
         BigInteger blockLimit = web3jMap.get(groupId).getBlockNumberCache();
@@ -571,7 +571,7 @@ public class TransService {
     }
 
     /**
-     * checkGroupId.
+     * check groupId.
      * 
      * @param groupId info
      * @return
@@ -585,9 +585,9 @@ public class TransService {
         }
         return false;
     }
-    
+
     /**
-     * deleteDataSchedule.
+     * delete transaction data.
      */
     public void deleteDataSchedule() {
         transMapper.deletePartData(properties.getKeepDays());

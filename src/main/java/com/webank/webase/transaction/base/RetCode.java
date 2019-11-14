@@ -16,6 +16,10 @@ package com.webank.webase.transaction.base;
 
 import lombok.Data;
 
+/**
+ * RetCode.
+ *
+ */
 @Data
 public class RetCode {
     private Integer code;

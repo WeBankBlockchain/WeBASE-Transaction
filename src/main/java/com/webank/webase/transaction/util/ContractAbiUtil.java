@@ -14,6 +14,10 @@
 
 package com.webank.webase.transaction.util;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.webank.webase.transaction.base.ConstantProperties;
+import com.webank.webase.transaction.base.exception.BaseException;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -28,14 +32,10 @@ import org.fisco.bcos.web3j.abi.datatypes.DynamicArray;
 import org.fisco.bcos.web3j.abi.datatypes.Event;
 import org.fisco.bcos.web3j.abi.datatypes.Type;
 import org.fisco.bcos.web3j.protocol.core.methods.response.AbiDefinition;
+import org.fisco.bcos.web3j.protocol.core.methods.response.AbiDefinition.NamedType;
 import org.fisco.bcos.web3j.protocol.core.methods.response.Log;
 import org.fisco.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
-import org.fisco.bcos.web3j.protocol.core.methods.response.AbiDefinition.NamedType;
 import org.fisco.bcos.web3j.tx.Contract;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
-import com.webank.webase.transaction.base.ConstantProperties;
-import com.webank.webase.transaction.base.exception.BaseException;
 
 /**
  * ContractAbiUtil.
@@ -115,11 +115,11 @@ public class ContractAbiUtil {
                     && name.equals(abiDefinition.getName())) {
                 result = abiDefinition;
                 break;
-            } 
+            }
         }
         return result;
     }
-    
+
     /**
      * get event abi info.
      * 
@@ -133,7 +133,7 @@ public class ContractAbiUtil {
             AbiDefinition abiDefinition = JSON.parseObject(object.toString(), AbiDefinition.class);
             if (ConstantProperties.TYPE_EVENT.equals(abiDefinition.getType())) {
                 result.add(abiDefinition);
-            } 
+            }
         }
         return result;
     }
@@ -239,7 +239,7 @@ public class ContractAbiUtil {
      * @param typeList list
      * @return
      */
-    public static Object callResultParse(List<String> funOutputTypes, List<Type> typeList) 
+    public static Object callResultParse(List<String> funOutputTypes, List<Type> typeList)
             throws BaseException {
         if (funOutputTypes.size() == typeList.size()) {
             List<Object> result = new ArrayList<>();
@@ -267,7 +267,7 @@ public class ContractAbiUtil {
         }
         return null;
     }
-    
+
     /**
      * receiptParse.
      * 
@@ -275,7 +275,7 @@ public class ContractAbiUtil {
      * @param abiList info
      * @return
      */
-    public static Object receiptParse(TransactionReceipt receipt, List<AbiDefinition> abiList) 
+    public static Object receiptParse(TransactionReceipt receipt, List<AbiDefinition> abiList)
             throws BaseException {
         Map<String, Object> resultMap = new HashMap<>();
         List<Log> logList = receipt.getLogs();
@@ -283,7 +283,7 @@ public class ContractAbiUtil {
             String eventName = abiDefinition.getName();
             List<String> funcInputTypes = getFuncInputType(abiDefinition);
             List<TypeReference<?>> finalOutputs = outputFormat(funcInputTypes);
-            Event event = new Event(eventName,finalOutputs);
+            Event event = new Event(eventName, finalOutputs);
             Object result = null;
             for (Log logInfo : logList) {
                 EventValues eventValues = Contract.staticExtractEventParameters(event, logInfo);

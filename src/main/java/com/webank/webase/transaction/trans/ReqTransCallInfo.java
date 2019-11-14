@@ -21,6 +21,10 @@ import javax.validation.constraints.NotNull;
 import lombok.Data;
 import org.hibernate.validator.constraints.NotBlank;
 
+/**
+ * transaction call request parameters.
+ *
+ */
 @Data
 public class ReqTransCallInfo {
     @NotNull(message = ConstantCode.GROUP_ID_IS_EMPTY)

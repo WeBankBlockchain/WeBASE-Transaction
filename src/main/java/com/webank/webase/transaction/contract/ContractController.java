@@ -19,8 +19,6 @@ import com.webank.webase.transaction.base.BaseController;
 import com.webank.webase.transaction.base.ResponseEntity;
 import com.webank.webase.transaction.base.exception.BaseException;
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import java.io.IOException;
@@ -67,53 +65,41 @@ public class ContractController extends BaseController {
     /**
      * contract deploy.
      * 
-     * @param req parameter
+     * @param deployInfo parameter
      * @param result checkResult
      * @return
      */
     @ApiOperation(value = "contract deploy", notes = "contract deploy")
-    @ApiImplicitParam(name = "req", value = "deploy info", required = true,
-            dataType = "ReqDeployInfo")
     @PostMapping("/deploy")
-    public ResponseEntity deploy(@Valid @RequestBody ReqDeployInfo req, BindingResult result)
+    public ResponseEntity deploy(@Valid @RequestBody ReqDeployInfo deployInfo, BindingResult result)
             throws BaseException {
-        log.info("deploy start. req:{}", JSON.toJSONString(req));
+        log.info("deploy start. deployInfo:{}", JSON.toJSONString(deployInfo));
         checkParamResult(result);
-        return contractService.deploy(req);
+        return contractService.deploy(deployInfo);
     }
 
     /**
-     * getAddress.
+     * get contract address.
      * 
      * @param groupId id
      * @param uuidDeploy uuid
      * @return
      */
-    @ApiOperation(value = "getAddress", notes = "Get contract address")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "groupId", value = "groupId", required = true,
-                    dataType = "int", paramType = "path"),
-            @ApiImplicitParam(name = "uuidDeploy", value = "uuidDeploy", required = true,
-                    dataType = "String", paramType = "path")})
+    @ApiOperation(value = "getAddress", notes = "get contract address")
     @GetMapping("/address/{groupId}/{uuidDeploy}")
     public ResponseEntity getAddress(@PathVariable("groupId") int groupId,
             @PathVariable("uuidDeploy") String uuidDeploy) throws BaseException {
         return contractService.getAddress(groupId, uuidDeploy);
     }
-    
+
     /**
-     * getEvent.
+     * get deploy event.
      * 
      * @param groupId id
      * @param uuidDeploy uuid
      * @return
      */
-    @ApiOperation(value = "getEvent", notes = "Get deploy event")
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = "groupId", value = "groupId", required = true,
-                dataType = "int", paramType = "path"),
-        @ApiImplicitParam(name = "uuidDeploy", value = "uuidDeploy", required = true,
-        dataType = "String", paramType = "path")})
+    @ApiOperation(value = "getEvent", notes = "get deploy event")
     @GetMapping("/event/{groupId}/{uuidDeploy}")
     public ResponseEntity getEvent(@PathVariable("groupId") int groupId,
             @PathVariable("uuidDeploy") String uuidDeploy) throws BaseException {

@@ -20,7 +20,7 @@ import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Service;
 
 /**
- * SignType.
+ * ContractMapper.
  *
  */
 @Service
@@ -32,15 +32,13 @@ public interface ContractMapper {
 
     DeployInfoDto selectDeployInfo(@Param("groupId") int groupId,
             @Param("uuidDeploy") String uuidDeploy);
-    
+
     String selectContractAddress(@Param("groupId") int groupId,
             @Param("uuidDeploy") String uuidDeploy);
-    
-    String selectTxHash(@Param("groupId") int groupId,
-            @Param("uuidDeploy") String uuidDeploy);
 
-    String selectContractAbi(@Param("groupId") int groupId,
-            @Param("uuidDeploy") String uuidDeploy);
+    String selectTxHash(@Param("groupId") int groupId, @Param("uuidDeploy") String uuidDeploy);
+
+    String selectContractAbi(@Param("groupId") int groupId, @Param("uuidDeploy") String uuidDeploy);
 
     List<DeployInfoDto> selectUnStatTrans(@Param("requestCountMax") int requestCountMax,
             @Param("selectCount") int selectCount, @Param("intervalTime") int intervalTime);
@@ -50,9 +48,10 @@ public interface ContractMapper {
             @Param("shardingTotalCount") int shardingTotalCount,
             @Param("shardingItem") int shardingItem);
 
-    void updateRequestCount(@Param("id") Long id, @Param("requestCount") int requestCount, @Param("gmtCreate") Date gmtCreate);
+    void updateRequestCount(@Param("id") Long id, @Param("requestCount") int requestCount,
+            @Param("gmtCreate") Date gmtCreate);
 
     void updateHandleStatus(DeployInfoDto deployInfoDto);
-    
+
     void deletePartData(@Param(value = "keepDays") int keepDays);
 }
