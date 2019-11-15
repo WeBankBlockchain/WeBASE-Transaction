@@ -14,6 +14,7 @@
 
 package com.webank.webase.transaction.contract;
 
+import com.webank.webase.transaction.contract.entity.DeployInfoDto;
 import java.util.Date;
 import java.util.List;
 import org.apache.ibatis.annotations.Param;

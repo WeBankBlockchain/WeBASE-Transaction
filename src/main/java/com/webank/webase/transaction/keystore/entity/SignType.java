@@ -12,7 +12,7 @@
  * the License.
  */
 
-package com.webank.webase.transaction.keystore;
+package com.webank.webase.transaction.keystore.entity;
 
 /**
  * SignType.

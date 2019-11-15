@@ -14,6 +14,7 @@
 
 package com.webank.webase.transaction.trans;
 
+import com.webank.webase.transaction.trans.entity.TransInfoDto;
 import java.util.Date;
 import java.util.List;
 import org.apache.ibatis.annotations.Param;

@@ -12,7 +12,7 @@
  * the License.
  */
 
-package com.webank.webase.transaction.contract;
+package com.webank.webase.transaction.contract.entity;
 
 import java.util.List;
 import lombok.Data;

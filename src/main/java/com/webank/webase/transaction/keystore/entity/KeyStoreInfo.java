@@ -12,31 +12,17 @@
  * the License.
  */
 
-package com.webank.webase.transaction.trans;
+package com.webank.webase.transaction.keystore.entity;
 
-import java.util.Date;
 import lombok.Data;
 
 /**
- * TransInfoDto.
- * 
+ * KeyStoreInfo.
+ *
  */
 @Data
-public class TransInfoDto {
-    private Long id;
-    private int groupId;
-    private String uuidStateless;
-    private String uuidDeploy;
-    private String contractAbi;
-    private String contractAddress;
-    private String funcName;
-    private String funcParam;
-    private int signType;
-    private int signUserId;
-    private int requestCount;
-    private int handleStatus = 0;
-    private String transHash;
-    private String transOutput;
-    private boolean receiptStatus;
-    private Date gmtCreate;
+public class KeyStoreInfo {
+    private String publicKey;
+    private String privateKey;
+    private String address;
 }
