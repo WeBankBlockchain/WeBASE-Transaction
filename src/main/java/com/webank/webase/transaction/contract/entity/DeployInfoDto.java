@@ -12,17 +12,29 @@
  * the License.
  */
 
-package com.webank.webase.transaction.keystore;
+package com.webank.webase.transaction.contract.entity;
 
+import java.util.Date;
 import lombok.Data;
 
 /**
- * KeyStoreInfo.
- *
+ * DeployInfoDto.
+ * 
  */
 @Data
-public class KeyStoreInfo {
-    private String publicKey;
-    private String privateKey;
-    private String address;
+public class DeployInfoDto {
+    private Long id;
+    private int groupId;
+    private String uuidDeploy;
+    private String contractBin;
+    private String contractAbi;
+    private String contractAddress;
+    private String funcParam;
+    private int signType;
+    private int signUserId;
+    private int requestCount;
+    private int handleStatus = 0;
+    private String transHash;
+    private boolean receiptStatus;
+    private Date gmtCreate;
 }

@@ -18,6 +18,8 @@ import com.alibaba.fastjson.JSON;
 import com.webank.webase.transaction.base.BaseController;
 import com.webank.webase.transaction.base.ResponseEntity;
 import com.webank.webase.transaction.base.exception.BaseException;
+import com.webank.webase.transaction.trans.entity.ReqTransCallInfo;
+import com.webank.webase.transaction.trans.entity.ReqTransSendInfo;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import javax.validation.Valid;

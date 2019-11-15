@@ -12,29 +12,27 @@
  * the License.
  */
 
-package com.webank.webase.transaction.contract;
+package com.webank.webase.transaction.trans.entity;
 
-import java.util.Date;
+import com.webank.webase.transaction.base.ConstantCode;
+import java.util.ArrayList;
+import java.util.List;
+import javax.validation.constraints.NotNull;
 import lombok.Data;
+import org.hibernate.validator.constraints.NotBlank;
 
 /**
- * DeployInfoDto.
- * 
+ * transaction call request parameters.
+ *
  */
 @Data
-public class DeployInfoDto {
-    private Long id;
+public class ReqTransCallInfo {
+    @NotNull(message = ConstantCode.GROUP_ID_IS_EMPTY)
     private int groupId;
     private String uuidDeploy;
-    private String contractBin;
-    private String contractAbi;
+    private List<Object> contractAbi = new ArrayList<>();
     private String contractAddress;
-    private String funcParam;
-    private int signType;
-    private int signUserId;
-    private int requestCount;
-    private int handleStatus = 0;
-    private String transHash;
-    private boolean receiptStatus;
-    private Date gmtCreate;
+    @NotBlank(message = ConstantCode.FUNCTION_NAME_IS_EMPTY)
+    private String funcName;
+    private List<Object> funcParam = new ArrayList<>();
 }
