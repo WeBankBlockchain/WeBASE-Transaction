@@ -16,6 +16,10 @@ package com.webank.webase.transaction.base;
 
 import lombok.Data;
 
+/**
+ * ResponseEntity.
+ *
+ */
 @Data
 public class ResponseEntity {
     private int code;

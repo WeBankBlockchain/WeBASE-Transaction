@@ -24,6 +24,7 @@ import org.springframework.context.annotation.Configuration;
 
 /**
  * ZookeeperRegistryCenter.
+ * 
  */
 @Configuration
 @ConditionalOnProperty(value = {"constant.ifDistributedTask"}, matchIfMissing = false)

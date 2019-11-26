@@ -14,7 +14,16 @@
 
 package com.webank.webase.transaction.trans;
 
+import com.alibaba.fastjson.JSON;
+import com.webank.webase.transaction.base.BaseController;
+import com.webank.webase.transaction.base.ResponseEntity;
+import com.webank.webase.transaction.base.exception.BaseException;
+import com.webank.webase.transaction.trans.entity.ReqTransCallInfo;
+import com.webank.webase.transaction.trans.entity.ReqTransSendInfo;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import javax.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,18 +32,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import com.alibaba.fastjson.JSON;
-import com.webank.webase.transaction.base.BaseController;
-import com.webank.webase.transaction.base.ResponseEntity;
-import com.webank.webase.transaction.base.exception.BaseException;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
-import io.swagger.annotations.ApiOperation;
-import lombok.extern.slf4j.Slf4j;
 
 /**
- * TransController.
+ * Transaction Controller.
  * 
  */
 @Api(value = "/trans", tags = "transaction interface")
@@ -48,71 +48,57 @@ public class TransController extends BaseController {
     /**
      * transaction send.
      * 
-     * @param req parameter
+     * @param transSendInfo parameter
      * @param result checkResult
      * @return
      */
     @ApiOperation(value = "transaction send", notes = "transaction send")
-    @ApiImplicitParam(name = "req", value = "transaction info", required = true,
-            dataType = "ReqTransSendInfo")
     @PostMapping("/send")
-    public ResponseEntity send(@Valid @RequestBody ReqTransSendInfo req, BindingResult result)
-            throws BaseException {
-        log.info("transSend start. req:{}", JSON.toJSONString(req));
+    public ResponseEntity send(@Valid @RequestBody ReqTransSendInfo transSendInfo,
+            BindingResult result) throws BaseException {
+        log.info("transSend start. transSendInfo:{}", JSON.toJSONString(transSendInfo));
         checkParamResult(result);
-        return transService.save(req);
+        return transService.save(transSendInfo);
     }
 
     /**
-     * call.
+     * transaction call.
      * 
-     * @param req parameter
+     * @param transCallInfo parameter
      * @param result checkResult
      * @return
      */
     @ApiOperation(value = "transaction call", notes = "transaction call")
-    @ApiImplicitParam(name = "req", value = "req info", required = true,
-            dataType = "ReqTransCallInfo")
     @PostMapping("/call")
-    public ResponseEntity call(@Valid @RequestBody ReqTransCallInfo req, BindingResult result)
-            throws BaseException {
-        log.info("call start. req:{}", JSON.toJSONString(req));
+    public ResponseEntity call(@Valid @RequestBody ReqTransCallInfo transCallInfo,
+            BindingResult result) throws BaseException {
+        log.info("call start. transCallInfo:{}", JSON.toJSONString(transCallInfo));
         checkParamResult(result);
-        return transService.call(req);
+        return transService.call(transCallInfo);
     }
-    
+
     /**
-     * getEvent.
+     * get transaction event.
      * 
-     * @param groupId id 
+     * @param groupId id
      * @param uuidStateless uuid
      * @return
      */
-    @ApiOperation(value = "getEvent", notes = "Get trans event")
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = "groupId", value = "groupId", required = true,
-                dataType = "int", paramType = "path"),
-        @ApiImplicitParam(name = "uuidStateless", value = "uuidStateless", required = true,
-        dataType = "String", paramType = "path")})
+    @ApiOperation(value = "getEvent", notes = "get transaction event")
     @GetMapping("/event/{groupId}/{uuidStateless}")
     public ResponseEntity getEvent(@PathVariable("groupId") int groupId,
             @PathVariable("uuidStateless") String uuidStateless) throws BaseException {
         return transService.getEvent(groupId, uuidStateless);
     }
-    
+
     /**
-     * getOutput.
+     * get transaction output.
      * 
-     * @param groupId id 
+     * @param groupId id
      * @param uuidStateless uuid
      * @return
      */
-    @ApiOperation(value = "getOutput", notes = "Get trans output")
-    @ApiImplicitParams({
-        @ApiImplicitParam(name = "groupId", value = "groupId", required = true,
-                dataType = "int", paramType = "path"),
-        @ApiImplicitParam(name = "uuidStateless", value = "uuidStateless", required = true,
-        dataType = "String", paramType = "path")})
+    @ApiOperation(value = "getOutput", notes = "get transaction output")
     @GetMapping("/output/{groupId}/{uuidStateless}")
     public ResponseEntity getOutput(@PathVariable("groupId") int groupId,
             @PathVariable("uuidStateless") String uuidStateless) throws BaseException {

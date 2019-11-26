@@ -14,19 +14,23 @@
 
 package com.webank.webase.transaction.job;
 
-import java.util.List;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.stereotype.Component;
 import com.dangdang.ddframe.job.api.ShardingContext;
 import com.dangdang.ddframe.job.api.dataflow.DataflowJob;
 import com.webank.webase.transaction.base.ConstantProperties;
 import com.webank.webase.transaction.contract.ContractMapper;
 import com.webank.webase.transaction.contract.ContractService;
-import com.webank.webase.transaction.contract.DeployInfoDto;
+import com.webank.webase.transaction.contract.entity.DeployInfoDto;
+import java.util.List;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Component;
 
+/**
+ * DeployHandleDataflowJob.
+ *
+ */
 @Slf4j
 @Component
 @ConditionalOnProperty(value = {"constant.ifDistributedTask"}, matchIfMissing = false)

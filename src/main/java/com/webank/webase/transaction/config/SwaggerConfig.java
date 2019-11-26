@@ -25,11 +25,15 @@ import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spring.web.plugins.Docket;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
+/**
+ * SwaggerConfig.
+ *
+ */
 @Configuration
 @EnableSwagger2
 public class SwaggerConfig {
     /**
-     * documentation.
+     * set documentation.
      * 
      * @return
      */
@@ -41,6 +45,11 @@ public class SwaggerConfig {
                 .apiInfo(apiInfo()).enable(true);
     }
 
+    /**
+     * set api info.
+     * 
+     * @return
+     */
     private ApiInfo apiInfo() {
         return new ApiInfoBuilder().title("API document").description("transaction api")
                 .version("1.0").build();

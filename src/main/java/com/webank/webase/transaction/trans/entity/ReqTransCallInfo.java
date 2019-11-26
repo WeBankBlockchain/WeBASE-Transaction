@@ -12,7 +12,7 @@
  * the License.
  */
 
-package com.webank.webase.transaction.trans;
+package com.webank.webase.transaction.trans.entity;
 
 import com.webank.webase.transaction.base.ConstantCode;
 import java.util.ArrayList;
@@ -21,16 +21,15 @@ import javax.validation.constraints.NotNull;
 import lombok.Data;
 import org.hibernate.validator.constraints.NotBlank;
 
+/**
+ * transaction call request parameters.
+ *
+ */
 @Data
-public class ReqTransSendInfo {
+public class ReqTransCallInfo {
     @NotNull(message = ConstantCode.GROUP_ID_IS_EMPTY)
-    private Integer groupId;
-    @NotBlank(message = ConstantCode.UUID_IS_EMPTY)
-    private String uuidStateless;
+    private int groupId;
     private String uuidDeploy;
-    @NotNull(message = ConstantCode.SIGN_TYPE_IS_EMPTY)
-    private Integer signType;
-    private Integer signUserId;
     private List<Object> contractAbi = new ArrayList<>();
     private String contractAddress;
     @NotBlank(message = ConstantCode.FUNCTION_NAME_IS_EMPTY)

@@ -16,8 +16,8 @@ package com.webank.webase.transaction.base.exception;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.webank.webase.transaction.base.ResponseEntity;
 import com.webank.webase.transaction.base.ConstantCode;
+import com.webank.webase.transaction.base.ResponseEntity;
 import com.webank.webase.transaction.base.RetCode;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
@@ -37,7 +37,7 @@ public class ExceptionsHandler {
     ObjectMapper mapper;
 
     /**
-     * myExceptionHandler.
+     * BaseException Handler.
      * 
      * @param baseException e
      * @return
@@ -55,7 +55,7 @@ public class ExceptionsHandler {
     }
 
     /**
-     * exceptionHandler.
+     * Exception Handler.
      * 
      * @param exc e
      * @return

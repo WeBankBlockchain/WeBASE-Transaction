@@ -14,19 +14,23 @@
 
 package com.webank.webase.transaction.scheduler;
 
-import java.util.List;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.stereotype.Service;
 import com.webank.webase.transaction.base.ConstantProperties;
 import com.webank.webase.transaction.contract.ContractMapper;
 import com.webank.webase.transaction.contract.ContractService;
-import com.webank.webase.transaction.contract.DeployInfoDto;
-import com.webank.webase.transaction.trans.TransInfoDto;
+import com.webank.webase.transaction.contract.entity.DeployInfoDto;
 import com.webank.webase.transaction.trans.TransMapper;
 import com.webank.webase.transaction.trans.TransService;
+import com.webank.webase.transaction.trans.entity.TransInfoDto;
+import java.util.List;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Service;
 
+/**
+ * ScheduleService.
+ *
+ */
 @Slf4j
 @Service
 public class ScheduleService {
@@ -62,7 +66,7 @@ public class ScheduleService {
                         properties.getSelectCount(), properties.getIntervalTime());
         transService.handleTransInfo(transInfoList);
     }
-    
+
     /**
      * deleteDataSchedule.
      */

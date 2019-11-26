@@ -14,13 +14,14 @@
 
 package com.webank.webase.transaction.trans;
 
+import com.webank.webase.transaction.trans.entity.TransInfoDto;
 import java.util.Date;
 import java.util.List;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Service;
 
 /**
- * SignType.
+ * TransMapper.
  *
  */
 @Service
@@ -29,7 +30,7 @@ public interface TransMapper {
     void createTbStatelessTrans();
 
     void insertTransInfo(TransInfoDto transInfoDto);
-    
+
     TransInfoDto selectTransInfo(@Param("groupId") int groupId,
             @Param("uuidStateless") String uuidStateless);
 
@@ -41,9 +42,10 @@ public interface TransMapper {
             @Param("shardingTotalCount") int shardingTotalCount,
             @Param("shardingItem") int shardingItem);
 
-    void updateRequestCount(@Param("id") Long id, @Param("requestCount") int requestCount, @Param("gmtCreate") Date gmtCreate);
+    void updateRequestCount(@Param("id") Long id, @Param("requestCount") int requestCount,
+            @Param("gmtCreate") Date gmtCreate);
 
     void updateHandleStatus(TransInfoDto transInfoDto);
-    
+
     void deletePartData(@Param(value = "keepDays") int keepDays);
 }

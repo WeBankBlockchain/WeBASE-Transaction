@@ -15,18 +15,22 @@
 package com.webank.webase.transaction.config;
 
 import java.util.concurrent.ThreadPoolExecutor.AbortPolicy;
+import lombok.Data;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
-import lombok.Data;
 
+/**
+ * transaction ThreadPoolTaskExecutor configure.
+ *
+ */
 @Data
 @EnableAsync
 @Configuration
 public class ThreadConfig {
     /**
-     * transExecutor.
+     * set ThreadPoolTaskExecutor.
      * 
      * @return
      */
