@@ -41,7 +41,7 @@
         gmt_create as gmtCreate
     </sql>
     
-    <insert id="insertTransInfo" parameterType="com.webank.webase.transaction.trans.TransInfoDto">
+    <insert id="insertTransInfo" parameterType="com.webank.webase.transaction.trans.entity.TransInfoDto">
         insert into tb_stateless_transaction(
             `group_id`,
             `uuid_stateless`,
@@ -69,7 +69,7 @@
         )
     </insert>
     
-    <select id="selectTransInfo" resultType="com.webank.webase.transaction.trans.TransInfoDto">
+    <select id="selectTransInfo" resultType="com.webank.webase.transaction.trans.entity.TransInfoDto">
         select trans_hash as transHash,
                contract_abi as contractAbi,
                func_name as funcName,
@@ -80,7 +80,7 @@
         limit 1
     </select>
     
-    <select id="selectUnStatTrans" resultType="com.webank.webase.transaction.trans.TransInfoDto">
+    <select id="selectUnStatTrans" resultType="com.webank.webase.transaction.trans.entity.TransInfoDto">
         select <include refid="TRANS_COLUMN" />
         from tb_stateless_transaction
         where handle_status = 0
@@ -91,7 +91,7 @@
         limit 0,#{selectCount}
     </select>
     
-    <select id="selectUnStatTransByJob" resultType="com.webank.webase.transaction.trans.TransInfoDto">
+    <select id="selectUnStatTransByJob" resultType="com.webank.webase.transaction.trans.entity.TransInfoDto">
         select <include refid="TRANS_COLUMN" />
         from tb_stateless_transaction
         where handle_status = 0
