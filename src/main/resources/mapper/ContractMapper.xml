@@ -39,7 +39,7 @@
         gmt_create as gmtCreate
     </sql>
     
-    <insert id="insertDeployInfo" parameterType="com.webank.webase.transaction.contract.DeployInfoDto">
+    <insert id="insertDeployInfo" parameterType="com.webank.webase.transaction.contract.entity.DeployInfoDto">
         insert into tb_deploy_transaction(
             `group_id`,
             `uuid_deploy`,
@@ -63,7 +63,7 @@
         )
     </insert>
     
-    <select id="selectDeployInfo" resultType="com.webank.webase.transaction.contract.DeployInfoDto">
+    <select id="selectDeployInfo" resultType="com.webank.webase.transaction.contract.entity.DeployInfoDto">
         select <include refid="DEPLOY_COLUMN" />
         from tb_deploy_transaction
         where group_id = #{groupId}
@@ -92,7 +92,7 @@
           and uuid_deploy = #{uuidDeploy}
     </select>
     
-    <select id="selectUnStatTrans" resultType="com.webank.webase.transaction.contract.DeployInfoDto">
+    <select id="selectUnStatTrans" resultType="com.webank.webase.transaction.contract.entity.DeployInfoDto">
         select <include refid="DEPLOY_COLUMN" />
         from tb_deploy_transaction
         where handle_status = 0
@@ -103,7 +103,7 @@
         limit 0,#{selectCount}
     </select>
     
-    <select id="selectUnStatTransByJob" resultType="com.webank.webase.transaction.contract.DeployInfoDto">
+    <select id="selectUnStatTransByJob" resultType="com.webank.webase.transaction.contract.entity.DeployInfoDto">
         select <include refid="DEPLOY_COLUMN" />
         from tb_deploy_transaction
         where handle_status = 0
@@ -123,7 +123,7 @@
           and gmt_create = #{gmtCreate}
     </update>
     
-    <update id="updateHandleStatus" parameterType="com.webank.webase.transaction.contract.DeployInfoDto">
+    <update id="updateHandleStatus" parameterType="com.webank.webase.transaction.contract.entity.DeployInfoDto">
         update tb_deploy_transaction 
         set contract_address = #{contractAddress},
             trans_hash = #{transHash},
