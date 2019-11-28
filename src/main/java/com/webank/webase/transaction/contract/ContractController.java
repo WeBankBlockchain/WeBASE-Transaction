@@ -106,4 +106,18 @@ public class ContractController extends BaseController {
             @PathVariable("uuidDeploy") String uuidDeploy) throws BaseException {
         return contractService.getEvent(groupId, uuidDeploy);
     }
+    
+    /**
+     * get deploy info.
+     * 
+     * @param groupId id
+     * @param uuidDeploy uuid
+     * @return
+     */
+    @ApiOperation(value = "getDeployInfo", notes = "get deploy info")
+    @GetMapping("/deployInfo/{groupId}/{uuidDeploy}")
+    public ResponseEntity getDeployInfo(@PathVariable("groupId") int groupId,
+            @PathVariable("uuidDeploy") String uuidDeploy) throws BaseException {
+        return contractService.getDeployInfo(groupId, uuidDeploy);
+    }
 }

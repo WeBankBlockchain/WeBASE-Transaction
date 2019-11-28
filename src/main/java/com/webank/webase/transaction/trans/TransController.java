@@ -104,4 +104,18 @@ public class TransController extends BaseController {
             @PathVariable("uuidStateless") String uuidStateless) throws BaseException {
         return transService.getOutput(groupId, uuidStateless);
     }
+    
+    /**
+     * get transaction info.
+     * 
+     * @param groupId id
+     * @param uuidStateless uuid
+     * @return
+     */
+    @ApiOperation(value = "getTransInfo", notes = "get transaction info")
+    @GetMapping("/transInfo/{groupId}/{uuidStateless}")
+    public ResponseEntity getTransInfo(@PathVariable("groupId") int groupId,
+            @PathVariable("uuidStateless") String uuidStateless) throws BaseException {
+        return transService.getTransInfo(groupId, uuidStateless);
+    }
 }

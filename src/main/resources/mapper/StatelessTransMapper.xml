@@ -41,6 +41,25 @@
         gmt_create as gmtCreate
     </sql>
     
+    <sql id="SELECT_COLUMN">
+        id,
+        group_id as groupId,
+        uuid_stateless as uuidStateless,
+        uuid_deploy as uuidDeploy,
+        contract_abi as contractAbi,
+        contract_address as contractAddress,
+        func_name as funcName,
+        func_param as funcParam,
+        sign_type as signType,
+        sign_user_id as signUserId,
+        request_count as requestCount,
+        handle_status as handleStatus,
+        trans_hash as transHash,
+        trans_output as transOutput,
+        receipt_status as receiptStatus,
+        gmt_create as gmtCreate
+    </sql>
+    
     <insert id="insertTransInfo" parameterType="com.webank.webase.transaction.trans.entity.TransInfoDto">
         insert into tb_stateless_transaction(
             `group_id`,
@@ -70,10 +89,7 @@
     </insert>
     
     <select id="selectTransInfo" resultType="com.webank.webase.transaction.trans.entity.TransInfoDto">
-        select trans_hash as transHash,
-               contract_abi as contractAbi,
-               func_name as funcName,
-               trans_output as transOutput
+        select  <include refid="SELECT_COLUMN" />
         from tb_stateless_transaction
         where group_id = #{groupId}
           and uuid_stateless = #{uuidStateless}

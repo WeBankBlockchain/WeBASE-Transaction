@@ -215,6 +215,25 @@ public class ContractService {
         response.setData(contractAddress);
         return response;
     }
+    
+    /**
+     * get getDeployInfo.
+     * 
+     * @param groupId groupId
+     * @param uuidDeploy uuid
+     * @return
+     */
+    public ResponseEntity getDeployInfo(int groupId, String uuidDeploy) throws BaseException {
+        ResponseEntity response = new ResponseEntity(ConstantCode.RET_SUCCEED);
+        // check if contract has been deployed
+        DeployInfoDto deployInfo = contractMapper.selectDeployInfo(groupId, uuidDeploy);
+        if (deployInfo == null) {
+            log.warn("getDeployInfo fail. data not exists uuidDeploy:{}.", uuidDeploy);
+            throw new BaseException(ConstantCode.DATA_NOT_EXISTS);
+        }
+        response.setData(deployInfo);
+        return response;
+    }
 
     /**
      * get contract Event.
