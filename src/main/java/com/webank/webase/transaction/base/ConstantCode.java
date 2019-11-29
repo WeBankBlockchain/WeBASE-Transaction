@@ -51,13 +51,14 @@ public interface ConstantCode {
     RetCode ADDRESS_ABI_EMPTY = RetCode.mark(303016,
             "if deploy uuid is empty, contract address and contract abi cannot be empty");
     RetCode TRANS_OUTPUT_EMPTY = RetCode.mark(303017, "trans output is empty");
-    RetCode TRANS_NOT_EXIST = RetCode.mark(303018, "trans is not exist");
+    RetCode TRANS_NOT_EXIST = RetCode.mark(303018, "trans is not exists");
     RetCode GROUPID_NOT_CONFIGURED =
             RetCode.mark(303019, "request group id has not been configured");
     RetCode SIGN_USERID_EMPTY =
             RetCode.mark(303020, "sign user id cannot be empty while sign type is 2");
     RetCode SIGN_USERID_ERROR = RetCode.mark(303021, "sign user id check failed");
     RetCode FUNCTION_NOT_EXISTS = RetCode.mark(303022, "function is not exists");
+    RetCode DATA_NOT_EXISTS = RetCode.mark(303023, "data is not exists");
 
     // system error
     RetCode SYSTEM_ERROR = RetCode.mark(103001, "system error");

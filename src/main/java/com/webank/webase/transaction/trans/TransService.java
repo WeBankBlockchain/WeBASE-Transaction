@@ -377,6 +377,26 @@ public class TransService {
     }
 
     /**
+     * get transaction info.
+     * 
+     * @param groupId groupId
+     * @param uuidStateless uuid
+     * @return
+     */
+    public ResponseEntity getTransInfo(int groupId, String uuidStateless)
+            throws BaseException {
+        ResponseEntity response = new ResponseEntity(ConstantCode.RET_SUCCEED);
+        TransInfoDto transInfo = transMapper.selectTransInfo(groupId, uuidStateless);
+        if (transInfo == null) {
+            log.warn("getTransactionHash fail. trans is not exist uuidStateless:{}.",
+                    uuidStateless);
+            throw new BaseException(ConstantCode.TRANS_NOT_EXIST);
+        }
+        response.setData(transInfo);
+        return response;
+    }
+
+    /**
      * handleTransInfo.
      * 
      * @param transInfoList transInfoList
