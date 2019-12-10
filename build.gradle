@@ -18,6 +18,11 @@ repositories {
     mavenCentral()
 }
 
+// support guomi solc jar
+repositories {
+    flatDir {  dirs 'lib' }
+}
+
 def spring_boot_version="1.5.9.RELEASE"
 List spring_boot =[ 
     "org.springframework.boot:spring-boot-starter-web:$spring_boot_version",
@@ -62,8 +67,7 @@ List zookeeper = [
 ]
 
 List web3sdk = [
-    'org.fisco-bcos:web3sdk:2.0.5',
-    'org.ethereum:solcJ-all:0.4.25',
+//    'org.ethereum:solcJ-all:0.4.25', // web3sdk已包含该包 无需再次引入
     'org.apache.httpcomponents:httpclient:4.5.2',
     'org.bouncycastle:bcprov-jdk15on:1.54',
     'com.lambdaworks:scrypt:1.4.0',
@@ -81,6 +85,12 @@ List jaxb = [
 
 dependencies {
     compile spring_boot,mysql,swagger,web3sdk,logger,netty,dangdang,zookeeper,jaxb
+    // guomi contract compile: USE 'socJ-all-0.4.25-gm' to REPLACE 'ethereum:solcJ-all'
+    compile ("org.fisco-bcos:web3sdk:2.1.2")
+//        {
+//            exclude group:"org.ethereum"
+//        }
+//    compile "org.fisco-bcos:solcJ-all-0.4.25-gm"
     compile "org.apache.commons:commons-lang3:3.6"
     compile "commons-io:commons-io:2.4"
     compile "commons-fileupload:commons-fileupload:1.4"
