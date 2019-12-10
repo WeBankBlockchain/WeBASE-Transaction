@@ -28,6 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.fisco.bcos.web3j.crypto.Credentials;
 import org.fisco.bcos.web3j.crypto.ECKeyPair;
 import org.fisco.bcos.web3j.crypto.Keys;
+import org.fisco.bcos.web3j.crypto.gm.GenCredential;
 import org.fisco.bcos.web3j.utils.Numeric;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
@@ -84,7 +85,7 @@ public class KeyStoreService {
     public String getAddress() throws BaseException {
         try {
             String privateKey = properties.getPrivateKey();
-            Credentials credentials = Credentials.create(privateKey);
+            Credentials credentials = GenCredential.create(privateKey);
             return credentials.getAddress();
         } catch (Exception e) {
             log.error("getAddress fail.");

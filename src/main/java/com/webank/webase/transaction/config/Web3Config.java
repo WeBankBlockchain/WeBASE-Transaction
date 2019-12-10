@@ -22,6 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.fisco.bcos.channel.client.Service;
 import org.fisco.bcos.channel.handler.ChannelConnections;
 import org.fisco.bcos.channel.handler.GroupChannelConnectionsConfig;
+import org.fisco.bcos.web3j.crypto.EncryptType;
 import org.fisco.bcos.web3j.protocol.Web3j;
 import org.fisco.bcos.web3j.protocol.channel.ChannelEthereumService;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -41,7 +42,8 @@ public class Web3Config {
     private String orgName;
     private int timeout = 10000;
     private GroupChannelConnectionsConfig groupConfig;
-
+    // 0: standard, 1: guomi
+    private int encryptType;
     /**
      * init web3j.
      * 
@@ -90,4 +92,14 @@ public class Web3Config {
         executor.initialize();
         return executor;
     }
+
+    /**
+     * set sdk's encrypt type: 0: standard, 1: guomi
+     * sdk switch ecdsa to sm2, sha to sm3
+     */
+    @Bean
+    public EncryptType EncryptType() {
+        return new EncryptType(encryptType);
+    }
+
 }
