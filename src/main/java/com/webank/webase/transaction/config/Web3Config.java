@@ -46,9 +46,14 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 public class Web3Config {
     private String orgName;
     private int timeout = 10000;
+    private int corePoolSize = 100;
+    private int maxPoolSize = 500;
+    private int queueCapacity = 500;
+    private int keepAlive = 60;
     private GroupChannelConnectionsConfig groupConfig;
     // 0: standard, 1: guomi
     private int encryptType;
+
     /**
      * init web3j.
      * 
@@ -91,10 +96,10 @@ public class Web3Config {
     @Bean
     public ThreadPoolTaskExecutor sdkThreadPool() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(50);
-        executor.setMaxPoolSize(100);
-        executor.setQueueCapacity(500);
-        executor.setKeepAliveSeconds(60);
+        executor.setCorePoolSize(corePoolSize);
+        executor.setMaxPoolSize(maxPoolSize);
+        executor.setQueueCapacity(queueCapacity);
+        executor.setKeepAliveSeconds(keepAlive);
         executor.setRejectedExecutionHandler(new AbortPolicy());
         executor.setThreadNamePrefix("sdkThreadPool-");
         executor.initialize();
@@ -102,8 +107,7 @@ public class Web3Config {
     }
 
     /**
-     * set sdk's encrypt type: 0: standard, 1: guomi
-     * sdk switch ecdsa to sm2, sha to sm3
+     * set sdk's encrypt type: 0: standard, 1: guomi sdk switch ecdsa to sm2, sha to sm3.
      */
     @Bean(name = "encryptType")
     public EncryptType EncryptType() {
