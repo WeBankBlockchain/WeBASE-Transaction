@@ -121,9 +121,9 @@ public class Web3Config {
             isMatch = EncryptType.encryptType == 0;
         }
         if(!isMatch) {
-            log.error("Chain's version not matches with Front's  encryptType:{}", EncryptType.encryptType);
-            throw new BaseException(ConstantCode.SYSTEM_ERROR.getCode(), "Chain's version not matches with Front's" +
-                    " encryptType: " + EncryptType.encryptType);
+            log.error("Chain's version not matches with local encryptType:{}", EncryptType.encryptType);
+            throw new BaseException(ConstantCode.SYSTEM_ERROR.getCode(), "Chain's version not matches " +
+                    "with local encryptType"+ EncryptType.encryptType);
         }
     }
 }
