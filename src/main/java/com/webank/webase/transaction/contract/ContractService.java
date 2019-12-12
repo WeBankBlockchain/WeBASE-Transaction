@@ -185,11 +185,7 @@ public class ContractService {
         deployInfoDto.setContractAbi(contractAbi);
         deployInfoDto.setFuncParam(JSON.toJSONString(params));
         deployInfoDto.setSignType(req.getSignType());
-        if(req.getSignUserId() == null){
-            deployInfoDto.setSignUserId(0);
-        }else {
-            deployInfoDto.setSignUserId(req.getSignUserId());
-        }
+        deployInfoDto.setSignUserId(req.getSignUserId());
         deployInfoDto.setGmtCreate(new Date());
         contractMapper.insertDeployInfo(deployInfoDto);
 

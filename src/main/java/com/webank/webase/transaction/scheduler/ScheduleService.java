@@ -48,7 +48,7 @@ public class ScheduleService {
     /**
      * deploySchedule.
      */
-    public void deploySchedule() {
+    public synchronized void deploySchedule() {
         log.debug("deploySchedule start...");
         List<DeployInfoDto> deployInfoList =
                 contractMapper.selectUnStatTrans(properties.getRequestCountMax(),
@@ -59,7 +59,7 @@ public class ScheduleService {
     /**
      * transSchedule.
      */
-    public void transSchedule() {
+    public synchronized void transSchedule() {
         log.debug("transSchedule start...");
         List<TransInfoDto> transInfoList =
                 transMapper.selectUnStatTrans(properties.getRequestCountMax(),
