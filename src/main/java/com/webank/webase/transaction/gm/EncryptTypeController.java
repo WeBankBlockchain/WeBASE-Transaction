@@ -14,6 +14,8 @@
 
 package com.webank.webase.transaction.gm;
 
+import com.webank.webase.transaction.base.ConstantCode;
+import com.webank.webase.transaction.base.ResponseEntity;
 import io.swagger.annotations.Api;
 import lombok.extern.slf4j.Slf4j;
 import org.fisco.bcos.web3j.crypto.EncryptType;
@@ -30,9 +32,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping(value = "encrypt")
 public class EncryptTypeController {
     @GetMapping("")
-    public Integer getEncryptType() {
+    public ResponseEntity getEncryptType() {
+        ResponseEntity response = new ResponseEntity(ConstantCode.RET_SUCCEED);
         int encrypt = EncryptType.encryptType;
         log.info("getEncryptType:{}", encrypt);
-        return encrypt;
+        response.setData(encrypt);
+        return response;
     }
 }
