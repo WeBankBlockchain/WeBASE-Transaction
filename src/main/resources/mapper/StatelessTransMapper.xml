@@ -96,6 +96,12 @@
         limit 1
     </select>
     
+    <select id="selectStatus" resultType="int">
+        select handle_status
+        from tb_stateless_transaction
+        where id = #{id}
+    </select>
+    
     <select id="selectUnStatTrans" resultType="com.webank.webase.transaction.trans.entity.TransInfoDto">
         select <include refid="TRANS_COLUMN" />
         from tb_stateless_transaction
