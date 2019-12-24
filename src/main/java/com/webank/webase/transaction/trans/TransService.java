@@ -434,6 +434,12 @@ public class TransService {
         int requestCount = transInfoDto.getRequestCount();
         int signType = transInfoDto.getSignType();
         try {
+            // check status
+            int status = transMapper.selectStatus(id);
+            if (status == 1) {
+                log.debug("transSend id:{} has successed.", id);
+                return;
+            }
             // requestCount + 1
             transMapper.updateRequestCount(id, requestCount + 1, transInfoDto.getGmtCreate());
             // check requestCount

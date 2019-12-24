@@ -33,6 +33,8 @@ public interface TransMapper {
 
     TransInfoDto selectTransInfo(@Param("groupId") int groupId,
             @Param("uuidStateless") String uuidStateless);
+    
+    int selectStatus(@Param("id") Long id);
 
     List<TransInfoDto> selectUnStatTrans(@Param("requestCountMax") int requestCountMax,
             @Param("selectCount") int selectCount, @Param("intervalTime") int intervalTime);

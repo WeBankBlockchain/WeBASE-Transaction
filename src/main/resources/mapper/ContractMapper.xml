@@ -109,6 +109,12 @@
           and uuid_deploy = #{uuidDeploy}
     </select>
     
+    <select id="selectStatus" resultType="int">
+        select handle_status
+        from tb_deploy_transaction
+        where id = #{id}
+    </select>
+    
     <select id="selectUnStatTrans" resultType="com.webank.webase.transaction.contract.entity.DeployInfoDto">
         select <include refid="DEPLOY_COLUMN" />
         from tb_deploy_transaction
