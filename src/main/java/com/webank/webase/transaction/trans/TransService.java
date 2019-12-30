@@ -57,6 +57,7 @@ import org.fisco.bcos.web3j.crypto.ExtendedTransactionEncoder;
 import org.fisco.bcos.web3j.crypto.RawTransaction;
 import org.fisco.bcos.web3j.crypto.Sign.SignatureData;
 import org.fisco.bcos.web3j.crypto.TransactionEncoder;
+import org.fisco.bcos.web3j.crypto.gm.GenCredential;
 import org.fisco.bcos.web3j.protocol.Web3j;
 import org.fisco.bcos.web3j.protocol.core.DefaultBlockParameterName;
 import org.fisco.bcos.web3j.protocol.core.Request;
@@ -433,6 +434,12 @@ public class TransService {
         int requestCount = transInfoDto.getRequestCount();
         int signType = transInfoDto.getSignType();
         try {
+            // check status
+            int status = transMapper.selectStatus(id);
+            if (status == 1) {
+                log.debug("transSend id:{} has successed.", id);
+                return;
+            }
             // requestCount + 1
             transMapper.updateRequestCount(id, requestCount + 1, transInfoDto.getGmtCreate());
             // check requestCount
@@ -506,12 +513,12 @@ public class TransService {
                     ConstantProperties.GAS_PRICE, ConstantProperties.GAS_LIMIT, blockLimit,
                     contractAddress, BigInteger.ZERO, data);
             if (signType == SignType.LOCALCONFIG.getValue()) {
-                Credentials credentials = Credentials.create(properties.getPrivateKey());
+                Credentials credentials = GenCredential.create(properties.getPrivateKey());
                 byte[] signedMessage = TransactionEncoder.signMessage(rawTransaction, credentials);
                 signMsg = Numeric.toHexString(signedMessage);
             } else if (signType == SignType.LOCALRANDOM.getValue()) {
                 KeyStoreInfo keyStoreInfo = keyStoreService.getKey();
-                Credentials credentials = Credentials.create(keyStoreInfo.getPrivateKey());
+                Credentials credentials = GenCredential.create(keyStoreInfo.getPrivateKey());
                 byte[] signedMessage = TransactionEncoder.signMessage(rawTransaction, credentials);
                 signMsg = Numeric.toHexString(signedMessage);
             } else if (signType == SignType.CLOUDCALL.getValue()) {
@@ -539,13 +546,13 @@ public class TransService {
                             BigInteger.ZERO, data, new BigInteger(chainId),
                             BigInteger.valueOf(groupId), "");
             if (signType == SignType.LOCALCONFIG.getValue()) {
-                Credentials credentials = Credentials.create(properties.getPrivateKey());
+                Credentials credentials = GenCredential.create(properties.getPrivateKey());
                 byte[] signedMessage =
                         ExtendedTransactionEncoder.signMessage(extendedRawTransaction, credentials);
                 signMsg = Numeric.toHexString(signedMessage);
             } else if (signType == SignType.LOCALRANDOM.getValue()) {
                 KeyStoreInfo keyStoreInfo = keyStoreService.getKey();
-                Credentials credentials = Credentials.create(keyStoreInfo.getPrivateKey());
+                Credentials credentials = GenCredential.create(keyStoreInfo.getPrivateKey());
                 byte[] signedMessage =
                         ExtendedTransactionEncoder.signMessage(extendedRawTransaction, credentials);
                 signMsg = Numeric.toHexString(signedMessage);

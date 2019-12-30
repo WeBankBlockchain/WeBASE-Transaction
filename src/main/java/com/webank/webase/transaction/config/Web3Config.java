@@ -14,19 +14,25 @@
 
 package com.webank.webase.transaction.config;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
+import com.webank.webase.transaction.base.ConstantCode;
+import com.webank.webase.transaction.base.exception.BaseException;
 import java.util.concurrent.ThreadPoolExecutor.AbortPolicy;
+
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.fisco.bcos.channel.client.Service;
 import org.fisco.bcos.channel.handler.ChannelConnections;
 import org.fisco.bcos.channel.handler.GroupChannelConnectionsConfig;
+import org.fisco.bcos.web3j.crypto.EncryptType;
 import org.fisco.bcos.web3j.protocol.Web3j;
 import org.fisco.bcos.web3j.protocol.channel.ChannelEthereumService;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 /**
@@ -40,7 +46,13 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 public class Web3Config {
     private String orgName;
     private int timeout = 10000;
+    private int corePoolSize = 100;
+    private int maxPoolSize = 500;
+    private int queueCapacity = 500;
+    private int keepAlive = 60;
     private GroupChannelConnectionsConfig groupConfig;
+    // 0: standard, 1: guomi
+    private int encryptType;
 
     /**
      * init web3j.
@@ -48,6 +60,7 @@ public class Web3Config {
      * @return
      */
     @Bean
+    @DependsOn("encryptType")
     public HashMap<Integer, Web3j> web3j() throws Exception {
         HashMap<Integer, Web3j> web3jMap = new HashMap<Integer, Web3j>();
 
@@ -67,6 +80,8 @@ public class Web3Config {
             channelEthereumService.setTimeout(timeout);
             channelEthereumService.setChannelService(service);
             Web3j web3j = Web3j.build(channelEthereumService, groupId);
+            // whether webase-transaction match with chain's encrypt type: guomi or standard
+            isMatchEncryptType(web3j);
             web3j.getGroupList().send().getGroupList();
             web3jMap.put(groupId, web3j);
         }
@@ -81,13 +96,44 @@ public class Web3Config {
     @Bean
     public ThreadPoolTaskExecutor sdkThreadPool() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(50);
-        executor.setMaxPoolSize(100);
-        executor.setQueueCapacity(500);
-        executor.setKeepAliveSeconds(60);
+        executor.setCorePoolSize(corePoolSize);
+        executor.setMaxPoolSize(maxPoolSize);
+        executor.setQueueCapacity(queueCapacity);
+        executor.setKeepAliveSeconds(keepAlive);
         executor.setRejectedExecutionHandler(new AbortPolicy());
         executor.setThreadNamePrefix("sdkThreadPool-");
         executor.initialize();
         return executor;
+    }
+
+    /**
+     * set sdk's encrypt type: 0: standard, 1: guomi sdk switch ecdsa to sm2, sha to sm3.
+     */
+    @Bean(name = "encryptType")
+    public EncryptType EncryptType() {
+        return new EncryptType(encryptType);
+    }
+
+    /**
+     * check local sdk's encrypt type match with chain's
+     * @param web3j
+     * @throws IOException
+     * @throws BaseException
+     */
+    public void isMatchEncryptType(Web3j web3j) throws IOException, BaseException {
+        boolean isMatch = true;
+        // 1: guomi, 0: standard
+        String clientVersion = web3j.getNodeVersion().send().getNodeVersion().getVersion();
+        log.info("Chain's clientVersion:{}", clientVersion);
+        if (clientVersion.contains("gm")) {
+            isMatch = EncryptType.encryptType == 1;
+        } else {
+            isMatch = EncryptType.encryptType == 0;
+        }
+        if (!isMatch) {
+            log.error("Chain's version not matches with local encryptType:{}", EncryptType.encryptType);
+            throw new BaseException(ConstantCode.SYSTEM_ERROR.getCode(), "Chain's version not matches "
+                    + "with local encryptType"+ EncryptType.encryptType);
+        }
     }
 }
