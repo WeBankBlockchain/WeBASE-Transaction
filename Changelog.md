@@ -15,7 +15,8 @@
 - 优化：支持sdk线程池可配置
 - 优化：web3sdk升级至v2.2.0
 - 优化：start.sh启动脚本优化
-- bugfix：CommonUtils的`SignatureData`序列化支持国密
+- 优化：CommonUtils的`SignatureData`序列化支持国密
+
 
 **兼容性**
 
