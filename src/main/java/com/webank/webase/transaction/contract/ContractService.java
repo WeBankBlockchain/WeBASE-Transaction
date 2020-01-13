@@ -311,7 +311,7 @@ public class ContractService {
         int signType = deployInfoDto.getSignType();
         try {
             // check status
-            int status = contractMapper.selectStatus(id);
+            int status = contractMapper.selectStatus(id, deployInfoDto.getGmtCreate());
             if (status == 1) {
                 log.info("deploySend id:{} has successed.", id);
                 return;
