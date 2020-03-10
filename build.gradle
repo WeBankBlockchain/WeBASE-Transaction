@@ -89,7 +89,6 @@ dependencies {
 //    compile fileTree(dir:'lib',includes:['solcJ-all-0.4.25-gm.jar'])
     compile "org.apache.commons:commons-lang3:3.6"
     compile "commons-io:commons-io:2.4"
-    compile "commons-fileupload:commons-fileupload:1.4"
     compile "com.alibaba:fastjson:1.2.60"
     compile "io.shardingsphere:sharding-jdbc-spring-boot-starter:3.1.0"
     compile 'org.projectlombok:lombok:1.18.2'

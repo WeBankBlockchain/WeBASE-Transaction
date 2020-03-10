@@ -273,7 +273,7 @@ public class TransService {
             Function function = new Function(funcName, finalInputs, finalOutputs);
             String encodedFunction = FunctionEncoder.encode(function);
             String callOutput = web3jMap.get(groupId)
-                    .call(Transaction.createEthCallTransaction(keyStoreService.getAddress(),
+                    .call(Transaction.createEthCallTransaction(keyStoreService.getRandomAddress(),
                             contractAddress, encodedFunction), DefaultBlockParameterName.LATEST)
                     .send().getValue().getOutput();
             List<Type> typeList =
