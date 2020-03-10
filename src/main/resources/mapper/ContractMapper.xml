@@ -113,6 +113,7 @@
         select handle_status
         from tb_deploy_transaction
         where id = #{id}
+          and gmt_create = #{gmtCreate}
     </select>
     
     <select id="selectUnStatTrans" resultType="com.webank.webase.transaction.contract.entity.DeployInfoDto">

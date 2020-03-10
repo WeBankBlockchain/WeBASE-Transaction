@@ -273,7 +273,7 @@ public class TransService {
             Function function = new Function(funcName, finalInputs, finalOutputs);
             String encodedFunction = FunctionEncoder.encode(function);
             String callOutput = web3jMap.get(groupId)
-                    .call(Transaction.createEthCallTransaction(keyStoreService.getAddress(),
+                    .call(Transaction.createEthCallTransaction(keyStoreService.getRandomAddress(),
                             contractAddress, encodedFunction), DefaultBlockParameterName.LATEST)
                     .send().getValue().getOutput();
             List<Type> typeList =
@@ -435,7 +435,7 @@ public class TransService {
         int signType = transInfoDto.getSignType();
         try {
             // check status
-            int status = transMapper.selectStatus(id);
+            int status = transMapper.selectStatus(id, transInfoDto.getGmtCreate());
             if (status == 1) {
                 log.debug("transSend id:{} has successed.", id);
                 return;

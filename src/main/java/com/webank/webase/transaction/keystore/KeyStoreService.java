@@ -92,6 +92,21 @@ public class KeyStoreService {
             throw new BaseException(ConstantCode.SYSTEM_ERROR);
         }
     }
+    
+    /**
+     * get random Address.
+     * 
+     * @return
+     */
+    public String getRandomAddress() throws BaseException {
+        try {
+            Credentials credentials = GenCredential.create();
+            return credentials.getAddress();
+        } catch (Exception e) {
+            log.error("getRandomAddress fail.");
+            throw new BaseException(ConstantCode.SYSTEM_ERROR);
+        }
+    }
 
     /**
      * getSignDate from sign service.

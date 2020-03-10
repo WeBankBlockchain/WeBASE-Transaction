@@ -40,8 +40,8 @@ public interface ContractMapper {
     String selectTxHash(@Param("groupId") int groupId, @Param("uuidDeploy") String uuidDeploy);
 
     String selectContractAbi(@Param("groupId") int groupId, @Param("uuidDeploy") String uuidDeploy);
-    
-    int selectStatus(@Param("id") Long id);
+
+    int selectStatus(@Param("id") Long id, @Param("gmtCreate") Date gmtCreate);
 
     List<DeployInfoDto> selectUnStatTrans(@Param("requestCountMax") int requestCountMax,
             @Param("selectCount") int selectCount, @Param("intervalTime") int intervalTime);
