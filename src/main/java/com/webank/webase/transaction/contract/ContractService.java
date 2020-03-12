@@ -156,11 +156,12 @@ public class ContractService {
         }
         // check sign user id
         if (SignType.CLOUDCALL.getValue() == req.getSignType()) {
-            if (req.getSignUserId() == null) {
+            String uuidUser = req.getSignUuidUser();
+            if (StringUtils.isBlank(uuidUser)) {
                 log.warn("deploy fail. sign user id is empty");
                 throw new BaseException(ConstantCode.SIGN_USERID_EMPTY);
             } else {
-                boolean result = keyStoreService.checkSignUserId(req.getSignUserId());
+                boolean result = keyStoreService.checkSignUserId(uuidUser);
                 if (!result) {
                     throw new BaseException(ConstantCode.SIGN_USERID_ERROR);
                 }
@@ -185,7 +186,7 @@ public class ContractService {
         deployInfoDto.setContractAbi(contractAbi);
         deployInfoDto.setFuncParam(JSON.toJSONString(params));
         deployInfoDto.setSignType(req.getSignType());
-        deployInfoDto.setSignUserId(req.getSignUserId());
+        deployInfoDto.setSignUuidUser(req.getSignUuidUser());
         deployInfoDto.setGmtCreate(new Date());
         contractMapper.insertDeployInfo(deployInfoDto);
 
@@ -343,7 +344,7 @@ public class ContractService {
             // data sign
             String data = contractBin + encodedConstructor;
             String signMsg = transService.signMessage(groupId, signType,
-                    deployInfoDto.getSignUserId(), "", data);
+                    deployInfoDto.getSignUuidUser(), "", data);
             if (StringUtils.isBlank(signMsg)) {
                 return;
             }

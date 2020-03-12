@@ -51,12 +51,8 @@ import org.fisco.bcos.web3j.abi.FunctionReturnDecoder;
 import org.fisco.bcos.web3j.abi.TypeReference;
 import org.fisco.bcos.web3j.abi.datatypes.Function;
 import org.fisco.bcos.web3j.abi.datatypes.Type;
-import org.fisco.bcos.web3j.crypto.Credentials;
-import org.fisco.bcos.web3j.crypto.ExtendedRawTransaction;
-import org.fisco.bcos.web3j.crypto.ExtendedTransactionEncoder;
-import org.fisco.bcos.web3j.crypto.RawTransaction;
+import org.fisco.bcos.web3j.crypto.*;
 import org.fisco.bcos.web3j.crypto.Sign.SignatureData;
-import org.fisco.bcos.web3j.crypto.TransactionEncoder;
 import org.fisco.bcos.web3j.crypto.gm.GenCredential;
 import org.fisco.bcos.web3j.protocol.Web3j;
 import org.fisco.bcos.web3j.protocol.core.DefaultBlockParameterName;
@@ -123,11 +119,12 @@ public class TransService {
         }
         // check sign user id
         if (SignType.CLOUDCALL.getValue() == req.getSignType()) {
-            if (req.getSignUserId() == null) {
+            String uuidUser = req.getSignUuidUser();
+            if (StringUtils.isBlank(uuidUser)) {
                 log.warn("deploy fail. sign user id is empty");
                 throw new BaseException(ConstantCode.SIGN_USERID_EMPTY);
             } else {
-                boolean result = keyStoreService.checkSignUserId(req.getSignUserId());
+                boolean result = keyStoreService.checkSignUserId(uuidUser);
                 if (!result) {
                     throw new BaseException(ConstantCode.SIGN_USERID_ERROR);
                 }
@@ -193,7 +190,7 @@ public class TransService {
         transInfoDto.setFuncName(funcName);
         transInfoDto.setFuncParam(JSON.toJSONString(params));
         transInfoDto.setSignType(req.getSignType());
-        transInfoDto.setSignUserId(req.getSignUserId());
+        transInfoDto.setSignUuidUser(req.getSignUuidUser());
         transInfoDto.setGmtCreate(new Date());
         transMapper.insertTransInfo(transInfoDto);
 
@@ -468,7 +465,7 @@ public class TransService {
             Function function = new Function(funcName, finalInputs, finalOutputs);
             String encodedFunction = FunctionEncoder.encode(function);
             // data sign
-            String signMsg = signMessage(groupId, signType, transInfoDto.getSignUserId(),
+            String signMsg = signMessage(groupId, signType, transInfoDto.getSignUuidUser(),
                     contractAddress, encodedFunction);
             if (StringUtils.isBlank(signMsg)) {
                 return;
@@ -501,7 +498,7 @@ public class TransService {
      * @param data info
      * @return
      */
-    public String signMessage(int groupId, int signType, int signUserId, String contractAddress,
+    public String signMessage(int groupId, int signType, String signUuidUser, String contractAddress,
             String data) throws IOException, BaseException {
         Random r = new Random();
         BigInteger randomid = new BigInteger(250, r);
@@ -527,8 +524,9 @@ public class TransService {
 
                 EncodeInfo encodeInfo = new EncodeInfo();
                 encodeInfo.setEncodedDataStr(encodedDataStr);
-                encodeInfo.setUserId(signUserId);
-                String signDataStr = keyStoreService.getSignDate(encodeInfo);
+                encodeInfo.setUuidUser(signUuidUser);
+                encodeInfo.setEncryptType(EncryptType.encryptType);
+                String signDataStr = keyStoreService.getSignData(encodeInfo);
                 if (StringUtils.isBlank(signDataStr)) {
                     log.warn("deploySend get sign data error.");
                     return null;
@@ -563,8 +561,8 @@ public class TransService {
 
                 EncodeInfo encodeInfo = new EncodeInfo();
                 encodeInfo.setEncodedDataStr(encodedDataStr);
-                encodeInfo.setUserId(signUserId);
-                String signDataStr = keyStoreService.getSignDate(encodeInfo);
+                encodeInfo.setUuidUser(signUuidUser);
+                String signDataStr = keyStoreService.getSignData(encodeInfo);
                 if (StringUtils.isBlank(signDataStr)) {
                     log.warn("deploySend get sign data error.");
                     return null;
