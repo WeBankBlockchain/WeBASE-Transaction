@@ -161,7 +161,7 @@ public class ContractService {
                 log.warn("deploy fail. sign user id is empty");
                 throw new BaseException(ConstantCode.SIGN_USERID_EMPTY);
             } else {
-                boolean result = keyStoreService.checkSignUserId(uuidUser);
+                boolean result = keyStoreService.checkSignUuidUser(uuidUser);
                 if (!result) {
                     throw new BaseException(ConstantCode.SIGN_USERID_ERROR);
                 }
