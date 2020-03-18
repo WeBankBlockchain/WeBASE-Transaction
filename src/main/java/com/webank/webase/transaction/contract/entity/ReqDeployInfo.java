@@ -34,7 +34,7 @@ public class ReqDeployInfo {
     private String uuidDeploy;
     @NotNull(message = ConstantCode.SIGN_TYPE_IS_EMPTY)
     private Integer signType;
-    private String signUuidUser;
+    private String signSignUserId;
     @NotBlank(message = ConstantCode.CONTRACT_BIN_IS_EMPTY)
     private String contractBin;
     @NotEmpty(message = ConstantCode.CONTRACT_ABI_IS_EMPTY)

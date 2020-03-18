@@ -32,7 +32,7 @@ public class TransInfoDto {
     private String funcName;
     private String funcParam;
     private int signType;
-    private String signUuidUser;
+    private String signUserId;
     private int requestCount;
     private int handleStatus = 0;
     private String transHash;
