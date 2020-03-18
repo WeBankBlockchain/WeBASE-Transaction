@@ -124,7 +124,7 @@ public class TransService {
                 log.warn("deploy fail. sign user id is empty");
                 throw new BaseException(ConstantCode.SIGN_USERID_EMPTY);
             } else {
-                boolean result = keyStoreService.checkSignSignUserId(signUserId);
+                boolean result = keyStoreService.checkSignUserId(signUserId);
                 if (!result) {
                     throw new BaseException(ConstantCode.SIGN_USERID_ERROR);
                 }
@@ -190,7 +190,7 @@ public class TransService {
         transInfoDto.setFuncName(funcName);
         transInfoDto.setFuncParam(JSON.toJSONString(params));
         transInfoDto.setSignType(req.getSignType());
-        transInfoDto.setSignSignUserId(req.getSignUserId());
+        transInfoDto.setSignUserId(req.getSignUserId());
         transInfoDto.setGmtCreate(new Date());
         transMapper.insertTransInfo(transInfoDto);
 
@@ -465,7 +465,7 @@ public class TransService {
             Function function = new Function(funcName, finalInputs, finalOutputs);
             String encodedFunction = FunctionEncoder.encode(function);
             // data sign
-            String signMsg = signMessage(groupId, signType, transInfoDto.getSignSignUserId(),
+            String signMsg = signMessage(groupId, signType, transInfoDto.getSignUserId(),
                     contractAddress, encodedFunction);
             if (StringUtils.isBlank(signMsg)) {
                 return;
@@ -498,7 +498,7 @@ public class TransService {
      * @param data info
      * @return
      */
-    public String signMessage(int groupId, int signType, String signSignUserId, String contractAddress,
+    public String signMessage(int groupId, int signType, String signUserId, String contractAddress,
             String data) throws IOException, BaseException {
         Random r = new Random();
         BigInteger randomid = new BigInteger(250, r);
@@ -524,7 +524,7 @@ public class TransService {
 
                 EncodeInfo encodeInfo = new EncodeInfo();
                 encodeInfo.setEncodedDataStr(encodedDataStr);
-                encodeInfo.setSignUserId(signSignUserId);
+                encodeInfo.setSignUserId(signUserId);
                 encodeInfo.setEncryptType(EncryptType.encryptType);
                 String signDataStr = keyStoreService.getSignData(encodeInfo);
                 if (StringUtils.isBlank(signDataStr)) {
@@ -561,7 +561,7 @@ public class TransService {
 
                 EncodeInfo encodeInfo = new EncodeInfo();
                 encodeInfo.setEncodedDataStr(encodedDataStr);
-                encodeInfo.setSignUserId(signSignUserId);
+                encodeInfo.setSignUserId(signUserId);
                 String signDataStr = keyStoreService.getSignData(encodeInfo);
                 if (StringUtils.isBlank(signDataStr)) {
                     log.warn("deploySend get sign data error.");

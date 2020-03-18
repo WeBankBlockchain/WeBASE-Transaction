@@ -138,22 +138,22 @@ public class KeyStoreService {
     }
 
     /**
-     * checkSignSignUserId.
+     * checkSignUserId.
      * 
      * @param signUserId business id of user in sign
      * @return
      */
-    public boolean checkSignSignUserId(String signUserId) {
+    public boolean checkSignUserId(String signUserId) {
         try {
             String url = String.format(SIGN_USERINFO_URL, properties.getSignServer(), signUserId);
-            log.info("checkSignSignUserId url:{}", url);
+            log.info("checkSignUserId url:{}", url);
             ResponseEntity response = restTemplate.getForObject(url, ResponseEntity.class);
-            log.info("checkSignSignUserId response:{}", JSON.toJSONString(response));
+            log.info("checkSignUserId response:{}", JSON.toJSONString(response));
             if (response.getCode() == 0) {
                 return true;
             }
         } catch (Exception e) {
-            log.error("checkSignSignUserId exception", e);
+            log.error("checkSignUserId exception", e);
         }
         return false;
     }
