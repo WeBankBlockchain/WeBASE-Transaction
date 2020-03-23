@@ -109,28 +109,28 @@ public class KeyStoreService {
     }
 
     /**
-     * getSignDate from sign service.
+     * getSignDatd from webase-sign service.
      * 
      * @param params params
      * @return
      */
-    public String getSignDate(EncodeInfo params) {
+    public String getSignData(EncodeInfo params) {
         try {
             SignInfo signInfo = new SignInfo();
             String url = String.format(SIGN_ADDSIGN_URL, properties.getSignServer());
-            log.info("getSignDate url:{}", url);
+            log.info("getSignData url:{}", url);
             HttpHeaders headers = CommonUtils.buildHeaders();
             HttpEntity<String> formEntity =
                     new HttpEntity<String>(JSON.toJSONString(params), headers);
             ResponseEntity response =
                     restTemplate.postForObject(url, formEntity, ResponseEntity.class);
-            log.info("getSignDate response:{}", JSON.toJSONString(response));
+            log.info("getSignData response:{}", JSON.toJSONString(response));
             if (response.getCode() == 0) {
                 signInfo = CommonUtils.object2JavaBean(response.getData(), SignInfo.class);
             }
             return signInfo.getSignDataStr();
         } catch (Exception e) {
-            log.error("getSignDate exception", e);
+            log.error("getSignData exception", e);
             LogUtils.monitorAbnormalLogger().error(ConstantProperties.CODE_ABNORMAL_S0005,
                     ConstantProperties.MSG_ABNORMAL_S0005);
         }
@@ -140,12 +140,12 @@ public class KeyStoreService {
     /**
      * checkSignUserId.
      * 
-     * @param userId userId
+     * @param signUserId business id of user in sign
      * @return
      */
-    public boolean checkSignUserId(int userId) {
+    public boolean checkSignUserId(String signUserId) {
         try {
-            String url = String.format(SIGN_USERINFO_URL, properties.getSignServer(), userId);
+            String url = String.format(SIGN_USERINFO_URL, properties.getSignServer(), signUserId);
             log.info("checkSignUserId url:{}", url);
             ResponseEntity response = restTemplate.getForObject(url, ResponseEntity.class);
             log.info("checkSignUserId response:{}", JSON.toJSONString(response));

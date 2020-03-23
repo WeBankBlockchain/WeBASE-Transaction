@@ -34,7 +34,7 @@ public class ReqTransSendInfo {
     private String uuidDeploy;
     @NotNull(message = ConstantCode.SIGN_TYPE_IS_EMPTY)
     private Integer signType;
-    private Integer signUserId = 0;
+    private String signUserId;
     private List<Object> contractAbi = new ArrayList<>();
     private String contractAddress;
     @NotBlank(message = ConstantCode.FUNCTION_NAME_IS_EMPTY)

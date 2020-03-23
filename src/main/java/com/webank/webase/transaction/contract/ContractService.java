@@ -156,11 +156,12 @@ public class ContractService {
         }
         // check sign user id
         if (SignType.CLOUDCALL.getValue() == req.getSignType()) {
-            if (req.getSignUserId() == null) {
+            String signUserId = req.getSignUserId();
+            if (StringUtils.isBlank(signUserId)) {
                 log.warn("deploy fail. sign user id is empty");
                 throw new BaseException(ConstantCode.SIGN_USERID_EMPTY);
             } else {
-                boolean result = keyStoreService.checkSignUserId(req.getSignUserId());
+                boolean result = keyStoreService.checkSignUserId(signUserId);
                 if (!result) {
                     throw new BaseException(ConstantCode.SIGN_USERID_ERROR);
                 }

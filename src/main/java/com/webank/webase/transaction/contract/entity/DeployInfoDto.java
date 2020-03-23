@@ -31,7 +31,7 @@ public class DeployInfoDto {
     private String contractAddress;
     private String funcParam;
     private int signType;
-    private int signUserId;
+    private String signUserId;
     private int requestCount;
     private int handleStatus = 0;
     private String transHash;
