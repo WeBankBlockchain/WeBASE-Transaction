@@ -530,7 +530,6 @@ public class TransService {
                 EncodeInfo encodeInfo = new EncodeInfo();
                 encodeInfo.setEncodedDataStr(encodedDataStr);
                 encodeInfo.setSignUserId(signUserId);
-                encodeInfo.setEncryptType(EncryptType.encryptType);
                 String signDataStr = keyStoreService.getSignData(encodeInfo);
                 if (StringUtils.isBlank(signDataStr)) {
                     log.warn("deploySend get sign data error.");
