@@ -24,7 +24,7 @@ List spring_boot =[
     "org.springframework.boot:spring-boot-starter-web:$spring_boot_version",
     "org.springframework.boot:spring-boot-autoconfigure:$spring_boot_version",
     "org.springframework.boot:spring-boot-configuration-processor:$spring_boot_version",
-    "org.springframework.boot:spring-boot-starter-log4j2:$spring_boot_version"
+    // "org.springframework.boot:spring-boot-starter-log4j2:$spring_boot_version"
 ]
 
 List mysql = [
@@ -38,7 +38,7 @@ List swagger = [
     'io.springfox:springfox-swagger-ui:2.8.0'
 ]
 
-def log4j_version="2.9.0"
+def log4j_version="2.13.1"
 List logger = [
     "org.apache.logging.log4j:log4j-api:$log4j_version",
     "org.apache.logging.log4j:log4j-core:$log4j_version",
@@ -79,8 +79,15 @@ List jaxb = [
      "javax.activation:activation:1.1.1"
 ]
 
+List jackson = [
+    "com.fasterxml.jackson.core:jackson-databind:2.10.0",
+    "com.fasterxml.jackson.module:jackson-module-parameter-names:2.10.0",
+    "com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.10.0",
+    "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.10.0"
+]
+
 dependencies {
-    compile spring_boot,mysql,swagger,web3sdk,logger,netty,dangdang,zookeeper,jaxb
+    compile spring_boot,mysql,swagger,web3sdk,logger,netty,dangdang,zookeeper,jaxb,jackson
     // guomi contract compile: USE 'socJ-all-0.4.25-gm' to REPLACE 'ethereum:solcJ-all'
     compile ("org.fisco-bcos:web3sdk:2.2.0")
 //        {
@@ -89,7 +96,7 @@ dependencies {
 //    compile fileTree(dir:'lib',includes:['solcJ-all-0.4.25-gm.jar'])
     compile "org.apache.commons:commons-lang3:3.6"
     compile "commons-io:commons-io:2.4"
-    compile "com.alibaba:fastjson:1.2.60"
+    compile "com.alibaba:fastjson:1.2.67"
     compile "io.shardingsphere:sharding-jdbc-spring-boot-starter:3.1.0"
     compile 'org.projectlombok:lombok:1.18.2'
     annotationProcessor 'org.projectlombok:lombok:1.18.2'
