@@ -14,30 +14,27 @@
 
 package com.webank.webase.transaction.trans.entity;
 
-import com.webank.webase.transaction.base.ConstantCode;
 import java.util.ArrayList;
 import java.util.List;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import lombok.Data;
-import org.hibernate.validator.constraints.NotBlank;
 
 /**
- * transaction send request parameters.
+ * transaction request parameters.
  *
  */
 @Data
 public class ReqTransSendInfo {
-    @NotNull(message = ConstantCode.GROUP_ID_IS_EMPTY)
+    @NotNull
     private Integer groupId;
-    @NotBlank(message = ConstantCode.UUID_IS_EMPTY)
-    private String uuidStateless;
-    private String uuidDeploy;
-    @NotNull(message = ConstantCode.SIGN_TYPE_IS_EMPTY)
-    private Integer signType;
-    private String signUserId;
-    private List<Object> contractAbi = new ArrayList<>();
+    @NotBlank
     private String contractAddress;
-    @NotBlank(message = ConstantCode.FUNCTION_NAME_IS_EMPTY)
+    private String signUserId;
+    @NotBlank
     private String funcName;
+    @NotEmpty
+    private List<Object> functionAbi = new ArrayList<>();
     private List<Object> funcParam = new ArrayList<>();
 }

@@ -14,13 +14,13 @@
 
 package com.webank.webase.transaction.config;
 
-import java.io.IOException;
+import com.webank.webase.transaction.base.ConstantCode;
+import com.webank.webase.transaction.base.Constants;
+import com.webank.webase.transaction.base.exception.BaseException;
 import java.util.HashMap;
 import java.util.List;
-import com.webank.webase.transaction.base.ConstantCode;
-import com.webank.webase.transaction.base.exception.BaseException;
+import java.util.Set;
 import java.util.concurrent.ThreadPoolExecutor.AbortPolicy;
-
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.fisco.bcos.channel.client.Service;
@@ -29,10 +29,10 @@ import org.fisco.bcos.channel.handler.GroupChannelConnectionsConfig;
 import org.fisco.bcos.web3j.crypto.EncryptType;
 import org.fisco.bcos.web3j.protocol.Web3j;
 import org.fisco.bcos.web3j.protocol.channel.ChannelEthereumService;
+import org.fisco.bcos.web3j.protocol.core.methods.response.NodeVersion;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.DependsOn;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 /**
@@ -51,8 +51,6 @@ public class Web3Config {
     private int queueCapacity = 500;
     private int keepAlive = 60;
     private GroupChannelConnectionsConfig groupConfig;
-    // 0: standard, 1: guomi
-    private int encryptType;
 
     /**
      * init web3j.
@@ -60,8 +58,7 @@ public class Web3Config {
      * @return
      */
     @Bean
-    @DependsOn("encryptType")
-    public HashMap<Integer, Web3j> web3j() throws Exception {
+    public HashMap<Integer, Web3j> web3jMap() throws Exception {
         HashMap<Integer, Web3j> web3jMap = new HashMap<Integer, Web3j>();
 
         Service service = new Service();
@@ -80,8 +77,6 @@ public class Web3Config {
             channelEthereumService.setTimeout(timeout);
             channelEthereumService.setChannelService(service);
             Web3j web3j = Web3j.build(channelEthereumService, groupId);
-            // whether webase-transaction match with chain's encrypt type: guomi or standard
-            isMatchEncryptType(web3j);
             web3j.getGroupList().send().getGroupList();
             web3jMap.put(groupId, web3j);
         }
@@ -106,34 +101,25 @@ public class Web3Config {
         return executor;
     }
 
-    /**
-     * set sdk's encrypt type: 0: standard, 1: guomi sdk switch ecdsa to sm2, sha to sm3.
-     */
-    @Bean(name = "encryptType")
-    public EncryptType EncryptType() {
-        return new EncryptType(encryptType);
-    }
-
-    /**
-     * check local sdk's encrypt type match with chain's
-     * @param web3j
-     * @throws IOException
-     * @throws BaseException
-     */
-    public void isMatchEncryptType(Web3j web3j) throws IOException, BaseException {
-        boolean isMatch = true;
+    @Bean
+    public EncryptType EncryptType(HashMap<Integer, Web3j> web3jMap) throws Exception {
+        Set<Integer> iSet = web3jMap.keySet();
+        if (iSet.isEmpty()) {
+            log.error("web3jMap is empty, please check your node status.");
+            throw new BaseException(ConstantCode.WEB3JMAP_IS_EMPTY);
+        }
+        // get random index to get web3j
+        Integer index = iSet.iterator().next();
+        NodeVersion version = web3jMap.get(index).getNodeVersion().send();
+        Constants.version = version.getNodeVersion().getVersion();
+        Constants.chainId = version.getNodeVersion().getChainID();
+        log.info("Chain's clientVersion:{}", Constants.version);
         // 1: guomi, 0: standard
-        String clientVersion = web3j.getNodeVersion().send().getNodeVersion().getVersion();
-        log.info("Chain's clientVersion:{}", clientVersion);
-        if (clientVersion.contains("gm")) {
-            isMatch = EncryptType.encryptType == 1;
-        } else {
-            isMatch = EncryptType.encryptType == 0;
+        int encryptType = 0;
+        if (Constants.version.contains("gm")) {
+            encryptType = 1;
         }
-        if (!isMatch) {
-            log.error("Chain's version not matches with local encryptType:{}", EncryptType.encryptType);
-            throw new BaseException(ConstantCode.SYSTEM_ERROR.getCode(), "Chain's version not matches "
-                    + "with local encryptType"+ EncryptType.encryptType);
-        }
+        log.info("init EncrytType:" + encryptType);
+        return new EncryptType(encryptType);
     }
 }

@@ -14,14 +14,15 @@
 
 package com.webank.webase.transaction.base.exception;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import com.alibaba.fastjson.JSON;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.webank.webase.transaction.base.ConstantCode;
-import com.webank.webase.transaction.base.ResponseEntity;
-import com.webank.webase.transaction.base.RetCode;
-import java.util.Optional;
+import java.util.HashMap;
+import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.TypeMismatchException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.ServletRequestBindingException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -37,40 +38,60 @@ public class ExceptionsHandler {
     ObjectMapper mapper;
 
     /**
-     * BaseException Handler.
-     * 
-     * @param baseException e
-     * @return
+     * myExceptionHandler.
+     *
+     * @param frontException e
      */
     @ResponseBody
     @ExceptionHandler(value = BaseException.class)
-    public ResponseEntity myExceptionHandler(BaseException baseException) throws Exception {
-        log.warn("catch business exception", baseException);
-        RetCode retCode = Optional.ofNullable(baseException).map(BaseException::getRetCode)
-                .orElse(ConstantCode.SYSTEM_ERROR);
+    public ResponseEntity myExceptionHandler(BaseException frontException) throws Exception {
+        log.warn("catch frontException: {}", frontException.getMessage());
+        Map<String, Object> map = new HashMap<>();
+        map.put("errorMessage", frontException.getMessage());
+        map.put("code", frontException.getRetCode().getCode());
+        return ResponseEntity.status(422).body(map);
 
-        ResponseEntity rep = new ResponseEntity(retCode);
-        log.warn("business exception return:{}", mapper.writeValueAsString(rep));
-        return rep;
     }
 
     /**
-     * Exception Handler.
-     * 
+     * parameter exception:TypeMismatchException
+     */
+    @ResponseBody
+    @ExceptionHandler(value = TypeMismatchException.class)
+    public ResponseEntity typeMismatchExceptionHandler(TypeMismatchException ex) {
+        log.warn("catch typeMismatchException", ex);
+
+        Map<String, Object> map = new HashMap<>();
+        map.put("errorMessage", ex.getMessage());
+        map.put("code", 400);
+        log.warn("typeMismatchException return:{}", JSON.toJSONString(map));
+        return ResponseEntity.status(400).body(map);
+    }
+
+    @ResponseBody
+    @ExceptionHandler(value = ServletRequestBindingException.class)
+    public ResponseEntity bindExceptionHandler(ServletRequestBindingException ex) {
+        log.warn("catch bindExceptionHandler", ex);
+
+        Map<String, Object> map = new HashMap<>();
+        map.put("errorMessage", ex.getMessage());
+        map.put("code", 400);
+        log.warn("bindExceptionHandler return:{}", JSON.toJSONString(map));
+        return ResponseEntity.status(400).body(map);
+    }
+
+    /**
+     * exceptionHandler.
+     *
      * @param exc e
-     * @return
      */
     @ResponseBody
     @ExceptionHandler(value = Exception.class)
     public ResponseEntity exceptionHandler(Exception exc) {
-        log.info("catch  exception", exc);
-        RetCode retCode = ConstantCode.SYSTEM_ERROR;
-        ResponseEntity rep = new ResponseEntity(retCode);
-        try {
-            log.warn("exceptionHandler system exception return:{}", mapper.writeValueAsString(rep));
-        } catch (JsonProcessingException ex) {
-            log.warn("exceptionHandler system exception");
-        }
-        return rep;
+        log.info("catch  exception: ", exc);
+        Map<String, Object> map = new HashMap<>();
+        map.put("errorMessage", exc.getMessage());
+        map.put("code", 500);
+        return ResponseEntity.status(500).body(map);
     }
 }

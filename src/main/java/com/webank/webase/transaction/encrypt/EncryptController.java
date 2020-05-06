@@ -12,7 +12,7 @@
  * the License.
  */
 
-package com.webank.webase.transaction.gm;
+package com.webank.webase.transaction.encrypt;
 
 import com.webank.webase.transaction.base.ConstantCode;
 import com.webank.webase.transaction.base.ResponseEntity;
@@ -30,7 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 @RestController
 @RequestMapping(value = "encrypt")
-public class EncryptTypeController {
+public class EncryptController {
     @GetMapping("")
     public ResponseEntity getEncryptType() {
         ResponseEntity response = new ResponseEntity(ConstantCode.RET_SUCCEED);

@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright 2014-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
@@ -11,27 +11,24 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+package com.webank.webase.transaction.base.exception;
 
-package com.webank.webase.transaction.util;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.webank.webase.transaction.base.RetCode;
 
 /**
- * LogUtils.
+ * param Exception
  */
-public class LogUtils {
+public class ParamException extends RuntimeException {
 
-    private static final Logger MONITORBUSINESS = LoggerFactory.getLogger("monitorBusiness");
+    private static final long serialVersionUID = 1L;
+    private RetCode retCode;
 
-    private static final Logger MONITORABNORMAL = LoggerFactory.getLogger("monitorAbnormal");
-
-    public static Logger monitorBusinessLogger() {
-        return MONITORBUSINESS;
+    public ParamException(int code, String msg) {
+        super(msg);
+        this.retCode = new RetCode(code, msg);
     }
 
-    public static Logger monitorAbnormalLogger() {
-        return MONITORABNORMAL;
+    public RetCode getRetCode() {
+        return retCode;
     }
-
 }

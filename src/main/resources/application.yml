@@ -1,0 +1,27 @@
+server:
+  port: 5003
+  servlet:
+    context-path: /WeBASE-Transaction
+
+sdk:
+  # 机构名
+  orgName: webank
+  timeout: 10000
+  # 群组信息，可配置多群组和多节点
+  groupConfig:
+    allChannelConnections:
+    - groupId: 1
+      connectionsStr:
+      - 127.0.0.1:23200
+      - 127.0.0.1:23200
+    - groupId: 2
+      connectionsStr:
+      - 127.0.0.1:23200
+      - 127.0.0.1:23200
+
+constant: 
+  # WeBASE-Sign签名服务ip端口
+  signServer: 127.0.0.1:5004
+
+logging: 
+  config: classpath:log4j2.xml

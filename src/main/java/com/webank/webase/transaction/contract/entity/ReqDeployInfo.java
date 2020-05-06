@@ -14,13 +14,12 @@
 
 package com.webank.webase.transaction.contract.entity;
 
-import com.webank.webase.transaction.base.ConstantCode;
 import java.util.ArrayList;
 import java.util.List;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import lombok.Data;
-import org.hibernate.validator.constraints.NotBlank;
-import org.hibernate.validator.constraints.NotEmpty;
 
 /**
  * contract deploy request parameters.
@@ -28,16 +27,13 @@ import org.hibernate.validator.constraints.NotEmpty;
  */
 @Data
 public class ReqDeployInfo {
-    @NotNull(message = ConstantCode.GROUP_ID_IS_EMPTY)
+    @NotNull
     private Integer groupId;
-    @NotBlank(message = ConstantCode.UUID_IS_EMPTY)
-    private String uuidDeploy;
-    @NotNull(message = ConstantCode.SIGN_TYPE_IS_EMPTY)
-    private Integer signType;
+    @NotBlank
     private String signUserId;
-    @NotBlank(message = ConstantCode.CONTRACT_BIN_IS_EMPTY)
-    private String contractBin;
-    @NotEmpty(message = ConstantCode.CONTRACT_ABI_IS_EMPTY)
+    @NotBlank
+    private String bytecodeBin;
+    @NotEmpty
     private List<Object> contractAbi;
     private List<Object> funcParam = new ArrayList<>();
 }
