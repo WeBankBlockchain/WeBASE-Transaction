@@ -16,7 +16,7 @@ package com.webank.webase.transaction.util;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
-import com.webank.webase.transaction.base.ConstantProperties;
+import com.webank.webase.transaction.base.Constants;
 import com.webank.webase.transaction.base.exception.BaseException;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -91,7 +91,7 @@ public class ContractAbiUtil {
         AbiDefinition result = null;
         for (Object object : abiArr) {
             AbiDefinition abiDefinition = JSON.parseObject(object.toString(), AbiDefinition.class);
-            if (ConstantProperties.TYPE_CONSTRUCTOR.equals(abiDefinition.getType())) {
+            if (Constants.TYPE_CONSTRUCTOR.equals(abiDefinition.getType())) {
                 result = abiDefinition;
                 break;
             }
@@ -111,7 +111,7 @@ public class ContractAbiUtil {
         AbiDefinition result = null;
         for (Object object : abiArr) {
             AbiDefinition abiDefinition = JSON.parseObject(object.toString(), AbiDefinition.class);
-            if (ConstantProperties.TYPE_FUNCTION.equals(abiDefinition.getType())
+            if (Constants.TYPE_FUNCTION.equals(abiDefinition.getType())
                     && name.equals(abiDefinition.getName())) {
                 result = abiDefinition;
                 break;
@@ -131,7 +131,7 @@ public class ContractAbiUtil {
         List<AbiDefinition> result = new ArrayList<>();
         for (Object object : abiArr) {
             AbiDefinition abiDefinition = JSON.parseObject(object.toString(), AbiDefinition.class);
-            if (ConstantProperties.TYPE_EVENT.equals(abiDefinition.getType())) {
+            if (Constants.TYPE_EVENT.equals(abiDefinition.getType())) {
                 result.add(abiDefinition);
             }
         }

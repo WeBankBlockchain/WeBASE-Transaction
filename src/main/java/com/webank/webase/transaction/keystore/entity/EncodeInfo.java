@@ -22,6 +22,6 @@ import lombok.Data;
  */
 @Data
 public class EncodeInfo {
-    private Integer userId;
+    private String signUserId;
     private String encodedDataStr;
 }

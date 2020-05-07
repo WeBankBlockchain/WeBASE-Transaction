@@ -16,14 +16,16 @@ package com.webank.webase.transaction.trans;
 
 import com.alibaba.fastjson.JSON;
 import com.webank.webase.transaction.base.BaseController;
+import com.webank.webase.transaction.base.ConstantCode;
 import com.webank.webase.transaction.base.ResponseEntity;
 import com.webank.webase.transaction.base.exception.BaseException;
-import com.webank.webase.transaction.trans.entity.ReqTransCallInfo;
 import com.webank.webase.transaction.trans.entity.ReqTransSendInfo;
+import com.webank.webase.transaction.util.CommonUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import javax.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import org.fisco.bcos.web3j.protocol.core.methods.response.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -55,67 +57,29 @@ public class TransController extends BaseController {
     @ApiOperation(value = "transaction send", notes = "transaction send")
     @PostMapping("/send")
     public ResponseEntity send(@Valid @RequestBody ReqTransSendInfo transSendInfo,
-            BindingResult result) throws BaseException {
+            BindingResult result) throws Exception {
         log.info("transSend start. transSendInfo:{}", JSON.toJSONString(transSendInfo));
-        checkParamResult(result);
-        return transService.save(transSendInfo);
+        checkBindResult(result);
+        return CommonUtils.buildSuccessRsp(transService.send(transSendInfo));
     }
 
     /**
-     * transaction call.
-     * 
-     * @param transCallInfo parameter
-     * @param result checkResult
-     * @return
+     * get transaction by hash.
      */
-    @ApiOperation(value = "transaction call", notes = "transaction call")
-    @PostMapping("/call")
-    public ResponseEntity call(@Valid @RequestBody ReqTransCallInfo transCallInfo,
-            BindingResult result) throws BaseException {
-        log.info("call start. transCallInfo:{}", JSON.toJSONString(transCallInfo));
-        checkParamResult(result);
-        return transService.call(transCallInfo);
+    @GetMapping("/getTransactionByHash/{groupId}/{transHash}")
+    public ResponseEntity getTransactionByHash(@PathVariable("groupId") Integer groupId,
+            @PathVariable("transHash") String transHash) throws BaseException {
+        log.info("start getTransactionByHash groupId:{} transHash:{}", groupId, transHash);
+        return CommonUtils.buildSuccessRsp(transService.getTransactionByHash(groupId, transHash));
     }
 
     /**
-     * get transaction event.
-     * 
-     * @param groupId id
-     * @param uuidStateless uuid
-     * @return
+     * get transaction receipt by hash.
      */
-    @ApiOperation(value = "getEvent", notes = "get transaction event")
-    @GetMapping("/event/{groupId}/{uuidStateless}")
-    public ResponseEntity getEvent(@PathVariable("groupId") int groupId,
-            @PathVariable("uuidStateless") String uuidStateless) throws BaseException {
-        return transService.getEvent(groupId, uuidStateless);
-    }
-
-    /**
-     * get transaction output.
-     * 
-     * @param groupId id
-     * @param uuidStateless uuid
-     * @return
-     */
-    @ApiOperation(value = "getOutput", notes = "get transaction output")
-    @GetMapping("/output/{groupId}/{uuidStateless}")
-    public ResponseEntity getOutput(@PathVariable("groupId") int groupId,
-            @PathVariable("uuidStateless") String uuidStateless) throws BaseException {
-        return transService.getOutput(groupId, uuidStateless);
-    }
-    
-    /**
-     * get transaction info.
-     * 
-     * @param groupId id
-     * @param uuidStateless uuid
-     * @return
-     */
-    @ApiOperation(value = "getTransInfo", notes = "get transaction info")
-    @GetMapping("/transInfo/{groupId}/{uuidStateless}")
-    public ResponseEntity getTransInfo(@PathVariable("groupId") int groupId,
-            @PathVariable("uuidStateless") String uuidStateless) throws BaseException {
-        return transService.getTransInfo(groupId, uuidStateless);
+    @GetMapping("/getTransactionReceipt/{groupId}/{transHash}")
+    public ResponseEntity getTransactionReceipt(@PathVariable("groupId") Integer groupId,
+            @PathVariable("transHash") String transHash) throws BaseException {
+        log.info("start getTransactionReceipt groupId:{} transHash:{}", groupId, transHash);
+        return CommonUtils.buildSuccessRsp(transService.getTransactionReceipt(groupId, transHash));
     }
 }

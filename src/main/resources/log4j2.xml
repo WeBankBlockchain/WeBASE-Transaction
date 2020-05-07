@@ -31,39 +31,9 @@
             <DefaultRolloverStrategy max="24" >
             </DefaultRolloverStrategy>
         </RollingFile>
-        
-        <RollingFile name="monitorBusiness" fileName="${logPath}/monitor-business.log" 
-                     filePattern="${logPath}/monitor-business.log.%d{yyyy-MM-dd}.log.gz">
-            <PatternLayout pattern="[%-5p][%d{yyyy-MM-dd HH:mm:ss.SSS}][%t][TRANS][123][123][LOG_POINT]%m%n" />
-            <Policies>
-                <TimeBasedTriggeringPolicy />
-                <SizeBasedTriggeringPolicy size="200 MB" />
-            </Policies>
-            <DefaultRolloverStrategy max="24" >
-            </DefaultRolloverStrategy>
-        </RollingFile>
-        
-        <RollingFile name="monitorAbnormal" fileName="${logPath}/monitor-abnormal.log" 
-                     filePattern="${logPath}/monitor-abnormal.log.%d{yyyy-MM-dd}.log.gz">
-            <PatternLayout pattern="[%-5p][%d{yyyy-MM-dd HH:mm:ss.SSS}][%t][TRANS][123][123][LOG_POINT]%m%n" />
-            <Policies>
-                <TimeBasedTriggeringPolicy />
-                <SizeBasedTriggeringPolicy size="200 MB" />
-            </Policies>
-            <DefaultRolloverStrategy max="24" >
-            </DefaultRolloverStrategy>
-        </RollingFile>
 
         <Async name="asyncWeb3sdk" bufferSize="512">
             <AppenderRef ref="web3sdk" />
-        </Async>
-        
-        <Async name="asyncMonitorBusiness" bufferSize="512">
-            <AppenderRef ref="monitorBusiness" />
-        </Async>
-        
-        <Async name="asyncMonitorAbnormal" bufferSize="512">
-            <AppenderRef ref="monitorAbnormal" />
         </Async>
         
         <Async name="asyncTransaction" bufferSize="512">
@@ -72,20 +42,8 @@
     </Appenders>
 
     <Loggers>
-        <Logger name="org.fisco.bcos.channel" level="debug" additivity="false">
+        <Logger name="org.fisco.bcos" level="info" additivity="false">
             <AppenderRef ref="asyncWeb3sdk" />
-        </Logger>
-        
-        <Logger name="org.fisco.bcos.web3j" level="debug" additivity="false">
-            <AppenderRef ref="asyncWeb3sdk" />
-        </Logger>
-        
-        <Logger name="monitorBusiness" level="info" additivity="false">
-            <AppenderRef ref="asyncMonitorBusiness" />
-        </Logger>
-        
-        <Logger name="monitorAbnormal" level="error" additivity="false">
-            <AppenderRef ref="asyncMonitorAbnormal" />
         </Logger>
         
         <Root level="info">

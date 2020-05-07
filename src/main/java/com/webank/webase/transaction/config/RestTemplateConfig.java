@@ -11,19 +11,23 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.webank.webase.transaction.config;
 
+import java.util.concurrent.TimeUnit;
 import lombok.Data;
+import org.apache.http.client.HttpClient;
+import org.apache.http.impl.client.DefaultConnectionKeepAliveStrategy;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.client.ClientHttpRequestFactory;
-import org.springframework.http.client.SimpleClientHttpRequestFactory;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 
 /**
- * RestTemplateConfig.
- *
+ * Restful request template configuration
  */
 @Data
 @Configuration
@@ -46,9 +50,20 @@ public class RestTemplateConfig {
      */
     @Bean
     public ClientHttpRequestFactory simpleClientHttpRequestFactory() {
-        SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
-        factory.setReadTimeout(20000);
-        factory.setConnectTimeout(5000);
-        return factory;
+        PoolingHttpClientConnectionManager pollingConnectionManager =
+                new PoolingHttpClientConnectionManager(30, TimeUnit.SECONDS);
+        // max connection
+        pollingConnectionManager.setMaxTotal(1000);
+        pollingConnectionManager.setDefaultMaxPerRoute(100);
+        HttpClientBuilder httpClientBuilder = HttpClients.custom();
+        httpClientBuilder.setConnectionManager(pollingConnectionManager);
+        // add Keep-Alive
+        httpClientBuilder.setKeepAliveStrategy(new DefaultConnectionKeepAliveStrategy());
+        HttpClient httpClient = httpClientBuilder.build();
+        HttpComponentsClientHttpRequestFactory clientHttpRequestFactory =
+                new HttpComponentsClientHttpRequestFactory(httpClient);
+        clientHttpRequestFactory.setReadTimeout(100000);
+        clientHttpRequestFactory.setConnectTimeout(100000);
+        return clientHttpRequestFactory;
     }
 }

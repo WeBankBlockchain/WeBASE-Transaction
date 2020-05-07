@@ -1,80 +1,18 @@
 
-### v1.2.2
+### v1.3.1
 
- (2020-01-02)
+ (2020-05-06)
 
 **Add**
 
-- 支持国密
-  - 发送交易、部署合约(sm2, sm3, solc-gm)
-  - 新增`/encrypt`接口判断国密
-- 新增查询接口支持查询部署信息与交易信息
-
-**Fix**
-
-- 优化：支持sdk线程池可配置
-- 优化：web3sdk升级至v2.2.0
-- 优化：start.sh启动脚本优化
-- 优化：CommonUtils的`SignatureData`序列化支持国密
-
+- 部署合约
+- 发送交易
+- 查询国密/非国密
 
 **兼容性**
 
-- 支持FISCO-BCOS v2.0.0-rc1 版本
-- 支持FISCO-BCOS v2.0.0-rc2 版本
-- 支持FISCO-BCOS v2.0.0-rc3 版本
+- 国密/非国密
 - 支持FISCO-BCOS v2.0.0 及以上版本
-- WeBASE-Sign v1.2.2
+- WeBASE-Sign bsn
 
 详细了解，请阅读[**技术文档**](https://webasedoc.readthedocs.io/zh_CN/latest/)。
-
-
-### v1.2.0
-
- (2019-09-30)
-
-**Add**
-
-- 分库分表
-- 支持删除数据
-
-详细了解，请阅读[**技术文档**](https://webasedoc.readthedocs.io/zh_CN/latest/)。
-
-
-
-### v1.1.0
-
- (2019-09-12)
-
-**Fix**
-
-- bugfix：调用WeBASE-Sign时签名用户地址不一致
-- bugfix：方法调用时校验方法名是否存在
-- 优化：调用WeBASE-Sign时支持传入用户编号
-- 优化：启停脚本通过程序名和端口校验进程
-
-**兼容性**
-
-- 支持FISCO-BCOS v2.0.0-rc1 版本
-- 支持FISCO-BCOS v2.0.0-rc2 版本
-- 支持FISCO-BCOS v2.0.0-rc3 版本
-- 支持FISCO-BCOS v2.0.0 及以上版本
-- WeBASE-Sign V1.1.0
-
-详细了解，请阅读[**技术文档**](https://webasedoc.readthedocs.io/zh_CN/latest/)。
-
-
-
-### V1.0.0
-
-(2019-06-27)
-
-**Add**
-
-1. 适配FISCO-BCOS 2.0.0版本
-2. 支持多群组功能
-3. 支持合约编译，合约部署，合约调用
-4. 可以查询交易的event和output
-5. 缓存无状态交易，轮询上链
-6. 支持本地配置私钥或随机私钥签名
-7. 支持单机或集群部署

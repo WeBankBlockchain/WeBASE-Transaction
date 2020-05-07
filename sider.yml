@@ -3,3 +3,9 @@ linter:
     dir: src
     encoding: Shift_JIS
     min_priority: 2
+  checkstyle:
+    config: google
+    dir: src
+    ignore:
+      - warning
+      - info

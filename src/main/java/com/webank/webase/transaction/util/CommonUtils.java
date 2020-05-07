@@ -16,23 +16,14 @@ package com.webank.webase.transaction.util;
 
 import com.alibaba.fastjson.JSON;
 import com.webank.webase.transaction.base.ConstantCode;
-import com.webank.webase.transaction.base.exception.BaseException;
-import java.io.Closeable;
+import com.webank.webase.transaction.base.ResponseEntity;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.Enumeration;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 import lombok.extern.slf4j.Slf4j;
 import org.fisco.bcos.web3j.crypto.EncryptType;
 import org.fisco.bcos.web3j.crypto.Sign.SignatureData;
 import org.fisco.bcos.web3j.utils.Numeric;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.web.multipart.MultipartFile;
 
 /**
  * CommonUtils.
@@ -40,136 +31,14 @@ import org.springframework.web.multipart.MultipartFile;
  */
 @Slf4j
 public class CommonUtils {
-
-    public static final int publicKeyLength_64 = 64;
-
+    
     /**
-     * unZipFiles.
-     * 
-     * @param zipFile file
-     * @param path path
+     * base response
      */
-    public static void unZipFiles(MultipartFile zipFile, String path)
-            throws IOException, BaseException {
-        if (zipFile.isEmpty()) {
-            throw new BaseException(ConstantCode.FILE_IS_EMPTY);
-        }
-        if (!path.endsWith(File.separator)) {
-            path = path + File.separator;
-        }
-        String fileName = zipFile.getOriginalFilename();
-        int pos = fileName.lastIndexOf(".");
-        String extName = fileName.substring(pos + 1).toLowerCase();
-        if (!extName.equals("zip")) {
-            throw new BaseException(ConstantCode.NOT_A_ZIP_FILE);
-        }
-        File file = new File(path + fileName);
-        if (!file.getParentFile().exists()) {
-            file.getParentFile().mkdirs();
-        }
-        zipFile.transferTo(file);
-        ZipFile zf = null;
-        try {
-            zf = new ZipFile(file);
-            for (Enumeration entries = zf.entries(); entries.hasMoreElements();) {
-                ZipEntry entry = (ZipEntry) entries.nextElement();
-                String zipEntryName = entry.getName();
-                if (!zipEntryName.endsWith(".sol")) {
-                    continue;
-                }
-                InputStream inputStream = null;
-                OutputStream outputStream = null;
-                try {
-                    inputStream = zf.getInputStream(entry);
-                    String outPath = (path + zipEntryName).replaceAll("\\*", "/");
-                    log.info("unZipFiles outPath:{}", cleanString(outPath));
-
-                    outputStream = new FileOutputStream(cleanString(outPath));
-                    byte[] buf1 = new byte[1024];
-                    int len;
-                    while ((len = inputStream.read(buf1)) > 0) {
-                        outputStream.write(buf1, 0, len);
-                    }
-                    outputStream.flush();
-                } catch (IOException e) {
-                    System.out.println("unZipFiles IOException:" + e.toString());
-                } finally {
-                    close(outputStream);
-                    close(inputStream);
-                }
-            }
-        } catch (IOException e) {
-            System.out.println("unZipFiles IOException:" + e.toString());
-        } finally {
-            close(zf);
-        }
-        if (file.exists()) {
-            file.delete();
-        }
-    }
-
-    private static String cleanString(String str) {
-        if (str == null) {
-            return null;
-        }
-        String cleanString = "";
-        for (int i = 0; i < str.length(); ++i) {
-            cleanString += cleanChar(str.charAt(i));
-        }
-        return cleanString;
-    }
-
-    private static char cleanChar(char value) {
-        // 0 - 9
-        for (int i = 48; i < 58; ++i) {
-            if (value == i) {
-                return (char) i;
-            }
-        }
-        // 'A' - 'Z'
-        for (int i = 65; i < 91; ++i) {
-            if (value == i) {
-                return (char) i;
-            }
-        }
-        // 'a' - 'z'
-        for (int i = 97; i < 123; ++i) {
-            if (value == i) {
-                return (char) i;
-            }
-        }
-        // other valid characters
-        switch (value) {
-            case '\\':
-                return '\\';
-            case '/':
-                return '/';
-            case ':':
-                return ':';
-            case '.':
-                return '.';
-            case '-':
-                return '-';
-            case '_':
-                return '_';
-            default:
-                return ' ';
-        }
-    }
-
-    /**
-     * close Closeable.
-     * 
-     * @param closeable object
-     */
-    private static void close(Closeable closeable) {
-        if (closeable != null) {
-            try {
-                closeable.close();
-            } catch (IOException e) {
-                System.out.println("close IOException:" + e.toString());
-            }
-        }
+    public static ResponseEntity buildSuccessRsp(Object data) {
+        ResponseEntity baseRspVo = new ResponseEntity(ConstantCode.RET_SUCCEED);
+        baseRspVo.setData(data);
+        return baseRspVo;
     }
 
     /**
@@ -214,7 +83,7 @@ public class CommonUtils {
     public static String signatureDataToString(SignatureData signatureData) {
         byte[] byteArr;
         if(EncryptType.encryptType == 1) {
-            byteArr = new byte[1 + signatureData.getR().length + signatureData.getS().length + publicKeyLength_64];
+            byteArr = new byte[1 + signatureData.getR().length + signatureData.getS().length + 64];
             byteArr[0] = signatureData.getV();
             System.arraycopy(signatureData.getR(), 0, byteArr, 1, signatureData.getR().length);
             System.arraycopy(signatureData.getS(), 0, byteArr, signatureData.getR().length + 1,

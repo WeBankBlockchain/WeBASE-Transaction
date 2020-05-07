@@ -15,67 +15,32 @@
 package com.webank.webase.transaction.base;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
-import com.webank.webase.transaction.base.exception.BaseException;
-import java.util.List;
-import lombok.extern.slf4j.Slf4j;
+import com.webank.webase.transaction.base.exception.ParamException;
+import java.util.stream.Collectors;
+import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.ObjectError;
 
 /**
  * BaseController.
  * 
  */
-@Slf4j
 public abstract class BaseController {
-    /**
-     * Parameters check Result handle.
-     * 
-     * @param bindingResult checkResult
-     */
-    protected ResponseEntity checkParamResult(BindingResult bindingResult) throws BaseException {
-        if (!bindingResult.hasErrors()) {
-            return null;
-        }
-
-        String errorMsg = getParamValidFaildMessage(bindingResult);
-        if (StringUtils.isBlank(errorMsg)) {
-            log.warn("OnWarning:param exception. errorMsg is empty");
-            throw new BaseException(ConstantCode.PARAM_VAILD_FAIL);
-        }
-
-        RetCode retCode = null;
-        try {
-            JSONObject jsonObject = JSON.parseObject(errorMsg);
-            retCode = JSONObject.toJavaObject(jsonObject, RetCode.class);
-        } catch (Exception ex) {
-            log.warn("OnWarning:retCodeJson convert error");
-            throw new BaseException(ConstantCode.PARAM_VAILD_FAIL);
-        }
-
-        throw new BaseException(retCode);
-    }
+    @Autowired
+    protected HttpServletRequest request;
 
     /**
-     * Parameters check message format.
-     * 
-     * @param bindingResult checkResult
-     * @return
+     * check param valid result.
      */
-    private String getParamValidFaildMessage(BindingResult bindingResult) {
-        List<ObjectError> errorList = bindingResult.getAllErrors();
-        log.info("errorList:{}", JSON.toJSONString(errorList));
-        if (errorList == null) {
-            log.warn("onWarning:errorList is empty!");
-            return null;
+    protected void checkBindResult(BindingResult result) {
+        if (result.hasErrors()) {
+            String errFieldStr = result.getAllErrors().stream()
+                    .map(obj -> JSON.parseObject(JSON.toJSONString(obj)))
+                    .map(err -> err.getString("field")).collect(Collectors.joining(","));
+            StringUtils.removeEnd(errFieldStr, ",");
+            String message = "these fields can not be empty:" + errFieldStr;
+            throw new ParamException(ConstantCode.PARAM_VAILD_FAIL.getCode(), message);
         }
-
-        ObjectError objectError = errorList.get(0);
-        if (objectError == null) {
-            log.warn("onWarning:objectError is empty!");
-            return null;
-        }
-        return objectError.getDefaultMessage();
     }
 }

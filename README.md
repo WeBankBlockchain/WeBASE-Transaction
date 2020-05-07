@@ -1,4 +1,4 @@
-# 交易服务
+# 交易代理服务
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](https://webasedoc.readthedocs.io/zh_CN/latest/docs/WeBASE/CONTRIBUTING.html)
 [![CodeFactor](https://www.codefactor.io/repository/github/webankfintech/webase-transaction/badge)](https://www.codefactor.io/repository/github/webankfintech/webase-transaction)
 [![Code Lines](https://tokei.rs/b1/github/WeBankFinTech/WeBASE-Transaction?category=code)](https://github.com/WeBankFinTech/WeBASE-Transaction)
@@ -6,7 +6,12 @@
 [![GitHub (pre-)release](https://img.shields.io/github/release/WeBankFinTech/WeBASE-Transaction/all.svg)](https://github.com/WeBankFinTech/WeBASE-Transaction/releases)
 
 ## 简介
-WeBASE-Transaction是交易上链代理子系统。主要接收无状态交易请求，缓存到数据库中，再异步上链。本系统可大幅提升吞吐量，解决区块链的tps瓶颈。 详细介绍请查看[WeBASE-Transaction在线文档](https://webasedoc.readthedocs.io/zh_CN/latest/docs/WeBASE-Transaction/index.html)
+WeBASE-Transaction-Proxy是交易代理服务。支持合约部署和调用，数据签名调用[WeBASE-Sign](<https://github.com/WeBankFinTech/WeBASE-Sign>)进行签名。 
+
+部署和接口说明如下：
+
+- [部署说明](./install.md)
+- [接口说明](./interface.md)
 
 ## 贡献说明
 请阅读我们的贡献文档，了解如何贡献代码，并提交你的贡献。

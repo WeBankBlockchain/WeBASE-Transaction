@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright 2014-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
@@ -11,30 +11,24 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+package com.webank.webase.transaction.base.exception;
 
-package com.webank.webase.transaction.contract.entity;
-
-import java.util.Date;
-import lombok.Data;
+import com.webank.webase.transaction.base.RetCode;
 
 /**
- * DeployInfoDto.
- * 
+ * param Exception
  */
-@Data
-public class DeployInfoDto {
-    private Long id;
-    private int groupId;
-    private String uuidDeploy;
-    private String contractBin;
-    private String contractAbi;
-    private String contractAddress;
-    private String funcParam;
-    private int signType;
-    private int signUserId;
-    private int requestCount;
-    private int handleStatus = 0;
-    private String transHash;
-    private boolean receiptStatus;
-    private Date gmtCreate;
+public class ParamException extends RuntimeException {
+
+    private static final long serialVersionUID = 1L;
+    private RetCode retCode;
+
+    public ParamException(int code, String msg) {
+        super(msg);
+        this.retCode = new RetCode(code, msg);
+    }
+
+    public RetCode getRetCode() {
+        return retCode;
+    }
 }

@@ -16,20 +16,18 @@ package com.webank.webase.transaction.keystore;
 
 import com.alibaba.fastjson.JSON;
 import com.webank.webase.transaction.base.ConstantCode;
-import com.webank.webase.transaction.base.ConstantProperties;
+import com.webank.webase.transaction.base.Constants;
 import com.webank.webase.transaction.base.ResponseEntity;
 import com.webank.webase.transaction.base.exception.BaseException;
 import com.webank.webase.transaction.keystore.entity.EncodeInfo;
-import com.webank.webase.transaction.keystore.entity.KeyStoreInfo;
+import com.webank.webase.transaction.keystore.entity.RspUserInfo;
 import com.webank.webase.transaction.keystore.entity.SignInfo;
 import com.webank.webase.transaction.util.CommonUtils;
-import com.webank.webase.transaction.util.LogUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.fisco.bcos.web3j.crypto.Credentials;
-import org.fisco.bcos.web3j.crypto.ECKeyPair;
-import org.fisco.bcos.web3j.crypto.Keys;
+import org.fisco.bcos.web3j.crypto.EncryptType;
 import org.fisco.bcos.web3j.crypto.gm.GenCredential;
-import org.fisco.bcos.web3j.utils.Numeric;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -46,53 +44,11 @@ public class KeyStoreService {
     @Autowired
     RestTemplate restTemplate;
     @Autowired
-    private ConstantProperties properties;
+    private Constants properties;
 
-    private static final int PUBLIC_KEY_LENGTH_IN_HEX = 128;
     private static final String SIGN_ADDSIGN_URL = "http://%s/WeBASE-Sign/sign";
     private static final String SIGN_USERINFO_URL = "http://%s/WeBASE-Sign/user/%s/userInfo";
 
-    /**
-     * get KeyStoreInfo.
-     * 
-     * @return
-     */
-    public KeyStoreInfo getKey() throws BaseException {
-        try {
-            ECKeyPair keyPair = Keys.createEcKeyPair();
-            String publicKey = Numeric.toHexStringWithPrefixZeroPadded(keyPair.getPublicKey(),
-                    PUBLIC_KEY_LENGTH_IN_HEX);
-            String privateKey = Numeric.toHexStringNoPrefix(keyPair.getPrivateKey());
-            String address = "0x" + Keys.getAddress(publicKey);
-
-            KeyStoreInfo keyStoreInfo = new KeyStoreInfo();
-            keyStoreInfo.setPublicKey(publicKey);
-            keyStoreInfo.setPrivateKey(privateKey);
-            keyStoreInfo.setAddress(address);
-
-            return keyStoreInfo;
-        } catch (Exception e) {
-            log.error("createEcKeyPair fail.");
-            throw new BaseException(ConstantCode.SYSTEM_ERROR);
-        }
-    }
-
-    /**
-     * get user Address.
-     * 
-     * @return
-     */
-    public String getAddress() throws BaseException {
-        try {
-            String privateKey = properties.getPrivateKey();
-            Credentials credentials = GenCredential.create(privateKey);
-            return credentials.getAddress();
-        } catch (Exception e) {
-            log.error("getAddress fail.");
-            throw new BaseException(ConstantCode.SYSTEM_ERROR);
-        }
-    }
-    
     /**
      * get random Address.
      * 
@@ -109,30 +65,28 @@ public class KeyStoreService {
     }
 
     /**
-     * getSignDate from sign service.
+     * getSignDatd from webase-sign service.
      * 
      * @param params params
      * @return
      */
-    public String getSignDate(EncodeInfo params) {
+    public String getSignData(EncodeInfo params) {
         try {
             SignInfo signInfo = new SignInfo();
             String url = String.format(SIGN_ADDSIGN_URL, properties.getSignServer());
-            log.info("getSignDate url:{}", url);
+            log.info("getSignData url:{}", url);
             HttpHeaders headers = CommonUtils.buildHeaders();
             HttpEntity<String> formEntity =
                     new HttpEntity<String>(JSON.toJSONString(params), headers);
             ResponseEntity response =
                     restTemplate.postForObject(url, formEntity, ResponseEntity.class);
-            log.info("getSignDate response:{}", JSON.toJSONString(response));
+            log.debug("getSignData response:{}", JSON.toJSONString(response));
             if (response.getCode() == 0) {
                 signInfo = CommonUtils.object2JavaBean(response.getData(), SignInfo.class);
             }
             return signInfo.getSignDataStr();
         } catch (Exception e) {
-            log.error("getSignDate exception", e);
-            LogUtils.monitorAbnormalLogger().error(ConstantProperties.CODE_ABNORMAL_S0005,
-                    ConstantProperties.MSG_ABNORMAL_S0005);
+            log.error("getSignData exception", e);
         }
         return null;
     }
@@ -140,16 +94,25 @@ public class KeyStoreService {
     /**
      * checkSignUserId.
      * 
-     * @param userId userId
+     * @param signUserId business id of user in sign
      * @return
      */
-    public boolean checkSignUserId(int userId) {
+    public boolean checkSignUserId(String signUserId) throws BaseException {
         try {
-            String url = String.format(SIGN_USERINFO_URL, properties.getSignServer(), userId);
+            if (StringUtils.isBlank(signUserId)) {
+                log.error("signUserId is null");
+                return false;
+            }
+            String url = String.format(SIGN_USERINFO_URL, properties.getSignServer(), signUserId);
             log.info("checkSignUserId url:{}", url);
             ResponseEntity response = restTemplate.getForObject(url, ResponseEntity.class);
-            log.info("checkSignUserId response:{}", JSON.toJSONString(response));
+            log.debug("checkSignUserId response:{}", JSON.toJSONString(response));
             if (response.getCode() == 0) {
+                RspUserInfo rspUserInfo = CommonUtils.object2JavaBean(response.getData(), RspUserInfo.class);
+                if (rspUserInfo.getEncryptType() != EncryptType.encryptType) {
+                    log.error("signUserId encryptType not match");
+                    return false;
+                }
                 return true;
             }
         } catch (Exception e) {
