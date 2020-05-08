@@ -46,7 +46,7 @@ List netty = [
 ]
 
 List web3sdk = [
-    'org.fisco-bcos:web3sdk:2.3.0'
+    'org.fisco-bcos:web3sdk:2.4.0'
 ]
 
 List jaxb = [
