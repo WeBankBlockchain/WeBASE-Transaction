@@ -14,16 +14,19 @@
 
 package com.webank.webase.transaction.util;
 
+import static org.fisco.bcos.web3j.abi.datatypes.Type.MAX_BYTE_LENGTH;
 import com.webank.webase.transaction.base.ConstantCode;
 import com.webank.webase.transaction.base.exception.BaseException;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.codec.binary.Hex;
 import org.fisco.bcos.web3j.abi.TypeReference;
 import org.fisco.bcos.web3j.abi.datatypes.Address;
 import org.fisco.bcos.web3j.abi.datatypes.Bool;
 import org.fisco.bcos.web3j.abi.datatypes.Bytes;
+import org.fisco.bcos.web3j.abi.datatypes.BytesType;
 import org.fisco.bcos.web3j.abi.datatypes.DynamicArray;
 import org.fisco.bcos.web3j.abi.datatypes.DynamicBytes;
 import org.fisco.bcos.web3j.abi.datatypes.NumericType;
@@ -125,6 +128,7 @@ import org.fisco.bcos.web3j.abi.datatypes.generated.Uint8;
 import org.fisco.bcos.web3j.abi.datatypes.generated.Uint80;
 import org.fisco.bcos.web3j.abi.datatypes.generated.Uint88;
 import org.fisco.bcos.web3j.abi.datatypes.generated.Uint96;
+import org.fisco.bcos.web3j.utils.Numeric;
 
 /**
  * ContractTypeUtil.
@@ -155,7 +159,7 @@ public class ContractTypeUtil {
             } else if (Bytes.class.isAssignableFrom(type)) {
                 return (T) encodeBytes(input, (Class<Bytes>) type);
             } else if (DynamicBytes.class.isAssignableFrom(type)) {
-                return (T) new DynamicBytes(input.getBytes());
+                return (T) new DynamicBytes(Numeric.hexStringToByteArray(input));
             } else {
                 throw new BaseException(201201,
                         String.format("type:%s unsupported encoding", type.getName()));
@@ -186,9 +190,9 @@ public class ContractTypeUtil {
             } else if (Utf8String.class.isAssignableFrom(type)) {
                 return result.getValue().toString();
             } else if (Bytes.class.isAssignableFrom(type)) {
-                return decodeBytes((byte[]) result.getValue());
+                return decodeBytes((Bytes) result);
             } else if (DynamicBytes.class.isAssignableFrom(type)) {
-                return decodeBytes((byte[]) result.getValue());
+                return "0x" + Hex.encodeHexString((byte[]) result.getValue());
             } else {
                 throw new BaseException(201202,
                         String.format("type:%s unsupported decoding", type.getName()));
@@ -216,26 +220,30 @@ public class ContractTypeUtil {
 
     static <T extends Bytes> T encodeBytes(String input, Class<T> type) throws BaseException {
         try {
-            String simpleName = type.getSimpleName();
-            String[] splitName = simpleName.split(Bytes.class.getSimpleName());
-            int length = Integer.parseInt(splitName[1]);
-
-            byte[] byteValue = null;
-            if (input.length() > length) {
-                byteValue = input.substring(0, length).getBytes();
-            } else {
-                byteValue = input.getBytes();
-            }
-            byte[] byteValueLength = new byte[length];
-            System.arraycopy(byteValue, 0, byteValueLength, 0, byteValue.length);
-
-            return type.getConstructor(byte[].class).newInstance(byteValueLength);
+            byte[] bytes = Numeric.hexStringToByteArray(input);
+            return type.getConstructor(byte[].class).newInstance(bytes);
         } catch (NoSuchMethodException | SecurityException | InstantiationException
                 | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
             log.error("encodeBytes failed.");
             throw new BaseException(201203,
                     String.format("unable to create instance of type:%s", type.getName()));
         }
+    }
+    
+    static String decodeBytes(BytesType bytesType) {
+        byte[] value = bytesType.getValue();
+        int length = value.length;
+        int mod = length % MAX_BYTE_LENGTH;
+
+        byte[] dest;
+        if (mod != 0) {
+            int padding = MAX_BYTE_LENGTH - mod;
+            dest = new byte[length + padding];
+            System.arraycopy(value, 0, dest, 0, length);
+        } else {
+            dest = value;
+        }
+        return Numeric.toHexString(dest);
     }
 
     /**
