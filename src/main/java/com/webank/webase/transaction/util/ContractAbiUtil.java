@@ -22,7 +22,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -185,8 +184,7 @@ public class ContractAbiUtil {
             Object input = null;
             if (funcInputTypes.get(i).indexOf("[") != -1
                     && funcInputTypes.get(i).indexOf("]") != -1) {
-                List<Object> arrList =
-                        new ArrayList<>(Arrays.asList(params.get(i).toString().split(",")));
+                List<Object> arrList = (List<Object>) params.get(i);
                 inputType = ContractTypeUtil.getType(
                         funcInputTypes.get(i).substring(0, funcInputTypes.get(i).indexOf("[")));
                 List<Type> arrParams = new ArrayList<>();
