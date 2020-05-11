@@ -24,7 +24,7 @@ HTTP POST
 | 1        | 群组编号     | groupId     | int            | 16           | 是       |                                                    |
 | 2        | 合约Bin      | bytecodeBin | String         |              | 是       |                                                    |
 | 3        | 合约Abi      | contractAbi | List\<Object\> |              | 是       | JSON数组                                           |
-| 4        | 构造方法参数 | funcParam   | List\<Object\> |              | 否       | JSON数组                                           |
+| 4        | 构造方法参数 | funcParam   | List\<Object\> |              | 否       | JSON数组，多个参数以逗号分隔（参数为数组同理），如：["str1",["arr1","arr2"]] |
 | 5 | 签名用户编号 | signUserId | String | 64 | 是 | WeBASE-Sign用户 |
 
 **2）数据格式**
@@ -105,14 +105,14 @@ HTTP POST
 
 **1）参数表**
 
-| **序号** | **中文**     | **参数名**      | **类型**       | **最大长度** | **必填** | **说明**                        |
-| -------- | ------------ | --------------- | -------------- | ------------ | -------- | ------------------------------- |
-| 1        | 群组编号     | groupId         | int            | 16           | 是       |                                 |
-| 2        | 合约地址     | contractAddress | String         |              | 是       |                                 |
-| 3        | 方法Abi      | functionAbi     | List\<Object\> |              | 是       | JSON数组，所调用方法的abi       |
-| 4        | 调用方法名   | funcName        | String         |              | 是       |                                 |
-| 5        | 方法参数     | funcParam       | List\<Object\> |              | 否       | JSON数组                        |
-| 6        | 签名用户编号 | signUserId      | int            |              | 否       | WeBASE-Sign用户，数据上链时必填 |
+| **序号** | **中文**     | **参数名**      | **类型**       | **最大长度** | **必填** | **说明**                                                     |
+| -------- | ------------ | --------------- | -------------- | ------------ | -------- | ------------------------------------------------------------ |
+| 1        | 群组编号     | groupId         | int            | 16           | 是       |                                                              |
+| 2        | 合约地址     | contractAddress | String         |              | 是       |                                                              |
+| 3        | 方法Abi      | functionAbi     | List\<Object\> |              | 是       | JSON数组，所调用方法的abi                                    |
+| 4        | 调用方法名   | funcName        | String         |              | 是       |                                                              |
+| 5        | 方法参数     | funcParam       | List\<Object\> |              | 否       | JSON数组，多个参数以逗号分隔（参数为数组同理），如：["str1",["arr1","arr2"]] |
+| 6        | 签名用户编号 | signUserId      | int            |              | 否       | WeBASE-Sign用户，数据上链时必填                              |
 
 **2）数据格式**
 
