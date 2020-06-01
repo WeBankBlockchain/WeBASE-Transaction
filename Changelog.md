@@ -1,3 +1,22 @@
+### v1.3.0
+
+ (2020-04-29)
+ 
+**Add**
+- 使用签名服务进行交易签名时，传入`Integer userId`改为`String signUserId`（国密或非国密由对应user的加密类型决定）
+
+**Fix**
+- 升级fastjson, jackson, log4j
+
+**兼容性**
+
+- 支持FISCO-BCOS v2.0.0-rc1 版本
+- 支持FISCO-BCOS v2.0.0-rc2 版本
+- 支持FISCO-BCOS v2.0.0-rc3 版本
+- 支持FISCO-BCOS v2.0.0 及以上版本
+- WeBASE-Sign v1.3.0
+
+详细了解，请阅读[**技术文档**](https://webasedoc.readthedocs.io/zh_CN/latest/)。
 
 ### v1.2.2
 
