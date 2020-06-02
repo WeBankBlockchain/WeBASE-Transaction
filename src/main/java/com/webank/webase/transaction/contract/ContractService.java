@@ -42,18 +42,20 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.fisco.bcos.web3j.abi.FunctionEncoder;
 import org.fisco.bcos.web3j.abi.datatypes.Type;
+import org.fisco.bcos.web3j.crypto.EncryptType;
 import org.fisco.bcos.web3j.protocol.Web3j;
 import org.fisco.bcos.web3j.protocol.core.methods.response.AbiDefinition;
 import org.fisco.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
-import org.fisco.bcos.web3j.solidity.compiler.CompilationResult;
-import org.fisco.bcos.web3j.solidity.compiler.CompilationResult.ContractMetadata;
-import org.fisco.bcos.web3j.solidity.compiler.SolidityCompiler;
-import org.fisco.bcos.web3j.solidity.compiler.SolidityCompiler.Options;
+import org.fisco.solc.compiler.CompilationResult;
+import org.fisco.solc.compiler.SolidityCompiler;
+import org.fisco.solc.compiler.CompilationResult.ContractMetadata;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import static org.fisco.solc.compiler.SolidityCompiler.Options.ABI;
+import static org.fisco.solc.compiler.SolidityCompiler.Options.BIN;
 /**
  * ContractService.
  * 
@@ -94,6 +96,8 @@ public class ContractService {
             return response;
         }
 
+        // whether use guomi to compile, 1-guomi, 0-ecdsa
+        boolean useSM2 = EncryptType.encryptType == 1;
         List<CompileInfo> compileInfos = new ArrayList<>();
         for (File solFile : solFiles) {
             if (!solFile.getName().endsWith(".sol")) {
@@ -103,14 +107,14 @@ public class ContractService {
                     solFile.getName().substring(0, solFile.getName().lastIndexOf("."));
             // compile
             SolidityCompiler.Result res =
-                    SolidityCompiler.compile(solFile, true, Options.ABI, Options.BIN);
+                    SolidityCompiler.compile(solFile, useSM2, true, ABI, BIN);
             // check result
             if (res.isFailed()) {
-                log.warn("compile fail. contract:{} compile error. {}", contractName, res.errors);
-                throw new BaseException(ConstantCode.CONTRACT_COMPILE_ERROR.getCode(), res.errors);
+                log.warn("compile fail. contract:{} compile error. {}", contractName, res.getErrors());
+                throw new BaseException(ConstantCode.CONTRACT_COMPILE_ERROR.getCode(), res.getErrors());
             }
             // parse result
-            CompilationResult result = CompilationResult.parse(res.output);
+            CompilationResult result = CompilationResult.parse(res.getOutput());
             List<ContractMetadata> contracts = result.getContracts();
             if (contracts.size() > 0) {
                 CompileInfo compileInfo = new CompileInfo();
