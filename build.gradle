@@ -64,7 +64,7 @@ dependencies {
     compile springboot,swagger,web3sdk,logger,netty,jaxb
     
     compile "org.apache.commons:commons-lang3:3.8.1"
-    compile "com.alibaba:fastjson:1.2.67"
+    compile "com.alibaba:fastjson:1.2.69"
     
     compile lombok
     annotationProcessor lombok
