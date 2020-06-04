@@ -80,8 +80,6 @@ public class Web3Config {
             channelEthereumService.setTimeout(timeout);
             channelEthereumService.setChannelService(service);
             Web3j web3j = Web3j.build(channelEthereumService, groupId);
-            // whether webase-transaction match with chain's encrypt type: guomi or standard
-            isMatchEncryptType(web3j);
             web3j.getGroupList().send().getGroupList();
             web3jMap.put(groupId, web3j);
         }
@@ -114,26 +112,4 @@ public class Web3Config {
         return new EncryptType(encryptType);
     }
 
-    /**
-     * check local sdk's encrypt type match with chain's
-     * @param web3j
-     * @throws IOException
-     * @throws BaseException
-     */
-    public void isMatchEncryptType(Web3j web3j) throws IOException, BaseException {
-        boolean isMatch = true;
-        // 1: guomi, 0: standard
-        String clientVersion = web3j.getNodeVersion().send().getNodeVersion().getVersion();
-        log.info("Chain's clientVersion:{}", clientVersion);
-        if (clientVersion.contains("gm")) {
-            isMatch = EncryptType.encryptType == 1;
-        } else {
-            isMatch = EncryptType.encryptType == 0;
-        }
-        if (!isMatch) {
-            log.error("Chain's version not matches with local encryptType:{}", EncryptType.encryptType);
-            throw new BaseException(ConstantCode.SYSTEM_ERROR.getCode(), "Chain's version not matches "
-                    + "with local encryptType"+ EncryptType.encryptType);
-        }
-    }
 }
