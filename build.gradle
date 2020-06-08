@@ -94,7 +94,7 @@ dependencies {
     compile "org.fisco-bcos:solcJ:0.4.25-rc1"
     compile "org.apache.commons:commons-lang3:3.6"
     compile "commons-io:commons-io:2.4"
-    compile "com.alibaba:fastjson:1.2.69"
+    compile "com.alibaba:fastjson:1.2.70"
     compile "io.shardingsphere:sharding-jdbc-spring-boot-starter:3.1.0"
     compile 'org.projectlombok:lombok:1.18.2'
     annotationProcessor 'org.projectlombok:lombok:1.18.2'
