@@ -14,7 +14,7 @@
 
 package com.webank.webase.transaction.keystore;
 
-import com.alibaba.fastjson.JSON;
+import com.webank.webase.transaction.util.JsonUtils;
 import com.webank.webase.transaction.base.ConstantCode;
 import com.webank.webase.transaction.base.ConstantProperties;
 import com.webank.webase.transaction.base.ResponseEntity;
@@ -121,10 +121,10 @@ public class KeyStoreService {
             log.info("getSignData url:{}", url);
             HttpHeaders headers = CommonUtils.buildHeaders();
             HttpEntity<String> formEntity =
-                    new HttpEntity<String>(JSON.toJSONString(params), headers);
+                    new HttpEntity<String>(JsonUtils.toJSONString(params), headers);
             ResponseEntity response =
                     restTemplate.postForObject(url, formEntity, ResponseEntity.class);
-            log.info("getSignData response:{}", JSON.toJSONString(response));
+            log.info("getSignData response:{}", JsonUtils.toJSONString(response));
             if (response.getCode() == 0) {
                 signInfo = CommonUtils.object2JavaBean(response.getData(), SignInfo.class);
             }
@@ -148,7 +148,7 @@ public class KeyStoreService {
             String url = String.format(SIGN_USERINFO_URL, properties.getSignServer(), signUserId);
             log.info("checkSignUserId url:{}", url);
             ResponseEntity response = restTemplate.getForObject(url, ResponseEntity.class);
-            log.info("checkSignUserId response:{}", JSON.toJSONString(response));
+            log.info("checkSignUserId response:{}", JsonUtils.toJSONString(response));
             if (response.getCode() == 0) {
                 return true;
             }

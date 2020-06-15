@@ -14,7 +14,7 @@
 
 package com.webank.webase.transaction.config;
 
-import com.alibaba.fastjson.JSON;
+import com.webank.webase.transaction.util.JsonUtils;
 import io.shardingsphere.api.algorithm.sharding.ListShardingValue;
 import io.shardingsphere.api.algorithm.sharding.ShardingValue;
 import io.shardingsphere.api.algorithm.sharding.complex.ComplexKeysShardingAlgorithm;
@@ -35,8 +35,8 @@ public class MyComplexShardingAlgorithm implements ComplexKeysShardingAlgorithm 
     @Override
     public Collection<String> doSharding(Collection<String> collection,
             Collection<ShardingValue> shardingValues) {
-        log.debug("collection:" + JSON.toJSONString(collection) + ",shardingValues:"
-                + JSON.toJSONString(shardingValues));
+        log.debug("collection:" + JsonUtils.toJSONString(collection) + ",shardingValues:"
+                + JsonUtils.toJSONString(shardingValues));
         // table sharding by id and gmt_create
         Collection<Long> idValues = getLongShardingValue(shardingValues, "id");
         Collection<Date> gmtValues = getDateShardingValue(shardingValues, "gmt_create");
