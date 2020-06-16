@@ -14,8 +14,6 @@
 
 package com.webank.webase.transaction.util;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
 import com.webank.webase.transaction.base.ConstantProperties;
 import com.webank.webase.transaction.base.exception.BaseException;
 import java.io.File;
@@ -87,10 +85,9 @@ public class ContractAbiUtil {
      * @return
      */
     public static AbiDefinition getAbiDefinition(String contractAbi) {
-        JSONArray abiArr = JSONArray.parseArray(contractAbi);
+        List<AbiDefinition> abiArr = JsonUtils.toJavaObjectList(contractAbi, AbiDefinition.class);
         AbiDefinition result = null;
-        for (Object object : abiArr) {
-            AbiDefinition abiDefinition = JSON.parseObject(object.toString(), AbiDefinition.class);
+        for (AbiDefinition abiDefinition : abiArr) {
             if (ConstantProperties.TYPE_CONSTRUCTOR.equals(abiDefinition.getType())) {
                 result = abiDefinition;
                 break;
@@ -107,12 +104,11 @@ public class ContractAbiUtil {
      * @return
      */
     public static AbiDefinition getAbiDefinition(String name, String contractAbi) {
-        JSONArray abiArr = JSONArray.parseArray(contractAbi);
+        List<AbiDefinition> abiArr = JsonUtils.toJavaObjectList(contractAbi, AbiDefinition.class);
         AbiDefinition result = null;
-        for (Object object : abiArr) {
-            AbiDefinition abiDefinition = JSON.parseObject(object.toString(), AbiDefinition.class);
+        for (AbiDefinition abiDefinition : abiArr) {
             if (ConstantProperties.TYPE_FUNCTION.equals(abiDefinition.getType())
-                    && name.equals(abiDefinition.getName())) {
+                && name.equals(abiDefinition.getName())) {
                 result = abiDefinition;
                 break;
             }
@@ -127,10 +123,9 @@ public class ContractAbiUtil {
      * @return
      */
     public static List<AbiDefinition> getEventAbiDefinitions(String contractAbi) {
-        JSONArray abiArr = JSONArray.parseArray(contractAbi);
+        List<AbiDefinition> abiArr = JsonUtils.toJavaObjectList(contractAbi, AbiDefinition.class);
         List<AbiDefinition> result = new ArrayList<>();
-        for (Object object : abiArr) {
-            AbiDefinition abiDefinition = JSON.parseObject(object.toString(), AbiDefinition.class);
+        for (AbiDefinition abiDefinition : abiArr) {
             if (ConstantProperties.TYPE_EVENT.equals(abiDefinition.getType())) {
                 result.add(abiDefinition);
             }
@@ -183,8 +178,8 @@ public class ContractAbiUtil {
         for (int i = 0; i < funcInputTypes.size(); i++) {
             Class<? extends Type> inputType = null;
             Object input = null;
-            if (funcInputTypes.get(i).indexOf("[") != -1
-                    && funcInputTypes.get(i).indexOf("]") != -1) {
+            if (funcInputTypes.get(i).contains("[")
+                    && funcInputTypes.get(i).contains("]")) {
                 List<Object> arrList =
                         new ArrayList<>(Arrays.asList(params.get(i).toString().split(",")));
                 inputType = ContractTypeUtil.getType(
@@ -219,8 +214,8 @@ public class ContractAbiUtil {
         for (int i = 0; i < funOutputTypes.size(); i++) {
             Class<? extends Type> outputType = null;
             TypeReference<?> typeReference = null;
-            if (funOutputTypes.get(i).indexOf("[") != -1
-                    && funOutputTypes.get(i).indexOf("]") != -1) {
+            if (funOutputTypes.get(i).contains("[")
+                    && funOutputTypes.get(i).contains("]")) {
                 typeReference = ContractTypeUtil.getArrayType(
                         funOutputTypes.get(i).substring(0, funOutputTypes.get(i).indexOf("[")));
             } else {
@@ -246,8 +241,8 @@ public class ContractAbiUtil {
             for (int i = 0; i < funOutputTypes.size(); i++) {
                 Class<? extends Type> outputType = null;
                 Object value = null;
-                if (funOutputTypes.get(i).indexOf("[") != -1
-                        && funOutputTypes.get(i).indexOf("]") != -1) {
+                if (funOutputTypes.get(i).contains("[")
+                        && funOutputTypes.get(i).contains("]")) {
                     List<Object> values = new ArrayList<>();
                     List<Type> results = (List<Type>) typeList.get(i).getValue();
                     for (int j = 0; j < results.size(); j++) {
@@ -263,7 +258,7 @@ public class ContractAbiUtil {
                     result.add(value);
                 }
             }
-            return JSON.parse(JSON.toJSONString(result));
+            return JsonUtils.toJavaObject(JsonUtils.toJSONString(result), Object.class);
         }
         return null;
     }

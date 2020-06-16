@@ -14,8 +14,6 @@
 
 package com.webank.webase.transaction.contract;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
 import com.webank.webase.transaction.base.ConstantCode;
 import com.webank.webase.transaction.base.ConstantProperties;
 import com.webank.webase.transaction.base.ResponseEntity;
@@ -28,6 +26,7 @@ import com.webank.webase.transaction.keystore.entity.SignType;
 import com.webank.webase.transaction.trans.TransService;
 import com.webank.webase.transaction.util.CommonUtils;
 import com.webank.webase.transaction.util.ContractAbiUtil;
+import com.webank.webase.transaction.util.JsonUtils;
 import com.webank.webase.transaction.util.LogUtils;
 import java.io.File;
 import java.io.IOException;
@@ -121,7 +120,7 @@ public class ContractService {
                 compileInfo.setContractName(contractName);
                 compileInfo.setContractBin(result.getContract(contractName).bin);
                 compileInfo
-                        .setContractAbi(JSONArray.parseArray(result.getContract(contractName).abi));
+                        .setContractAbi(JsonUtils.toJavaObjectList(result.getContract(contractName).abi, Object.class));
                 compileInfos.add(compileInfo);
             }
         }
@@ -172,7 +171,7 @@ public class ContractService {
             }
         }
         // check parameters
-        String contractAbi = JSON.toJSONString(req.getContractAbi());
+        String contractAbi = JsonUtils.toJSONString(req.getContractAbi());
         List<Object> params = req.getFuncParam();
         AbiDefinition abiDefinition = ContractAbiUtil.getAbiDefinition(contractAbi);
         List<String> funcInputTypes = ContractAbiUtil.getFuncInputType(abiDefinition);
@@ -188,7 +187,7 @@ public class ContractService {
         deployInfoDto.setUuidDeploy(uuid);
         deployInfoDto.setContractBin(req.getContractBin());
         deployInfoDto.setContractAbi(contractAbi);
-        deployInfoDto.setFuncParam(JSON.toJSONString(params));
+        deployInfoDto.setFuncParam(JsonUtils.toJSONString(params));
         deployInfoDto.setSignType(req.getSignType());
         deployInfoDto.setSignUserId(req.getSignUserId());
         deployInfoDto.setGmtCreate(new Date());
@@ -308,7 +307,7 @@ public class ContractService {
      * @param deployInfoDto deployInfoDto
      */
     public void deploySend(DeployInfoDto deployInfoDto) {
-        log.debug("deploySend deployInfoDto:{}", JSON.toJSONString(deployInfoDto));
+        log.debug("deploySend deployInfoDto:{}", JsonUtils.toJSONString(deployInfoDto));
         Long id = deployInfoDto.getId();
         log.info("deploySend id:{}", id);
         int groupId = deployInfoDto.getGroupId();
@@ -334,7 +333,7 @@ public class ContractService {
 
             String contractAbi = deployInfoDto.getContractAbi();
             String contractBin = deployInfoDto.getContractBin();
-            List<Object> params = JSONArray.parseArray(deployInfoDto.getFuncParam());
+            List<Object> params = JsonUtils.toJavaObjectList(deployInfoDto.getFuncParam(), Object.class);
 
             // get function abi
             AbiDefinition abiDefinition = ContractAbiUtil.getAbiDefinition(contractAbi);
