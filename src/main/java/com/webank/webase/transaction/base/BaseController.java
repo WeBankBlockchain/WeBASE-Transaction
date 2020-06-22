@@ -14,8 +14,8 @@
 
 package com.webank.webase.transaction.base;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
+import com.webank.webase.transaction.util.JsonUtils;
+
 import com.webank.webase.transaction.base.exception.BaseException;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
@@ -47,8 +47,10 @@ public abstract class BaseController {
 
         RetCode retCode = null;
         try {
-            JSONObject jsonObject = JSON.parseObject(errorMsg);
-            retCode = JSONObject.toJavaObject(jsonObject, RetCode.class);
+            retCode = JsonUtils.toJavaObject(errorMsg, RetCode.class);
+            if (retCode == null) {
+                log.error("json parse error");
+            }
         } catch (Exception ex) {
             log.warn("OnWarning:retCodeJson convert error");
             throw new BaseException(ConstantCode.PARAM_VAILD_FAIL);
@@ -65,7 +67,7 @@ public abstract class BaseController {
      */
     private String getParamValidFaildMessage(BindingResult bindingResult) {
         List<ObjectError> errorList = bindingResult.getAllErrors();
-        log.info("errorList:{}", JSON.toJSONString(errorList));
+        log.info("errorList:{}", JsonUtils.toJSONString(errorList));
         if (errorList == null) {
             log.warn("onWarning:errorList is empty!");
             return null;

@@ -14,7 +14,7 @@
 
 package com.webank.webase.transaction.contract;
 
-import com.alibaba.fastjson.JSON;
+import com.webank.webase.transaction.util.JsonUtils;
 import com.webank.webase.transaction.base.BaseController;
 import com.webank.webase.transaction.base.ResponseEntity;
 import com.webank.webase.transaction.base.exception.BaseException;
@@ -74,7 +74,7 @@ public class ContractController extends BaseController {
     @PostMapping("/deploy")
     public ResponseEntity deploy(@Valid @RequestBody ReqDeployInfo deployInfo, BindingResult result)
             throws BaseException {
-        log.info("deploy start. deployInfo:{}", JSON.toJSONString(deployInfo));
+        log.info("deploy start. deployInfo:{}", JsonUtils.toJSONString(deployInfo));
         checkParamResult(result);
         return contractService.deploy(deployInfo);
     }

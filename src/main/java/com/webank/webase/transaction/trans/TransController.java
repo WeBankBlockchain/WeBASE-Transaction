@@ -14,7 +14,7 @@
 
 package com.webank.webase.transaction.trans;
 
-import com.alibaba.fastjson.JSON;
+import com.webank.webase.transaction.util.JsonUtils;
 import com.webank.webase.transaction.base.BaseController;
 import com.webank.webase.transaction.base.ResponseEntity;
 import com.webank.webase.transaction.base.exception.BaseException;
@@ -56,7 +56,7 @@ public class TransController extends BaseController {
     @PostMapping("/send")
     public ResponseEntity send(@Valid @RequestBody ReqTransSendInfo transSendInfo,
             BindingResult result) throws BaseException {
-        log.info("transSend start. transSendInfo:{}", JSON.toJSONString(transSendInfo));
+        log.info("transSend start. transSendInfo:{}", JsonUtils.toJSONString(transSendInfo));
         checkParamResult(result);
         return transService.save(transSendInfo);
     }
@@ -72,7 +72,7 @@ public class TransController extends BaseController {
     @PostMapping("/call")
     public ResponseEntity call(@Valid @RequestBody ReqTransCallInfo transCallInfo,
             BindingResult result) throws BaseException {
-        log.info("call start. transCallInfo:{}", JSON.toJSONString(transCallInfo));
+        log.info("call start. transCallInfo:{}", JsonUtils.toJSONString(transCallInfo));
         checkParamResult(result);
         return transService.call(transCallInfo);
     }

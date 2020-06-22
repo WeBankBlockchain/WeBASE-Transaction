@@ -14,9 +14,7 @@
 
 package com.webank.webase.transaction.trans;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.webank.webase.transaction.base.ConstantCode;
 import com.webank.webase.transaction.base.ConstantProperties;
 import com.webank.webase.transaction.base.ResponseEntity;
@@ -33,6 +31,7 @@ import com.webank.webase.transaction.trans.entity.TransInfoDto;
 import com.webank.webase.transaction.util.CommonUtils;
 import com.webank.webase.transaction.util.ContractAbiUtil;
 import com.webank.webase.transaction.util.LogUtils;
+import com.webank.webase.transaction.util.JsonUtils;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Date;
@@ -160,7 +159,7 @@ public class TransService {
                 throw new BaseException(ConstantCode.CONTRACT_ABI_EMPTY);
             }
         } else {
-            contractAbi = JSON.toJSONString(abiList);
+            contractAbi = JsonUtils.toJSONString(abiList);
         }
         // check function
         String funcName = req.getFuncName();
@@ -193,7 +192,7 @@ public class TransService {
         transInfoDto.setContractAbi(contractAbi);
         transInfoDto.setContractAddress(contractAddress);
         transInfoDto.setFuncName(funcName);
-        transInfoDto.setFuncParam(JSON.toJSONString(params));
+        transInfoDto.setFuncParam(JsonUtils.toJSONString(params));
         transInfoDto.setSignType(req.getSignType());
         transInfoDto.setSignUserId(req.getSignUserId());
         transInfoDto.setGmtCreate(new Date());
@@ -248,7 +247,7 @@ public class TransService {
                     throw new BaseException(ConstantCode.CONTRACT_ABI_EMPTY);
                 }
             } else {
-                contractAbi = JSON.toJSONString(abiList);
+                contractAbi = JsonUtils.toJSONString(abiList);
             }
             // check function
             AbiDefinition abiDefinition = ContractAbiUtil.getAbiDefinition(funcName, contractAbi);
@@ -429,7 +428,7 @@ public class TransService {
      * @param transInfoDto transaction info
      */
     public void transSend(TransInfoDto transInfoDto) {
-        log.debug("transSend transInfoDto:{}", JSON.toJSONString(transInfoDto));
+        log.debug("transSend transInfoDto:{}", JsonUtils.toJSONString(transInfoDto));
         Long id = transInfoDto.getId();
         log.info("transSend id:{}", id);
         int groupId = transInfoDto.getGroupId();
@@ -456,7 +455,7 @@ public class TransService {
             String contractAbi = transInfoDto.getContractAbi();
             String contractAddress = transInfoDto.getContractAddress();
             String funcName = transInfoDto.getFuncName();
-            List<Object> params = JSONArray.parseArray(transInfoDto.getFuncParam());
+            List<Object> params = JsonUtils.toJavaObjectList(transInfoDto.getFuncParam(), Object.class);
 
             // get function abi
             AbiDefinition abiDefinition = ContractAbiUtil.getAbiDefinition(funcName, contractAbi);
@@ -541,7 +540,11 @@ public class TransService {
                 signMsg = Numeric.toHexString(signedMessage);
             }
         } else {
-            String chainId = (String) JSONObject.parseObject(versionContent).get("Chain Id");
+            JsonNode version = JsonUtils.stringToJsonNode(versionContent);
+            if (version == null) {
+                log.error("parse json error");
+            }
+            String chainId = version.get("Chain Id").asText();
             ExtendedRawTransaction extendedRawTransaction =
                     ExtendedRawTransaction.createTransaction(randomid, ConstantProperties.GAS_PRICE,
                             ConstantProperties.GAS_LIMIT, blockLimit, contractAddress,
