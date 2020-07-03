@@ -64,16 +64,15 @@ public class Web3Config {
     public HashMap<Integer, Web3j> web3j() throws Exception {
         HashMap<Integer, Web3j> web3jMap = new HashMap<Integer, Web3j>();
 
-        Service service = new Service();
-        service.setOrgID(orgName);
-        service.setThreadPool(sdkThreadPool());
-        service.setAllChannelConnections(groupConfig);
-
         List<ChannelConnections> channelConnectList = groupConfig.getAllChannelConnections();
         for (ChannelConnections connect : channelConnectList) {
             int groupId = connect.getGroupId();
             log.info("init groupId:{}", groupId);
             // set groupId
+            Service service = new Service();
+            service.setOrgID(orgName);
+            service.setThreadPool(sdkThreadPool());
+            service.setAllChannelConnections(groupConfig);
             service.setGroupId(groupId);
             service.run();
             ChannelEthereumService channelEthereumService = new ChannelEthereumService();
