@@ -21,11 +21,17 @@ import com.webank.webase.transaction.base.ResponseEntity;
 import com.webank.webase.transaction.base.exception.BaseException;
 import com.webank.webase.transaction.trans.entity.ReqTransSendInfo;
 import com.webank.webase.transaction.util.CommonUtils;
+import com.webank.webase.transaction.util.JsonUtils;
+import com.webank.webase.transaction.util.ReqQueryTransHandle;
+import com.webank.webase.transaction.util.ReqSignedTransHandle;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
 import javax.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.fisco.bcos.web3j.protocol.core.methods.response.Transaction;
+import org.fisco.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -34,6 +40,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.time.Duration;
+import java.time.Instant;
 
 /**
  * Transaction Controller.
@@ -81,5 +90,44 @@ public class TransController extends BaseController {
             @PathVariable("transHash") String transHash) throws BaseException {
         log.info("start getTransactionReceipt groupId:{} transHash:{}", groupId, transHash);
         return CommonUtils.buildSuccessRsp(transService.getTransactionReceipt(groupId, transHash));
+    }
+
+
+    @ApiOperation(value = "send signed transaction ")
+    @ApiImplicitParam(name = "reqSignedTransHandle", value = "transaction info", required = true, dataType = "ReqSignedTransHandle")
+    @PostMapping("/signed-transaction")
+    public TransactionReceipt sendSignedTransaction(@Valid @RequestBody ReqSignedTransHandle reqSignedTransHandle, BindingResult result) throws BaseException {
+        log.info("transHandleLocal start. ReqSignedTransHandle:[{}]", JsonUtils.toJSONString(reqSignedTransHandle));
+
+        Instant startTime = Instant.now();
+        log.info("transHandleLocal start startTime:{}", startTime.toEpochMilli());
+
+        checkBindResult(result);
+        String signedStr = reqSignedTransHandle.getSignedStr();
+        if (StringUtils.isBlank(signedStr)) {
+            throw new BaseException(ConstantCode.ENCODE_STR_CANNOT_BE_NULL);
+        }
+        TransactionReceipt receipt =  transService.sendSignedTransaction(signedStr, reqSignedTransHandle.getSync(),reqSignedTransHandle.getGroupId());
+        log.info("transHandleLocal end  useTime:{}", Duration.between(startTime, Instant.now()).toMillis());
+        return receipt;
+    }
+
+    @ApiOperation(value = "send query transaction ")
+    @ApiImplicitParam(name = "reqQueryTransHandle", value = "transaction info", required = true, dataType = "ReqQueryTransHandle")
+    @PostMapping("/query-transaction")
+    public Object sendQueryTransaction(@Valid @RequestBody ReqQueryTransHandle reqQueryTransHandle, BindingResult result)   throws BaseException{
+        log.info("transHandleLocal start. ReqQueryTransHandle:[{}]", JsonUtils.toJSONString(reqQueryTransHandle));
+
+        Instant startTime = Instant.now();
+        log.info("transHandleLocal start startTime:{}", startTime.toEpochMilli());
+
+        checkBindResult(result);
+        String encodeStr = reqQueryTransHandle.getEncodeStr();
+        if (StringUtils.isBlank(encodeStr)) {
+            throw new BaseException(ConstantCode.ENCODE_STR_CANNOT_BE_NULL);
+        }
+        Object obj =  transService.sendQueryTransaction(encodeStr, reqQueryTransHandle.getContractAddress(),reqQueryTransHandle.getFuncName(),reqQueryTransHandle.getContractAbi(),reqQueryTransHandle.getGroupId(),reqQueryTransHandle.getUserAddress());
+        log.info("transHandleLocal end  useTime:{}", Duration.between(startTime, Instant.now()).toMillis());
+        return obj;
     }
 }

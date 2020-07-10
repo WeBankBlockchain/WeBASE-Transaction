@@ -16,11 +16,14 @@ package com.webank.webase.transaction.base;
 
 import com.alibaba.fastjson.JSON;
 import com.webank.webase.transaction.base.exception.ParamException;
+
+import java.util.List;
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.ObjectError;
 
 /**
  * BaseController.
@@ -43,4 +46,5 @@ public abstract class BaseController {
             throw new ParamException(ConstantCode.PARAM_VAILD_FAIL.getCode(), message);
         }
     }
+
 }

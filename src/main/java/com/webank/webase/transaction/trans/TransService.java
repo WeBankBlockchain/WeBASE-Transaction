@@ -36,6 +36,8 @@ import java.util.Optional;
 import java.util.Random;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+
+import com.webank.webase.transaction.util.JsonUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.fisco.bcos.channel.client.TransactionSucCallback;
@@ -43,13 +45,11 @@ import org.fisco.bcos.channel.handler.ChannelConnections;
 import org.fisco.bcos.web3j.abi.FunctionEncoder;
 import org.fisco.bcos.web3j.abi.FunctionReturnDecoder;
 import org.fisco.bcos.web3j.abi.TypeReference;
+import org.fisco.bcos.web3j.abi.Utils;
 import org.fisco.bcos.web3j.abi.datatypes.Function;
 import org.fisco.bcos.web3j.abi.datatypes.Type;
-import org.fisco.bcos.web3j.crypto.ExtendedRawTransaction;
-import org.fisco.bcos.web3j.crypto.ExtendedTransactionEncoder;
-import org.fisco.bcos.web3j.crypto.RawTransaction;
+import org.fisco.bcos.web3j.crypto.*;
 import org.fisco.bcos.web3j.crypto.Sign.SignatureData;
-import org.fisco.bcos.web3j.crypto.TransactionEncoder;
 import org.fisco.bcos.web3j.protocol.Web3j;
 import org.fisco.bcos.web3j.protocol.core.DefaultBlockParameterName;
 import org.fisco.bcos.web3j.protocol.core.Request;
@@ -57,6 +57,7 @@ import org.fisco.bcos.web3j.protocol.core.methods.request.Transaction;
 import org.fisco.bcos.web3j.protocol.core.methods.response.AbiDefinition;
 import org.fisco.bcos.web3j.protocol.core.methods.response.SendTransaction;
 import org.fisco.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
+import org.fisco.bcos.web3j.tx.txdecode.ConstantProperties;
 import org.fisco.bcos.web3j.utils.Numeric;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -191,7 +192,7 @@ public class TransService {
      * data sign.
      * 
      * @param groupId id
-     * @param signType type
+     * @param signUserId type
      * @param contractAddress info
      * @param data info
      * @return
@@ -341,5 +342,97 @@ public class TransService {
                         .inputList(funcInputTypes).outputList(funOutputTypes)
                         .finalInputs(finalInputs).finalOutputs(finalOutputs).build();
         return cf;
+    }
+
+    /**
+     * send message to node.
+     *
+     * @param signMsg signMsg
+     * @param future future
+     */
+    public void sendMessage(Web3j web3j, String signMsg,
+                            final CompletableFuture<TransactionReceipt> future) throws IOException {
+        Request<?, SendTransaction> request = web3j.sendRawTransaction(signMsg);
+        request.setNeedTransCallback(true);
+        request.setTransactionSucCallback(new TransactionSucCallback() {
+            @Override
+            public void onResponse(TransactionReceipt receipt) {
+                log.info("onResponse receipt:{}", receipt);
+                future.complete(receipt);
+                return;
+            }
+        });
+        request.send();
+    }
+
+    public TransactionReceipt sendSignedTransaction(String signedStr, Boolean sync, int groupId)  throws BaseException  {
+
+        Web3j web3j = getWeb3j(groupId);
+        if (sync) {
+            final CompletableFuture<TransactionReceipt> transFuture = new CompletableFuture<>();
+            TransactionReceipt receipt;
+            try {
+                sendMessage(web3j, signedStr, transFuture);
+                receipt = transFuture.get(constants.getTransMaxWait(), TimeUnit.SECONDS);
+            } catch (Exception e ) {
+                throw new BaseException(ConstantCode.TRANSACTION_FAILED);
+            }
+            return receipt;
+        } else {
+            TransactionReceipt transactionReceipt = new TransactionReceipt();
+            web3j.sendRawTransaction(signedStr).sendAsync();
+            transactionReceipt.setTransactionHash(Hash.sha3(signedStr));
+            return transactionReceipt;
+        }
+    }
+
+
+    public static AbiDefinition getFunctionAbiDefinition(String functionName, String contractAbi)throws BaseException {
+        if(functionName == null) {
+            throw new BaseException(ConstantCode.IN_FUNCTION_ERROR);
+        }
+        List<AbiDefinition> abiDefinitionList = JsonUtils.toJavaObjectList(contractAbi, AbiDefinition.class);
+        if (abiDefinitionList == null) {
+            throw new BaseException(ConstantCode.FAIL_PARSE_JSON);
+        }
+        AbiDefinition result = null;
+        for (AbiDefinition abiDefinition : abiDefinitionList) {
+            if (abiDefinition == null) {
+                throw new BaseException(ConstantCode.IN_FUNCTION_ERROR);
+            }
+            if (ConstantProperties.TYPE_FUNCTION.equals(abiDefinition.getType())
+                    && functionName.equals(abiDefinition.getName())) {
+                result = abiDefinition;
+                break;
+            }
+        }
+        return result;
+    }
+    public Object sendQueryTransaction(String encodeStr, String contractAddress, String funcName, String contractAbi, int groupId, String userAddress) throws BaseException {
+
+        Web3j web3j = getWeb3j(groupId);
+        String callOutput ;
+        try {
+            callOutput = web3j.call(Transaction.createEthCallTransaction(userAddress, contractAddress, encodeStr), DefaultBlockParameterName.LATEST)
+                    .send().getValue().getOutput();
+        } catch (IOException e) {
+            throw new BaseException(ConstantCode.TRANSACTION_FAILED);
+        }
+
+        AbiDefinition abiDefinition = getFunctionAbiDefinition(funcName, contractAbi);
+        if (Objects.isNull(abiDefinition)) {
+            throw new BaseException(ConstantCode.IN_FUNCTION_ERROR);
+        }
+        List<String> funOutputTypes = ContractAbiUtil.getFuncOutputType(abiDefinition);
+        List<TypeReference<?>> finalOutputs = ContractAbiUtil.outputFormat(funOutputTypes);
+
+        List<Type> typeList = FunctionReturnDecoder.decode(callOutput, Utils.convert(finalOutputs));
+        Object response;
+        if (typeList.size() > 0) {
+            response = ContractAbiUtil.callResultParse(funOutputTypes, typeList);
+        } else {
+            response = typeList;
+        }
+        return response;
     }
 }
