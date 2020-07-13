@@ -93,10 +93,9 @@ public class TransController extends BaseController {
     }
 
 
-    @ApiOperation(value = "send signed transaction ")
-    @ApiImplicitParam(name = "reqSignedTransHandle", value = "transaction info", required = true, dataType = "ReqSignedTransHandle")
-    @PostMapping("/signed-transaction")
-    public TransactionReceipt sendSignedTransaction(@Valid @RequestBody ReqSignedTransHandle reqSignedTransHandle, BindingResult result) throws BaseException {
+    @ApiOperation(value = "sendSignedTransaction")
+    @PostMapping("/sendSignedTransaction")
+    public ResponseEntity sendSignedTransaction(@Valid @RequestBody ReqSignedTransHandle reqSignedTransHandle, BindingResult result) throws BaseException {
         log.info("transHandleLocal start. ReqSignedTransHandle:[{}]", JsonUtils.toJSONString(reqSignedTransHandle));
 
         Instant startTime = Instant.now();
@@ -109,13 +108,12 @@ public class TransController extends BaseController {
         }
         TransactionReceipt receipt =  transService.sendSignedTransaction(signedStr, reqSignedTransHandle.getSync(),reqSignedTransHandle.getGroupId());
         log.info("transHandleLocal end  useTime:{}", Duration.between(startTime, Instant.now()).toMillis());
-        return receipt;
+        return CommonUtils.buildSuccessRsp(receipt);
     }
 
-    @ApiOperation(value = "send query transaction ")
-    @ApiImplicitParam(name = "reqQueryTransHandle", value = "transaction info", required = true, dataType = "ReqQueryTransHandle")
-    @PostMapping("/query-transaction")
-    public Object sendQueryTransaction(@Valid @RequestBody ReqQueryTransHandle reqQueryTransHandle, BindingResult result)   throws BaseException{
+    @ApiOperation(value = "sendQueryTransaction")
+    @PostMapping("/sendQueryTransaction")
+    public ResponseEntity sendQueryTransaction(@Valid @RequestBody ReqQueryTransHandle reqQueryTransHandle, BindingResult result)   throws BaseException{
         log.info("transHandleLocal start. ReqQueryTransHandle:[{}]", JsonUtils.toJSONString(reqQueryTransHandle));
 
         Instant startTime = Instant.now();
@@ -128,6 +126,6 @@ public class TransController extends BaseController {
         }
         Object obj =  transService.sendQueryTransaction(encodeStr, reqQueryTransHandle.getContractAddress(),reqQueryTransHandle.getFuncName(),reqQueryTransHandle.getContractAbi(),reqQueryTransHandle.getGroupId(),reqQueryTransHandle.getUserAddress());
         log.info("transHandleLocal end  useTime:{}", Duration.between(startTime, Instant.now()).toMillis());
-        return obj;
+        return CommonUtils.buildSuccessRsp(obj);
     }
 }
