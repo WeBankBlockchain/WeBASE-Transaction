@@ -15,6 +15,7 @@
 package com.webank.webase.transaction.util;
 
 import com.alibaba.fastjson.JSON;
+import com.webank.webase.transaction.base.BasePageRsp;
 import com.webank.webase.transaction.base.ConstantCode;
 import com.webank.webase.transaction.base.ResponseEntity;
 import java.io.File;
@@ -31,6 +32,8 @@ import org.springframework.http.MediaType;
  */
 @Slf4j
 public class CommonUtils {
+
+    public static final int publicKeyLength_64 = 64;
     
     /**
      * base response
@@ -40,7 +43,15 @@ public class CommonUtils {
         baseRspVo.setData(data);
         return baseRspVo;
     }
-
+    /**
+     * base page response
+     */
+    public static ResponseEntity buildSuccessPageRspVo(Object data, long totalCount) {
+        BasePageRsp basePageRspVo = new BasePageRsp(ConstantCode.RET_SUCCEED);
+        basePageRspVo.setData(data);
+        basePageRspVo.setTotalCount(totalCount);
+        return basePageRspVo;
+    }
     /**
      * buildHeaders.
      * 
@@ -166,6 +177,17 @@ public class CommonUtils {
             }
         }
         if (!flag) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * 0 < signUserId <= 64
+     * @param input
+     */
+    public static boolean checkLengthWithin_64(String input) {
+        if (input.isEmpty() || input.length() > publicKeyLength_64) {
             return false;
         }
         return true;
