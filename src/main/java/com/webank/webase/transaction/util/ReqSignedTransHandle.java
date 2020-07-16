@@ -13,23 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package com.webank.webase.transaction.keystore.entity;
+package com.webank.webase.transaction.util;
 
 import lombok.Data;
 
+import javax.validation.constraints.NotNull;
+
 /**
- * RspUserInfoVo.
- * 
+ * transHandler interface parameter.
+ * handle transactions of deploy/call contract
  */
 @Data
-public class RspUserInfo {
-    private String signUserId;
-    private String appId;
-    private String address;
-    private String publicKey;
-    // not return privateKey
-    private String privateKey;
-    private String description;
-    private Integer encryptType;
+public class ReqSignedTransHandle {
+    private String signedStr;
+    private Boolean sync;
+    @NotNull
+    private int groupId =1 ;
+
 }
