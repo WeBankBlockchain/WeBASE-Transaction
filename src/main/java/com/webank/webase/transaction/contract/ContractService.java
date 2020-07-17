@@ -14,15 +14,14 @@
 
 package com.webank.webase.transaction.contract;
 
-import com.alibaba.fastjson.JSON;
 import com.webank.webase.transaction.base.ConstantCode;
 import com.webank.webase.transaction.base.Constants;
-import com.webank.webase.transaction.base.ResponseEntity;
 import com.webank.webase.transaction.base.exception.BaseException;
 import com.webank.webase.transaction.contract.entity.ReqDeployInfo;
 import com.webank.webase.transaction.keystore.KeyStoreService;
 import com.webank.webase.transaction.trans.TransService;
 import com.webank.webase.transaction.util.ContractAbiUtil;
+import com.webank.webase.transaction.util.JsonUtils;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
@@ -70,7 +69,7 @@ public class ContractService {
             throw new BaseException(ConstantCode.SIGN_USERID_ERROR);
         }
         // check parameters
-        String contractAbi = JSON.toJSONString(req.getContractAbi());
+        String contractAbi = JsonUtils.toJSONString(req.getContractAbi());
         List<Object> params = req.getFuncParam();
         AbiDefinition abiDefinition = ContractAbiUtil.getAbiDefinition(contractAbi);
         List<String> funcInputTypes = ContractAbiUtil.getFuncInputType(abiDefinition);

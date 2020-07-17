@@ -7,17 +7,19 @@ sdk:
   # 机构名
   orgName: webank
   timeout: 10000
+  # 切换非国密与国密 0: standard, 1: guomi
+  encryptType: 0
   # 群组信息，可配置多群组和多节点
   groupConfig:
     allChannelConnections:
     - groupId: 1
       connectionsStr:
-      - 127.0.0.1:23200
-      - 127.0.0.1:23200
+      - 127.0.0.1:20200
+      - 127.0.0.1:20201
     - groupId: 2
       connectionsStr:
-      - 127.0.0.1:23200
-      - 127.0.0.1:23200
+      - 127.0.0.1:20200
+      - 127.0.0.1:20201
 
 constant: 
   # WeBASE-Sign签名服务ip端口

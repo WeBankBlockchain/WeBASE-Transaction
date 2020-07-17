@@ -31,10 +31,10 @@ public interface ConstantCode {
     RetCode WEB3J_IS_NULL = RetCode.mark(203006, "web3j is null, please check groupId");
     RetCode DATA_SIGN_ERROR = RetCode.mark(203007, "data request sign error");
     RetCode NODE_REQUEST_FAILED = RetCode.mark(203008, "node request failed");
-    RetCode TRANSACTION_FAILED = RetCode.mark(203009, "transaction failed!");
+    RetCode TRANSACTION_FAILED = RetCode.mark(203009, "transaction failed");
     RetCode IN_FUNCTION_ERROR = RetCode.mark(203010, "request function is error");
-    RetCode FAIL_PARSE_JSON = RetCode.mark(203011, "Fail to parse json");
-    RetCode ENCODE_STR_CANNOT_BE_NULL = RetCode.mark(203012, "encode string can not be empty!");
+    RetCode REQUEST_SIGN_EXCEPTION = RetCode.mark(203011, "request sign server exception");
+    
     // system error
     RetCode SYSTEM_ERROR = RetCode.mark(103001, "system error");
     RetCode PARAM_VAILD_FAIL = RetCode.mark(103002, "param valid fail");

@@ -33,6 +33,7 @@ import org.fisco.bcos.web3j.protocol.core.methods.response.NodeVersion;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 /**
@@ -51,6 +52,14 @@ public class Web3Config {
     private int queueCapacity = 500;
     private int keepAlive = 60;
     private GroupChannelConnectionsConfig groupConfig;
+    private int encryptType;
+    
+    @Bean(name = "encryptType")
+    public EncryptType EncryptType() {
+        // 1: guomi, 0: standard
+        log.info("*****init EncrytType:" + encryptType);
+        return new EncryptType(encryptType);
+    }
 
     /**
      * init web3j.
@@ -58,19 +67,18 @@ public class Web3Config {
      * @return
      */
     @Bean
+    @DependsOn("encryptType")
     public HashMap<Integer, Web3j> web3jMap() throws Exception {
         HashMap<Integer, Web3j> web3jMap = new HashMap<Integer, Web3j>();
-
-        Service service = new Service();
-        service.setOrgID(orgName);
-        service.setThreadPool(sdkThreadPool());
-        service.setAllChannelConnections(groupConfig);
-
         List<ChannelConnections> channelConnectList = groupConfig.getAllChannelConnections();
         for (ChannelConnections connect : channelConnectList) {
             int groupId = connect.getGroupId();
             log.info("init groupId:{}", groupId);
-            // set groupId
+            // set service
+            Service service = new Service();
+            service.setOrgID(orgName);
+            service.setThreadPool(sdkThreadPool());
+            service.setAllChannelConnections(groupConfig);
             service.setGroupId(groupId);
             service.run();
             ChannelEthereumService channelEthereumService = new ChannelEthereumService();
@@ -102,7 +110,7 @@ public class Web3Config {
     }
 
     @Bean
-    public EncryptType EncryptType(HashMap<Integer, Web3j> web3jMap) throws Exception {
+    public NodeVersion getNodeVersion(HashMap<Integer, Web3j> web3jMap) throws Exception {
         Set<Integer> iSet = web3jMap.keySet();
         if (iSet.isEmpty()) {
             log.error("web3jMap is empty, please check your node status.");
@@ -113,13 +121,6 @@ public class Web3Config {
         NodeVersion version = web3jMap.get(index).getNodeVersion().send();
         Constants.version = version.getNodeVersion().getVersion();
         Constants.chainId = version.getNodeVersion().getChainID();
-        log.info("Chain's clientVersion:{}", Constants.version);
-        // 1: guomi, 0: standard
-        int encryptType = 0;
-        if (Constants.version.contains("gm")) {
-            encryptType = 1;
-        }
-        log.info("init EncrytType:" + encryptType);
-        return new EncryptType(encryptType);
+        return version;
     }
 }

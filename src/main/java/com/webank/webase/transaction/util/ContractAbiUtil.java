@@ -14,9 +14,6 @@
 
 package com.webank.webase.transaction.util;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
-import com.webank.webase.transaction.base.Constants;
 import com.webank.webase.transaction.base.exception.BaseException;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -35,6 +32,7 @@ import org.fisco.bcos.web3j.protocol.core.methods.response.AbiDefinition.NamedTy
 import org.fisco.bcos.web3j.protocol.core.methods.response.Log;
 import org.fisco.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.fisco.bcos.web3j.tx.Contract;
+import org.fisco.bcos.web3j.tx.txdecode.ConstantProperties;
 
 /**
  * ContractAbiUtil.
@@ -86,11 +84,10 @@ public class ContractAbiUtil {
      * @return
      */
     public static AbiDefinition getAbiDefinition(String contractAbi) {
-        JSONArray abiArr = JSONArray.parseArray(contractAbi);
+        List<AbiDefinition> abiArr = JsonUtils.toJavaObjectList(contractAbi, AbiDefinition.class);
         AbiDefinition result = null;
-        for (Object object : abiArr) {
-            AbiDefinition abiDefinition = JSON.parseObject(object.toString(), AbiDefinition.class);
-            if (Constants.TYPE_CONSTRUCTOR.equals(abiDefinition.getType())) {
+        for (AbiDefinition abiDefinition : abiArr) {
+            if (ConstantProperties.TYPE_CONSTRUCTOR.equals(abiDefinition.getType())) {
                 result = abiDefinition;
                 break;
             }
@@ -106,12 +103,11 @@ public class ContractAbiUtil {
      * @return
      */
     public static AbiDefinition getAbiDefinition(String name, String contractAbi) {
-        JSONArray abiArr = JSONArray.parseArray(contractAbi);
+        List<AbiDefinition> abiArr = JsonUtils.toJavaObjectList(contractAbi, AbiDefinition.class);
         AbiDefinition result = null;
-        for (Object object : abiArr) {
-            AbiDefinition abiDefinition = JSON.parseObject(object.toString(), AbiDefinition.class);
-            if (Constants.TYPE_FUNCTION.equals(abiDefinition.getType())
-                    && name.equals(abiDefinition.getName())) {
+        for (AbiDefinition abiDefinition : abiArr) {
+            if (ConstantProperties.TYPE_FUNCTION.equals(abiDefinition.getType())
+                && name.equals(abiDefinition.getName())) {
                 result = abiDefinition;
                 break;
             }
@@ -126,11 +122,10 @@ public class ContractAbiUtil {
      * @return
      */
     public static List<AbiDefinition> getEventAbiDefinitions(String contractAbi) {
-        JSONArray abiArr = JSONArray.parseArray(contractAbi);
+        List<AbiDefinition> abiArr = JsonUtils.toJavaObjectList(contractAbi, AbiDefinition.class);
         List<AbiDefinition> result = new ArrayList<>();
-        for (Object object : abiArr) {
-            AbiDefinition abiDefinition = JSON.parseObject(object.toString(), AbiDefinition.class);
-            if (Constants.TYPE_EVENT.equals(abiDefinition.getType())) {
+        for (AbiDefinition abiDefinition : abiArr) {
+            if (ConstantProperties.TYPE_EVENT.equals(abiDefinition.getType())) {
                 result.add(abiDefinition);
             }
         }
@@ -261,7 +256,7 @@ public class ContractAbiUtil {
                     result.add(value);
                 }
             }
-            return JSON.parse(JSON.toJSONString(result));
+            return JsonUtils.toJavaObject(JsonUtils.toJSONString(result), Object.class);
         }
         return null;
     }

@@ -16,9 +16,11 @@
 
 package com.webank.webase.transaction.keystore.entity;
 
+import javax.validation.constraints.NotBlank;
 import lombok.Data;
 
 @Data
 public class ReqUserInfo {
+    @NotBlank
 	private String signUserId;
 }

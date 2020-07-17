@@ -14,7 +14,6 @@
 
 package com.webank.webase.transaction.util;
 
-import com.alibaba.fastjson.JSON;
 import com.webank.webase.transaction.base.BasePageRsp;
 import com.webank.webase.transaction.base.ConstantCode;
 import com.webank.webase.transaction.base.ResponseEntity;
@@ -124,8 +123,8 @@ public class CommonUtils {
             log.warn("Object2JavaBean. obj or clazz null");
             return null;
         }
-        String jsonStr = JSON.toJSONString(obj);
-        return JSON.parseObject(jsonStr, clazz);
+        String jsonStr = JsonUtils.toJSONString(obj);
+        return JsonUtils.toJavaObject(jsonStr, clazz);
     }
 
     /**

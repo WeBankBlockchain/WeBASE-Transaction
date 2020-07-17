@@ -66,14 +66,15 @@ org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating
 
 ## 3. application.yml配置项说明
 
-| 配置项                                                     | 说明                           |
-| ---------------------------------------------------------- | ------------------------------ |
-| server.port                                                | 工程服务端口                   |
-| server.servlet.context-path                                | 工程根URI                      |
-| logging.config                                             | 日志文件路径                   |
-| sdk.orgName                                                | 机构名                         |
-| sdk.timeout                                                | sdk连接超时时间                |
-| sdk.groupConfig.allChannelConnections[0].groupId           | sdk连接的群组id                |
-| sdk.groupConfig.allChannelConnections[0].connectionsStr[0] | sdk连接的节点的ip和channelPort |
-| constant.signServer                                        | WeBASE-Sign签名服务ip端口      |
+| 配置项                                                     | 说明                                   |
+| ---------------------------------------------------------- | -------------------------------------- |
+| server.port                                                | 工程服务端口                           |
+| server.servlet.context-path                                | 工程根URI                              |
+| logging.config                                             | 日志文件路径                           |
+| sdk.orgName                                                | 机构名                                 |
+| sdk.timeout                                                | sdk连接超时时间                        |
+| sdk.encryptType                                            | 切换非国密与国密 0: standard, 1: guomi |
+| sdk.groupConfig.allChannelConnections[0].groupId           | sdk连接的群组id                        |
+| sdk.groupConfig.allChannelConnections[0].connectionsStr[0] | sdk连接的节点的ip和channelPort         |
+| constant.signServer                                        | WeBASE-Sign签名服务ip端口              |
 
