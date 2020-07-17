@@ -14,13 +14,11 @@
 
 package com.webank.webase.transaction.base.exception;
 
-import com.alibaba.fastjson.JSON;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.webank.webase.transaction.util.JsonUtils;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.TypeMismatchException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.ServletRequestBindingException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -34,8 +32,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 @ControllerAdvice
 @Slf4j
 public class ExceptionsHandler {
-    @Autowired
-    ObjectMapper mapper;
 
     /**
      * myExceptionHandler.
@@ -64,7 +60,7 @@ public class ExceptionsHandler {
         Map<String, Object> map = new HashMap<>();
         map.put("errorMessage", ex.getMessage());
         map.put("code", 400);
-        log.warn("typeMismatchException return:{}", JSON.toJSONString(map));
+        log.warn("typeMismatchException return:{}", JsonUtils.toJSONString(map));
         return ResponseEntity.status(400).body(map);
     }
 
@@ -76,7 +72,7 @@ public class ExceptionsHandler {
         Map<String, Object> map = new HashMap<>();
         map.put("errorMessage", ex.getMessage());
         map.put("code", 400);
-        log.warn("bindExceptionHandler return:{}", JSON.toJSONString(map));
+        log.warn("bindExceptionHandler return:{}", JsonUtils.toJSONString(map));
         return ResponseEntity.status(400).body(map);
     }
 

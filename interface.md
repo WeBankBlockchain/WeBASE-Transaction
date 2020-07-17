@@ -17,7 +17,7 @@ constructor(bytes b,address[] a) -> ["0x1a",["0x7939E26070BE44E6c4Fc759Ce55C6C8b
 
 #### 接口URL
 
-http://localhost:5003/WeBASE-Transaction/contract/deploy
+**http://localhost:5003/WeBASE-Transaction/contract/deploy**
 
 #### 调用方法
 
@@ -111,7 +111,7 @@ function set(bytes b,address[] a) -> ["0x1a",["0x7939E26070BE44E6c4Fc759Ce55C6C8
 
 #### 接口URL
 
-http://localhost:5003/WeBASE-Transaction/trans/send
+**http://localhost:5003/WeBASE-Transaction/trans/send**
 
 #### 调用方法
 
@@ -224,7 +224,7 @@ c.异常返回结果示例（信息详情请参看附录1）
 
 #### 接口URL
 
-http://localhost:5003/WeBASE-Transaction/trans/getTransactionByHash/{groupId}/{transHash}
+**http://localhost:5003/WeBASE-Transaction/trans/getTransactionByHash/{groupId}/{transHash}**
 
 #### 调用方法
 
@@ -309,7 +309,7 @@ b.异常返回结果示例（信息详情请参看附录1）
 
 #### 接口URL
 
-http://localhost:5003/WeBASE-Transaction/trans/getTransactionReceipt/{groupId}/{transHash}
+**http://localhost:5003/WeBASE-Transaction/trans/getTransactionReceipt/{groupId}/{transHash}**
 
 #### 调用方法
 
@@ -391,9 +391,457 @@ b.异常返回结果示例（信息详情请参看附录1）
 }
 ```
 
-## 3. 其他接口
+### 2.4. 已签名交易发送
 
-### 3.1 获取节点加密类型接口 
+#### 接口描述
+
+> 发送已签名的交易上链，返回交易收据
+
+#### 接口URL
+
+**http://localhost:5003/WeBASE-Transaction/trans/sendSignedTransaction**
+
+#### 调用方法
+
+HTTP POST
+
+#### 请求参数
+
+**1）参数表**
+
+| **序号** | **中文**     | **参数名** | **类型** | **最大长度** | **必填** | **说明** |
+| -------- | ------------ | ---------- | -------- | ------------ | -------- | -------- |
+| 1        | 已签名字符串 | signedStr  | String   |              | 是       |          |
+| 2        | 是否同步发送 | sync       | bool     |              | 是       |          |
+| 2        | 群组ID       | groupId    | int      |              | 是       |          |
+
+**2）数据格式**
+
+```
+{
+    "signedStr": "0xddd",
+    "sync": 1,
+    "groupId":1
+}
+```
+
+#### 响应参数
+
+**1）数据格式**
+
+```
+{
+  "code": 0,
+  "message": "success",
+  "data": {
+    "transactionHash": "0xb2c733b742045e61c0fd6e7e2bafece04d56262a4887de9f78dad2c5dd2f944b",
+    "transactionIndex": 0,
+    "blockHash": "0xf27ff42d4be65329a1e7b11365e190086d92f9836168d0379e92642786db7ade",
+    "blockNumber": 100,
+    "cumulativeGasUsed": 121038,
+    "gasUsed": 121038,
+    "contractAddress": "0x0000000000000000000000000000000000000000",
+    "root": null,
+    "from": null,
+    "to": null,
+    "logs": [
+        {
+            "removed": false,
+            "logIndex": 0,
+            "transactionIndex": 0,
+            "transactionHash": "0xb2c733b742045e61c0fd6e7e2bafece04d56262a4887de9f78dad2c5dd2f944b",
+            "blockHash": "0xf27ff42d4be65329a1e7b11365e190086d92f9836168d0379e92642786db7ade",
+            "blockNumber": 100,
+            "address": "0x986278eb8e8b4ef98bdfc055c02d65865fc87ad2",
+            "data": "0x00000000000000000000000000000000000000000000000000000000000000c000000000000000000000000000000000000000000000000000000000000001200000000000000000000000000000000000000000000000000000000000000160000000000000000000000000000000000000000000000000000000000000001caf3fbec3675eabb85c0b25e2992d6f0a5e1546dad85c20733fdb27cfa4ca782a5fdfb621b416f3494c7d8ca436c12309884550d402ea79f03ef8ddfdd494f7a40000000000000000000000000000000000000000000000000000000000000040666164363863656230616530316530643731616635356331316561643031613532656638363435343866306134643133633836363164393664326461366239380000000000000000000000000000000000000000000000000000000000000002363000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000023630000000000000000000000000000000000000000000000000000000000000",
+            "type": "mined",
+            "topics": [
+                "0xbf474e795141390215f4f179557402a28c562b860f7b74dce4a3c0e0604cd97e"
+            ],
+            "logIndexRaw": "0",
+            "blockNumberRaw": "100",
+            "transactionIndexRaw": "0"
+        }
+    ],
+    "logsBloom": null,
+    "gasUsedRaw": "0x1d8ce",
+    "blockNumberRaw": "100",
+    "transactionIndexRaw": "0",
+    "cumulativeGasUsedRaw": "0x1d8ce",
+    "message": null,
+    "txProof": null,
+    "receiptProof": null
+  }
+}
+```
+
+### 2.5. 已编码查询交易发送
+
+#### 接口描述
+
+> 发送已编码的查询交易，返回合约的返回值；
+
+#### 接口URL
+
+**http://localhost:5003/WeBASE-Transaction/trans/sendQueryTransaction**
+
+#### 调用方法
+
+HTTP POST
+
+#### 请求参数
+
+**1）参数表**
+
+| **序号** | **中文**     | **参数名**      | **类型**       | **最大长度** | **必填** | **说明**                                                     |
+| -------- | ------------ | --------------- | -------------- | ------------ | -------- | ------------------------------------------------------------ |
+| 1        | 已编码字符串 | encodeStr       | String         |              | 是       |                                                              |
+| 2        | 合约地址     | contractAddress | String         |              | 是       |                                                              |
+| 3        | 群组ID       | groupId         | int            |              | 是       |                                                              |
+| 4        | 合约名       | funcName        | String         |              | 是       |                                                              |
+| 5        | 方法Abi      | functionAbi     | List\<Object\> |              | 是       | JSON数组，所调用方法的Abi（备注：合约有重载方法时，传全部Abi会有问题） |
+
+**2）数据格式**
+
+```
+{
+    "encodeStr": "0xddd",
+    "contractAddress": "0x2b5ad5c4795c026514f8317c7a215e218dccd6cf",
+    "groupId":1,
+    "funcName": "get",
+    "contractAbi": "[{\"constant\":true,\"inputs\":[],\"name\":\"get\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"}]"
+}
+```
+
+#### 响应参数
+
+ Object返回类型
+
+```
+{
+  "code": 0,
+  "message": "success",
+  "data": {
+    "Hi,Welcome!"
+  }
+}
+```
+
+## 3. 新增用户接口
+
+### 3.1. 导入私钥用户接口
+
+#### 接口描述
+
+导入私钥到Sign
+
+#### 接口URL
+
+**http://localhost:5003/WeBASE-Transaction/user/newUser**
+
+#### 调用方法
+
+HTTP POST
+
+#### 请求参数
+
+**1）参数表**
+
+| **序号** | **中文** | **参数名**  | **类型** | **最大长度** | **必填** | **说明**                                     |
+| -------- | -------- | ----------- | -------- | ------------ | -------- | -------------------------------------------- |
+| 1        | 私钥     | privateKey  | String   |              | 是       | 通过Base64加密后的私钥内容                   |
+| 2        | 用户编号 | signUserId  | String   | 64           | 是       | 私钥用户的唯一业务编号，仅支持数字字母下划线 |
+| 3        | 应用编号 | appId       | String   | 64           | 是       | 用于标志用户的应用编号,仅支持数字字母下划线  |
+| 4        | 加密类型 | encryptType | Integer  |              | 否       | 默认为0，0: ECDSA, 1: 国密                   |
+
+**2）数据格式**
+
+```
+http://localhost:5003/WeBASE-Transaction/user/newUser
+```
+
+```
+{
+  "appId": "app1001",
+  "encryptType": 1,
+  "privateKey": "YzAwNDYzYWU4MjM2OTVhNjk1MGNmZGUwNmVkODg0YjI2MzUzNmE2ODg2MGEwNWZjMTE4NTM4ODIxYTQ5OTcyNQ==",
+  "signUserId": "user1003"
+}
+```
+
+#### 响应参数
+
+**1）参数表**
+
+| **序号** | **中文** | **参数名**  | **类型**    | **最大长度** | **必填** | **说明**           |
+| -------- | -------- | ----------- | ----------- | ------------ | -------- | ------------------ |
+| 1        | 返回码   | code        | String      |              | 是       | 返回码信息请附录1  |
+| 2        | 提示信息 | message     | String      |              | 是       |                    |
+| 3        | 返回数据 | data        | Object      |              | 是       |                    |
+| 3.1      | 用户编号 | signUserId  | String      |              | 是       |                    |
+| 3.2      | 应用编号 | appId       | String      |              | 是       |                    |
+| 3.3      | 私钥信息 | privateKey  | String      |              | 否       |                    |
+| 3.4      | 账户地址 | address     | String      |              | 是       |                    |
+| 3.5      | 公钥     | publicKey   | toHexString |              | 是       |                    |
+| 3.6      | 描述     | description | String      |              | 是       |                    |
+| 3.7      | 加密类型 | encryptType | Integer     |              | 是       | 0: ECDSA, 1: guomi |
+
+**2）数据格式**
+
+a.请求正常返回结果
+
+ECDSA用户：
+
+```
+{
+    "code": 0,
+    "message": "success",
+    "data": {
+        "signUserId": "user_111",
+        "appId": "group_01",
+        "address": "0x2df87ff79e8c85a318c00c82ee76e2581fbab0a8",
+        "publicKey": "0x1befc9824623dfc2f1541d2fc1df4bc445d9dd26816b0884e24628881d5bb572bf7dfd69520d540adc2d16d295df954d9c34bef4381dbc207942fcbf43c7d622",
+        "privateKey": "", //不返回私钥
+        "description": null,
+        "encryptType": 0
+    }
+}
+```
+
+b.异常返回结果示例
+
+```
+{
+    "code": 303001,
+    "message": "user of this sign user id is already exists",
+    "data": null
+}
+```
+
+### 3.2 根据userId查询用户
+
+#### 接口描述
+
+根据用户编号查询用户信息。
+
+#### 接口URL
+
+**http://localhost:5003/WeBASE-Transaction/user/{signUserId}/userInfo**
+
+#### 调用方法
+
+HTTP GET
+
+#### 请求参数
+
+**1）参数表**
+
+| **序号** | **中文** | **参数名** | **类型** | **最大长度** | **必填** | **说明**                                     |
+| -------- | -------- | ---------- | -------- | ------------ | -------- | -------------------------------------------- |
+| 1        | 用户编号 | signUserId | String   | 64           | 是       | 私钥用户的唯一业务编号，仅支持数字字母下划线 |
+
+**2）数据格式**
+
+```
+http://localhost:5003/WeBASE-Transaction/user/user1001/userInfo
+```
+
+#### 响应参数
+
+**1）参数表**
+
+| **序号** | **中文** | **参数名**  | **类型**    | **最大长度** | **必填** | **说明**           |
+| -------- | -------- | ----------- | ----------- | ------------ | -------- | ------------------ |
+| 1        | 返回码   | code        | String      |              | 是       | 返回码信息请附录1  |
+| 2        | 提示信息 | message     | String      |              | 是       |                    |
+| 3        | 返回数据 | data        | Object      |              | 是       |                    |
+| 3.1      | 用户编号 | signUserId  | String      |              | 是       |                    |
+| 3.2      | 应用编号 | appId       | String      |              | 是       |                    |
+| 3.3      | 私钥信息 | privateKey  | String      |              | 是       |                    |
+| 3.4      | 账户地址 | address     | String      |              | 是       |                    |
+| 3.5      | 公钥     | publicKey   | toHexString |              | 是       |                    |
+| 3.6      | 描述     | description | String      |              | 是       |                    |
+| 3.7      | 加密类型 | encryptType | Integer     |              | 是       | 0: ECDSA, 1: guomi |
+
+**2）数据格式**
+
+a.请求正常返回结果
+
+```
+{
+  "code": 0,
+  "message": "success",
+  "data": {
+    "signUserId": "user1001",
+    "appId": "app1001",
+    "address": "0xdb4ed7a548623c219235aa68156f117dff959a17",
+    "publicKey": "0x46af4341acd0c404aab06a75cd950e2c04f8507a2f77abfe9e8b6d22014f897daaea457eb75dbdf26a0e74c4f1ee360c9d836ba6bfdd63754736231773904d4b",
+    "privateKey": "",
+    "description": null,
+    "encryptType": 1
+  }
+}
+```
+
+b.异常返回结果示例
+
+```
+{
+    "code": 303002,
+    "message": "user does not exist",
+    "data": null
+}
+```
+
+### 3.3. 根据appId查询用户列表（分页）
+
+#### 接口描述
+
+根据传入的`appId`值，查询所有所有属于该appId的用户信息列表。
+
+#### 接口URL
+
+**http://localhost:5003/WeBASE-Transaction/user/list/{appId}/{pageNumber}/{pageSize}**
+
+#### 调用方法
+
+HTTP GET
+
+#### 请求参数
+
+**1）参数表**
+
+| **序号** | **中文** | **参数名** | **类型** | **最大长度** | **必填** | **说明**               |
+| -------- | -------- | ---------- | -------- | ------------ | -------- | ---------------------- |
+| 1        | 应用编号 | appId      | String   |              | 是       | 用于标志用户的应用编号 |
+| 2        | 页码     | pageNumber | Integer  |              | 是       | 页码                   |
+| 3        | 页大小   | pageSize   | Integer  |              | 是       | 每页条数               |
+
+**2）数据格式**
+
+```
+http://localhost:5003/WeBASE-Transaction/user/list/app1001/1/5
+```
+
+#### 响应参数
+
+**1）参数表**
+
+| **序号** | **中文** | **参数名**  | **类型**    | **最大长度** | **必填** | **说明**           |
+| -------- | -------- | ----------- | ----------- | ------------ | -------- | ------------------ |
+| 1        | 返回码   | code        | String      |              | 是       | 返回码信息请附录1  |
+| 2        | 提示信息 | message     | String      |              | 是       |                    |
+| 3        | 返回数据 | data        | List        |              | 是       |                    |
+| 3.1      | 用户编号 | signUserId  | String      |              | 是       |                    |
+| 3.2      | 应用编号 | appId       | String      |              | 是       |                    |
+| 3.3      | 私钥信息 | privateKey  | String      |              | 是       |                    |
+| 3.4      | 账户地址 | address     | String      |              | 是       |                    |
+| 3.5      | 公钥     | publicKey   | toHexString |              | 是       |                    |
+| 3.6      | 描述     | description | String      |              | 是       |                    |
+| 3.7      | 加密类型 | encryptType | Integer     |              | 是       | 0: ECDSA, 1: guomi |
+| 4        | 总量     | totalCount  | Long        |              | 否       | 数据总量           |
+
+**2）数据格式**
+
+a.请求正常返回结果
+
+```
+{
+  "code": 0,
+  "message": "success",
+  "data": [
+    {
+      "signUserId": "user1001",
+      "appId": "app1001",
+      "address": "0xdb4ed7a548623c219235aa68156f117dff959a17",
+      "publicKey": "0x46af4341acd0c404aab06a75cd950e2c04f8507a2f77abfe9e8b6d22014f897daaea457eb75dbdf26a0e74c4f1ee360c9d836ba6bfdd63754736231773904d4b",
+      "privateKey": "",
+      "description": null,
+      "encryptType": 1
+    }
+  ],
+  "totalCount": 1
+}
+```
+
+b.异常返回结果示例
+
+```
+{
+  "code": 103001,
+  "message": "system error",
+  "data": null
+}
+```
+
+### 3.4. 停用私钥用户
+
+#### 接口描述
+
+通过修改私钥用户的`status`状态值来停用私钥用户；停用后，其他接口将不返回被停用的私钥用户
+
+#### 接口URL
+
+**http://localhost:5003/WeBASE-Transaction/user**
+
+#### 调用方法
+
+HTTP DELETE
+
+#### 请求参数
+
+**1）参数表**
+
+| **序号** | **中文** | **参数名** | **类型** | **最大长度** | **必填** | **说明**                                     |
+| -------- | -------- | ---------- | -------- | ------------ | -------- | -------------------------------------------- |
+| 1        | 用户编号 | signUserId | String   | 64           | 是       | 私钥用户的唯一业务编号，仅支持数字字母下划线 |
+
+**2）数据格式**
+
+```
+http://localhost:5003/WeBASE-Transaction/user
+```
+
+```
+{
+  "signUserId": "user1002"
+}
+```
+
+#### 响应参数
+
+**1）参数表**
+
+| **序号** | **中文** | **参数名** | **类型** | **最大长度** | **必填** | **说明**          |
+| -------- | -------- | ---------- | -------- | ------------ | -------- | ----------------- |
+| 1        | 返回码   | code       | String   |              | 是       | 返回码信息请附录1 |
+| 2        | 提示信息 | message    | String   |              | 是       |                   |
+
+**2）数据格式**
+
+a.请求正常返回结果
+
+```
+{
+  "code": 0,
+  "message": "success",
+  "data": null
+}
+```
+
+b.异常返回结果示例
+
+```
+{
+    "code": 303002,
+    "message": "user does not exist",
+    "data": null
+}
+```
+
+## 4. 其他接口
+
+### 4.1 获取节点加密类型
 
 #### 接口描述
 
@@ -401,7 +849,7 @@ b.异常返回结果示例（信息详情请参看附录1）
 
 #### 接口URL
 
-http://localhost:5003/WeBASE-Transaction/encrypt
+**http://localhost:5003/WeBASE-Transaction/encrypt**
 
 #### 调用方法
 
@@ -459,3 +907,6 @@ a.请求正常返回结果
 | 203006 | web3j is null, please check groupId      | web3j为空，检查群组编号  |
 | 203007 | data request sign error                  | 数据请求签名异常         |
 | 203008 | node request failed                      | 节点请求失败             |
+| 203009 | transaction failed                       | 交易失败                 |
+| 203010 | request function is error                | 请求方法名错误           |
+| 203011 | request sign server exception            | 请求签名服务异常         |

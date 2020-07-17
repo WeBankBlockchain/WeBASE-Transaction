@@ -16,8 +16,9 @@
 
 package com.webank.webase.transaction.keystore.entity;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import lombok.Data;
-import org.hibernate.validator.constraints.NotBlank;
 
 /**
  * import private key entity
@@ -29,10 +30,8 @@ public class ReqNewUser {
 	private String signUserId;
 	@NotBlank
 	private String appId;
+	@NotNull
 	private Integer encryptType;
-	/**
-	 * encoded by base64
-	 */
 	@NotBlank
 	private String privateKey;
 }

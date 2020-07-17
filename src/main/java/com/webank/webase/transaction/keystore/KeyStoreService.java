@@ -14,27 +14,24 @@
 
 package com.webank.webase.transaction.keystore;
 
-import com.alibaba.fastjson.JSON;
 import com.webank.webase.transaction.base.ConstantCode;
 import com.webank.webase.transaction.base.Constants;
 import com.webank.webase.transaction.base.ResponseEntity;
 import com.webank.webase.transaction.base.exception.BaseException;
-import com.webank.webase.transaction.keystore.entity.*;
+import com.webank.webase.transaction.keystore.entity.EncodeInfo;
+import com.webank.webase.transaction.keystore.entity.ReqNewUser;
+import com.webank.webase.transaction.keystore.entity.ReqUserInfo;
+import com.webank.webase.transaction.keystore.entity.RspUserInfo;
+import com.webank.webase.transaction.keystore.entity.SignInfo;
 import com.webank.webase.transaction.util.CommonUtils;
+import com.webank.webase.transaction.util.SignRestTools;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.fisco.bcos.web3j.crypto.Credentials;
 import org.fisco.bcos.web3j.crypto.EncryptType;
 import org.fisco.bcos.web3j.crypto.gm.GenCredential;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.client.RestTemplate;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * KeyStoreService.
@@ -44,14 +41,9 @@ import java.util.List;
 @Service
 public class KeyStoreService {
     @Autowired
-    RestTemplate restTemplate;
+    SignRestTools signRestTools;
     @Autowired
     private Constants properties;
-
-    private static final String SIGN_URL = "http://%s/WeBASE-Sign/sign";
-    private static final String SIGN_USERINFO_URL = "http://%s/WeBASE-Sign/user/%s/userInfo";
-    private static final String SIGN_GET_USER_LIST_URL = "http://%s/WeBASE-Sign/user/list/%s/%s/%s";
-    private static final String SIGN_NEW_USER_URL = "http://%s/WeBASE-Sign/newUser";
 
     /**
      * get random Address.
@@ -74,23 +66,13 @@ public class KeyStoreService {
      * @param params params
      * @return
      */
-    public String getSignData(EncodeInfo params) {
-        try {
-            SignInfo signInfo = new SignInfo();
-            String url = String.format(SIGN_URL, properties.getSignServer());
-            log.info("getSignData url:{}", url);
-            HttpHeaders headers = CommonUtils.buildHeaders();
-            HttpEntity<String> formEntity =
-                    new HttpEntity<String>(JSON.toJSONString(params), headers);
-            ResponseEntity response =
-                    restTemplate.postForObject(url, formEntity, ResponseEntity.class);
-            log.debug("getSignData response:{}", JSON.toJSONString(response));
-            if (response.getCode() == 0) {
-                signInfo = CommonUtils.object2JavaBean(response.getData(), SignInfo.class);
-            }
+    public String getSignData(EncodeInfo param) throws BaseException {
+        String url = String.format(SignRestTools.SIGN_URL, properties.getSignServer());
+        log.debug("getSignData url:{}", url);
+        ResponseEntity response = signRestTools.postToSign(url, param, ResponseEntity.class);
+        if (response.getCode() == 0) {
+            SignInfo signInfo = CommonUtils.object2JavaBean(response.getData(), SignInfo.class);
             return signInfo.getSignDataStr();
-        } catch (Exception e) {
-            log.error("getSignData exception", e);
         }
         return null;
     }
@@ -102,27 +84,35 @@ public class KeyStoreService {
      * @return
      */
     public boolean checkSignUserId(String signUserId) throws BaseException {
-        try {
-            if (StringUtils.isBlank(signUserId)) {
-                log.error("signUserId is null");
-                return false;
-            }
-            String url = String.format(SIGN_USERINFO_URL, properties.getSignServer(), signUserId);
-            log.info("checkSignUserId url:{}", url);
-            ResponseEntity response = restTemplate.getForObject(url, ResponseEntity.class);
-            log.debug("checkSignUserId response:{}", JSON.toJSONString(response));
-            if (response.getCode() == 0) {
-                RspUserInfo rspUserInfo = CommonUtils.object2JavaBean(response.getData(), RspUserInfo.class);
-                if (rspUserInfo.getEncryptType() != EncryptType.encryptType) {
-                    log.error("signUserId encryptType not match");
-                    return false;
-                }
+        if (StringUtils.isBlank(signUserId)) {
+            log.error("signUserId is null");
+            return false;
+        }
+        String url = String.format(SignRestTools.SIGN_USERINFO_URL, properties.getSignServer(),
+                signUserId);
+        log.debug("checkSignUserId url:{}", url);
+        ResponseEntity response = signRestTools.getFromSign(url, ResponseEntity.class);
+        if (response.getCode() == 0) {
+            RspUserInfo rspUserInfo =
+                    CommonUtils.object2JavaBean(response.getData(), RspUserInfo.class);
+            if (rspUserInfo.getEncryptType() == EncryptType.encryptType) {
                 return true;
             }
-        } catch (Exception e) {
-            log.error("checkSignUserId exception", e);
         }
         return false;
+    }
+
+    /**
+     * newUser.
+     *
+     * @param reqNewUser
+     * @return
+     */
+    public Object newUser(ReqNewUser reqNewUser) throws BaseException {
+        String url = String.format(SignRestTools.SIGN_NEW_USER_URL, properties.getSignServer());
+        log.debug("newUser url:{}", url);
+        Object response = signRestTools.postToSign(url, reqNewUser, Object.class);
+        return response;
     }
 
     /**
@@ -131,23 +121,11 @@ public class KeyStoreService {
      * @param reqUserInfo
      * @return
      */
-    public boolean deleteUser(ReqUserInfo reqUserInfo) throws BaseException {
-        try {
-            String url = String.format(SIGN_NEW_USER_URL, properties.getSignServer());
-            log.info("deleteUser url:{}", url);
-            HttpHeaders headers = CommonUtils.buildHeaders();
-            HttpEntity<String> formEntity =
-                    new HttpEntity<String>(JSON.toJSONString(reqUserInfo), headers);
-            ResponseEntity response =
-                    restTemplate.postForObject(url, formEntity, ResponseEntity.class);
-            log.debug("deleteUser response:{}", JSON.toJSONString(response));
-            if (response.getCode() == 0) {
-                return true;
-            }
-        } catch (Exception e) {
-            log.error("deleteUser exception", e);
-        }
-        return false;
+    public Object deleteUser(ReqUserInfo reqUserInfo) throws BaseException {
+        String url = String.format(SignRestTools.SIGN_URL_USER, properties.getSignServer());
+        log.debug("deleteUser url:{}", url);
+        Object response = signRestTools.deleteToSign(url, reqUserInfo, Object.class);
+        return response;
     }
 
     /**
@@ -156,21 +134,12 @@ public class KeyStoreService {
      * @param appId
      * @return
      */
-    public List<RspGetUserList> getUserListByAppId(String appId, Integer pageNumber, Integer pageSize) throws BaseException {
-        List<RspGetUserList> userList  = new ArrayList<>();
-        try {
-            String url = String.format(SIGN_GET_USER_LIST_URL, properties.getSignServer(), appId, pageNumber, pageSize );
-            log.info("getUserListByAppId url:{}", url);
-            ResponseEntity response =
-                    restTemplate.getForObject(url, ResponseEntity.class);
-            log.debug("getUserListByAppId response:{}", JSON.toJSONString(response));
-            if (response.getCode() == 0) {
-                userList  = CommonUtils.object2JavaBean(response.getData(), List.class);
-            }
-        } catch (Exception e) {
-            log.error("getUserListByAppId exception", e);
-        }
-        return userList;
+    public Object getUserListByAppId(String appId, Integer pageNumber, Integer pageSize)
+            throws BaseException {
+        String url = String.format(SignRestTools.SIGN_GET_USER_LIST_URL, properties.getSignServer(),
+                appId, pageNumber, pageSize);
+        Object response = signRestTools.getFromSign(url, Object.class);
+        return response;
     }
 
 
@@ -180,48 +149,11 @@ public class KeyStoreService {
      * @param signUserId business id of user in sign
      * @return
      */
-    public RspUserInfo getUserBySignUserId(String signUserId) throws BaseException {
-        try {
-            String url = String.format(SIGN_USERINFO_URL, properties.getSignServer(), signUserId);
-            log.info("getUserBySignUserId url:{}", url);
-            ResponseEntity response = restTemplate.getForObject(url, ResponseEntity.class);
-            log.debug("getUserBySignUserId response:{}", JSON.toJSONString(response));
-            if (response.getCode() == 0) {
-                RspUserInfo rspUserInfo = CommonUtils.object2JavaBean(response.getData(), RspUserInfo.class);
-                rspUserInfo.setPrivateKey("");
-                return rspUserInfo;
-            }
-        } catch (Exception e) {
-            log.error("checkSignUserId exception", e);
-        }
-        return null;
+    public Object getUserBySignUserId(String signUserId) throws BaseException {
+        String url = String.format(SignRestTools.SIGN_USERINFO_URL, properties.getSignServer(),
+                signUserId);
+        log.debug("getUserBySignUserId url:{}", url);
+        Object response = signRestTools.getFromSign(url, Object.class);
+        return response;
     }
-
-
-    /**
-     * newUser.
-     *
-     * @param reqNewUser
-     * @return
-     */
-    public RspUserInfo newUser(ReqNewUser reqNewUser)  throws BaseException {
-        RspUserInfo signInfo = new RspUserInfo();
-        try {
-            String url = String.format(SIGN_NEW_USER_URL, properties.getSignServer());
-            log.info("getSignData url:{}", url);
-            HttpHeaders headers = CommonUtils.buildHeaders();
-            HttpEntity<String> formEntity =
-                    new HttpEntity<String>(JSON.toJSONString(reqNewUser), headers);
-            ResponseEntity response =
-                    restTemplate.postForObject(url, formEntity, ResponseEntity.class);
-            log.debug("getSignData response:{}", JSON.toJSONString(response));
-            if (response.getCode() == 0) {
-                signInfo = CommonUtils.object2JavaBean(response.getData(), RspUserInfo.class);
-            }
-        } catch (Exception e) {
-            log.error("getSignData exception", e);
-        }
-        return signInfo;
-    }
-
 }

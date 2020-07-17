@@ -14,7 +14,6 @@
 
 package com.webank.webase.transaction.trans;
 
-import com.alibaba.fastjson.JSON;
 import com.webank.webase.transaction.base.ConstantCode;
 import com.webank.webase.transaction.base.Constants;
 import com.webank.webase.transaction.base.exception.BaseException;
@@ -25,6 +24,7 @@ import com.webank.webase.transaction.trans.entity.ContractFunction;
 import com.webank.webase.transaction.trans.entity.ReqTransSendInfo;
 import com.webank.webase.transaction.util.CommonUtils;
 import com.webank.webase.transaction.util.ContractAbiUtil;
+import com.webank.webase.transaction.util.JsonUtils;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.time.Duration;
@@ -36,8 +36,6 @@ import java.util.Optional;
 import java.util.Random;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
-
-import com.webank.webase.transaction.util.JsonUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.fisco.bcos.channel.client.TransactionSucCallback;
@@ -48,16 +46,18 @@ import org.fisco.bcos.web3j.abi.TypeReference;
 import org.fisco.bcos.web3j.abi.Utils;
 import org.fisco.bcos.web3j.abi.datatypes.Function;
 import org.fisco.bcos.web3j.abi.datatypes.Type;
-import org.fisco.bcos.web3j.crypto.*;
+import org.fisco.bcos.web3j.crypto.ExtendedRawTransaction;
+import org.fisco.bcos.web3j.crypto.ExtendedTransactionEncoder;
+import org.fisco.bcos.web3j.crypto.Hash;
+import org.fisco.bcos.web3j.crypto.RawTransaction;
 import org.fisco.bcos.web3j.crypto.Sign.SignatureData;
+import org.fisco.bcos.web3j.crypto.TransactionEncoder;
 import org.fisco.bcos.web3j.protocol.Web3j;
-import org.fisco.bcos.web3j.protocol.core.DefaultBlockParameterName;
 import org.fisco.bcos.web3j.protocol.core.Request;
 import org.fisco.bcos.web3j.protocol.core.methods.request.Transaction;
 import org.fisco.bcos.web3j.protocol.core.methods.response.AbiDefinition;
 import org.fisco.bcos.web3j.protocol.core.methods.response.SendTransaction;
 import org.fisco.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
-import org.fisco.bcos.web3j.tx.txdecode.ConstantProperties;
 import org.fisco.bcos.web3j.utils.Numeric;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -104,10 +104,12 @@ public class TransService {
         Object response;
         String contractAddress = req.getContractAddress();
         if (contractFunction.getConstant()) {
-            String callOutput = web3jMap.get(groupId)
-                    .call(Transaction.createEthCallTransaction(keyStoreService.getRandomAddress(),
-                            contractAddress, encodedFunction), DefaultBlockParameterName.LATEST)
-                    .send().getValue().getOutput();
+            String callOutput =
+                    web3jMap.get(groupId)
+                            .call(Transaction.createEthCallTransaction(
+                                    keyStoreService.getRandomAddress(), contractAddress,
+                                    encodedFunction))
+                            .send().getValue().getOutput();
             List<Type> typeList =
                     FunctionReturnDecoder.decode(callOutput, function.getOutputParameters());
             if (typeList.size() > 0) {
@@ -121,6 +123,7 @@ public class TransService {
             String signUserId = req.getSignUserId();
             boolean result = keyStoreService.checkSignUserId(signUserId);
             if (!result) {
+                log.error("checkSignUserId fail.");
                 throw new BaseException(ConstantCode.SIGN_USERID_ERROR);
             }
             // data sign
@@ -318,7 +321,7 @@ public class TransService {
             List<Object> params) throws BaseException {
         // check function name
         AbiDefinition abiDefinition =
-                ContractAbiUtil.getAbiDefinition(funcName, JSON.toJSONString(functionAbi));
+                ContractAbiUtil.getAbiDefinition(funcName, JsonUtils.toJSONString(functionAbi));
         if (Objects.isNull(abiDefinition)) {
             log.warn("transaction fail. func:{} is not existed", funcName);
             throw new BaseException(ConstantCode.FUNCTION_NOT_EXISTS);
@@ -351,7 +354,7 @@ public class TransService {
      * @param future future
      */
     public void sendMessage(Web3j web3j, String signMsg,
-                            final CompletableFuture<TransactionReceipt> future) throws IOException {
+            final CompletableFuture<TransactionReceipt> future) throws IOException {
         Request<?, SendTransaction> request = web3j.sendRawTransaction(signMsg);
         request.setNeedTransCallback(true);
         request.setTransactionSucCallback(new TransactionSucCallback() {
@@ -365,8 +368,8 @@ public class TransService {
         request.send();
     }
 
-    public TransactionReceipt sendSignedTransaction(String signedStr, Boolean sync, int groupId)  throws BaseException  {
-
+    public TransactionReceipt sendSignedTransaction(String signedStr, Boolean sync, int groupId)
+            throws BaseException {
         Web3j web3j = getWeb3j(groupId);
         if (sync) {
             final CompletableFuture<TransactionReceipt> transFuture = new CompletableFuture<>();
@@ -374,7 +377,7 @@ public class TransService {
             try {
                 sendMessage(web3j, signedStr, transFuture);
                 receipt = transFuture.get(constants.getTransMaxWait(), TimeUnit.SECONDS);
-            } catch (Exception e ) {
+            } catch (Exception e) {
                 throw new BaseException(ConstantCode.TRANSACTION_FAILED);
             }
             return receipt;
@@ -386,40 +389,20 @@ public class TransService {
         }
     }
 
-
-    public static AbiDefinition getFunctionAbiDefinition(String functionName, String contractAbi)throws BaseException {
-        if(functionName == null) {
-            throw new BaseException(ConstantCode.IN_FUNCTION_ERROR);
-        }
-        List<AbiDefinition> abiDefinitionList = JsonUtils.toJavaObjectList(contractAbi, AbiDefinition.class);
-        if (abiDefinitionList == null) {
-            throw new BaseException(ConstantCode.FAIL_PARSE_JSON);
-        }
-        AbiDefinition result = null;
-        for (AbiDefinition abiDefinition : abiDefinitionList) {
-            if (abiDefinition == null) {
-                throw new BaseException(ConstantCode.IN_FUNCTION_ERROR);
-            }
-            if (ConstantProperties.TYPE_FUNCTION.equals(abiDefinition.getType())
-                    && functionName.equals(abiDefinition.getName())) {
-                result = abiDefinition;
-                break;
-            }
-        }
-        return result;
-    }
-    public Object sendQueryTransaction(String encodeStr, String contractAddress, String funcName, String contractAbi, int groupId, String userAddress) throws BaseException {
-
+    public Object sendQueryTransaction(String encodeStr, String contractAddress, String funcName,
+            String functionAbi, int groupId) throws BaseException {
         Web3j web3j = getWeb3j(groupId);
-        String callOutput ;
+        String callOutput;
         try {
-            callOutput = web3j.call(Transaction.createEthCallTransaction(userAddress, contractAddress, encodeStr), DefaultBlockParameterName.LATEST)
+            callOutput = web3j
+                    .call(Transaction.createEthCallTransaction(keyStoreService.getRandomAddress(),
+                            contractAddress, encodeStr))
                     .send().getValue().getOutput();
         } catch (IOException e) {
             throw new BaseException(ConstantCode.TRANSACTION_FAILED);
         }
 
-        AbiDefinition abiDefinition = getFunctionAbiDefinition(funcName, contractAbi);
+        AbiDefinition abiDefinition = ContractAbiUtil.getAbiDefinition(funcName, functionAbi);
         if (Objects.isNull(abiDefinition)) {
             throw new BaseException(ConstantCode.IN_FUNCTION_ERROR);
         }

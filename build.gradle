@@ -40,15 +40,6 @@ List logger = [
     "org.slf4j:jcl-over-slf4j:1.7.12"
 ]
 
-List netty = [
-    'io.netty:netty-all:4.1.15.Final',
-    'io.netty:netty-tcnative:2.0.0.Final'
-]
-
-List web3sdk = [
-    'org.fisco-bcos:web3sdk:2.4.0'
-]
-
 List jaxb = [
      "javax.xml.bind:jaxb-api:2.3.0",
      "com.sun.xml.bind:jaxb-impl:2.3.0",
@@ -60,11 +51,19 @@ List lombok = [
     "org.projectlombok:lombok:1.18.2"
 ]
 
+def jackson_version="2.11.0"
+List jackson = [
+    "com.fasterxml.jackson.core:jackson-databind:$jackson_version",
+    "com.fasterxml.jackson.module:jackson-module-parameter-names:$jackson_version",
+    "com.fasterxml.jackson.datatype:jackson-datatype-jdk8:$jackson_version",
+    "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jackson_version"
+]
+
 dependencies {
-    compile springboot,swagger,web3sdk,logger,netty,jaxb
+    compile springboot,swagger,logger,jaxb,jackson
     
     compile "org.apache.commons:commons-lang3:3.8.1"
-    compile "com.alibaba:fastjson:1.2.69"
+    compile "org.fisco-bcos:web3sdk:2.5.1"
     
     compile lombok
     annotationProcessor lombok
@@ -110,10 +109,6 @@ jar {
         copy {
             from file('src/main/resources/')
             into 'dist/conf_template'
-        }
-        copy {
-            from file('script/')
-            into 'dist/script'
         }
         copy {
             from configurations.runtime

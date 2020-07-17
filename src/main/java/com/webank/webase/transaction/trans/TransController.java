@@ -14,23 +14,22 @@
 
 package com.webank.webase.transaction.trans;
 
-import com.alibaba.fastjson.JSON;
 import com.webank.webase.transaction.base.BaseController;
 import com.webank.webase.transaction.base.ConstantCode;
 import com.webank.webase.transaction.base.ResponseEntity;
 import com.webank.webase.transaction.base.exception.BaseException;
+import com.webank.webase.transaction.trans.entity.ReqQueryTransHandle;
+import com.webank.webase.transaction.trans.entity.ReqSignedTransHandle;
 import com.webank.webase.transaction.trans.entity.ReqTransSendInfo;
 import com.webank.webase.transaction.util.CommonUtils;
 import com.webank.webase.transaction.util.JsonUtils;
-import com.webank.webase.transaction.util.ReqQueryTransHandle;
-import com.webank.webase.transaction.util.ReqSignedTransHandle;
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
+import java.time.Duration;
+import java.time.Instant;
 import javax.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.fisco.bcos.web3j.protocol.core.methods.response.Transaction;
 import org.fisco.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
@@ -40,9 +39,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.time.Duration;
-import java.time.Instant;
 
 /**
  * Transaction Controller.
@@ -67,7 +63,7 @@ public class TransController extends BaseController {
     @PostMapping("/send")
     public ResponseEntity send(@Valid @RequestBody ReqTransSendInfo transSendInfo,
             BindingResult result) throws Exception {
-        log.info("transSend start. transSendInfo:{}", JSON.toJSONString(transSendInfo));
+        log.info("transSend start. transSendInfo:{}", JsonUtils.toJSONString(transSendInfo));
         checkBindResult(result);
         return CommonUtils.buildSuccessRsp(transService.send(transSendInfo));
     }
@@ -95,37 +91,36 @@ public class TransController extends BaseController {
 
     @ApiOperation(value = "sendSignedTransaction")
     @PostMapping("/sendSignedTransaction")
-    public ResponseEntity sendSignedTransaction(@Valid @RequestBody ReqSignedTransHandle reqSignedTransHandle, BindingResult result) throws BaseException {
-        log.info("transHandleLocal start. ReqSignedTransHandle:[{}]", JsonUtils.toJSONString(reqSignedTransHandle));
-
+    public ResponseEntity sendSignedTransaction(
+            @Valid @RequestBody ReqSignedTransHandle reqSignedTransHandle, BindingResult result)
+            throws BaseException {
         Instant startTime = Instant.now();
-        log.info("transHandleLocal start startTime:{}", startTime.toEpochMilli());
+        log.info("transHandleLocal start. startTime:{}", startTime.toEpochMilli());
 
         checkBindResult(result);
-        String signedStr = reqSignedTransHandle.getSignedStr();
-        if (StringUtils.isBlank(signedStr)) {
-            throw new BaseException(ConstantCode.ENCODE_STR_CANNOT_BE_NULL);
-        }
-        TransactionReceipt receipt =  transService.sendSignedTransaction(signedStr, reqSignedTransHandle.getSync(),reqSignedTransHandle.getGroupId());
-        log.info("transHandleLocal end  useTime:{}", Duration.between(startTime, Instant.now()).toMillis());
+        TransactionReceipt receipt =
+                transService.sendSignedTransaction(reqSignedTransHandle.getSignedStr(),
+                        reqSignedTransHandle.getSync(), reqSignedTransHandle.getGroupId());
+
+        log.info("transHandleLocal end  useTime:{}",
+                Duration.between(startTime, Instant.now()).toMillis());
         return CommonUtils.buildSuccessRsp(receipt);
     }
 
     @ApiOperation(value = "sendQueryTransaction")
     @PostMapping("/sendQueryTransaction")
-    public ResponseEntity sendQueryTransaction(@Valid @RequestBody ReqQueryTransHandle reqQueryTransHandle, BindingResult result)   throws BaseException{
-        log.info("transHandleLocal start. ReqQueryTransHandle:[{}]", JsonUtils.toJSONString(reqQueryTransHandle));
-
+    public ResponseEntity sendQueryTransaction(
+            @Valid @RequestBody ReqQueryTransHandle reqQueryTransHandle, BindingResult result)
+            throws BaseException {
         Instant startTime = Instant.now();
-        log.info("transHandleLocal start startTime:{}", startTime.toEpochMilli());
+        log.info("transHandleLocal start. startTime:{}", startTime.toEpochMilli());
 
         checkBindResult(result);
-        String encodeStr = reqQueryTransHandle.getEncodeStr();
-        if (StringUtils.isBlank(encodeStr)) {
-            throw new BaseException(ConstantCode.ENCODE_STR_CANNOT_BE_NULL);
-        }
-        Object obj =  transService.sendQueryTransaction(encodeStr, reqQueryTransHandle.getContractAddress(),reqQueryTransHandle.getFuncName(),reqQueryTransHandle.getContractAbi(),reqQueryTransHandle.getGroupId(),reqQueryTransHandle.getUserAddress());
-        log.info("transHandleLocal end  useTime:{}", Duration.between(startTime, Instant.now()).toMillis());
+        Object obj = transService.sendQueryTransaction(reqQueryTransHandle.getEncodeStr(),
+                reqQueryTransHandle.getContractAddress(), reqQueryTransHandle.getFuncName(),
+                JsonUtils.toJSONString(reqQueryTransHandle.getFunctionAbi()), reqQueryTransHandle.getGroupId());
+        log.info("transHandleLocal end  useTime:{}",
+                Duration.between(startTime, Instant.now()).toMillis());
         return CommonUtils.buildSuccessRsp(obj);
     }
 }

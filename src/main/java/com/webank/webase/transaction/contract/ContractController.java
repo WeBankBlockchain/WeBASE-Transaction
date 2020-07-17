@@ -14,11 +14,11 @@
 
 package com.webank.webase.transaction.contract;
 
-import com.alibaba.fastjson.JSON;
 import com.webank.webase.transaction.base.BaseController;
 import com.webank.webase.transaction.base.ResponseEntity;
 import com.webank.webase.transaction.contract.entity.ReqDeployInfo;
 import com.webank.webase.transaction.util.CommonUtils;
+import com.webank.webase.transaction.util.JsonUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import javax.validation.Valid;
@@ -53,7 +53,7 @@ public class ContractController extends BaseController {
     @PostMapping("/deploy")
     public ResponseEntity deploy(@Valid @RequestBody ReqDeployInfo deployInfo, BindingResult result)
             throws Exception {
-        log.info("deploy start. deployInfo:{}", JSON.toJSONString(deployInfo));
+        log.info("deploy start. deployInfo:{}", JsonUtils.toJSONString(deployInfo));
         checkBindResult(result);
         return CommonUtils.buildSuccessRsp(contractService.deploy(deployInfo));
     }

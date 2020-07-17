@@ -7,6 +7,8 @@ sdk:
   # 机构名
   orgName: webank
   timeout: 10000
+  # 切换非国密与国密 0: standard, 1: guomi
+  encryptType: 1
   # 群组信息，可配置多群组和多节点
   groupConfig:
     allChannelConnections:
