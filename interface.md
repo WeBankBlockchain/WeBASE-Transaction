@@ -137,7 +137,7 @@ HTTP POST
   "contractAddress": "0x93a17e78d08e1a0d98269b3bf5656eaed2c2416c",
   "funcName": "set",
   "funcParam": ["hello"],
-  "functionAbi": [{"constant":false,"inputs":[{"name":"n","type":"string"}],"name":"set","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"}],
+  "functionAbi": [{"constant":true,"inputs":[],"name":"get","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"}],
   "groupId": 1,
   "signUserId": "user1001"
 }
