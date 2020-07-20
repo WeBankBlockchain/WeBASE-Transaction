@@ -35,5 +35,5 @@ gradle.properties
 *.crt
 *.key
 
-
+application-test.properties
 
