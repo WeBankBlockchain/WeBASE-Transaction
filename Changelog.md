@@ -1,3 +1,22 @@
+### v1.4.0
+
+ (2020-08-06)
+ 
+
+**Add**
+- 增加返回 Version 版本接口
+
+**兼容性**
+
+- 支持FISCO-BCOS v2.0.0-rc1 版本
+- 支持FISCO-BCOS v2.0.0-rc2 版本
+- 支持FISCO-BCOS v2.0.0-rc3 版本
+- 支持FISCO-BCOS v2.0.0 及以上版本
+- WeBASE-Sign v1.4.0+
+
+详细了解，请阅读[**技术文档**](https://webasedoc.readthedocs.io/zh_CN/latest/)。
+
+
 ### v1.3.2
 
  (2020-06-17)
