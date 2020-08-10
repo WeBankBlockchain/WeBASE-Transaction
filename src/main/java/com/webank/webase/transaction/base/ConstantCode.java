@@ -21,21 +21,27 @@ package com.webank.webase.transaction.base;
 public interface ConstantCode {
     // return success
     RetCode RET_SUCCEED = RetCode.mark(0, "success");
-
-    // general error
-    RetCode IN_FUNCPARAM_ERROR = RetCode.mark(203001, "contract funcParam is error");
-    RetCode GROUPID_NOT_CONFIGURED = RetCode.mark(203002, "request group id has not been configured");
-    RetCode SIGN_USERID_ERROR = RetCode.mark(203003, "signUserId check failed");
-    RetCode FUNCTION_NOT_EXISTS = RetCode.mark(203004, "function is not exists");
-    RetCode WEB3JMAP_IS_EMPTY = RetCode.mark(203005, "web3jMap is empty");
-    RetCode WEB3J_IS_NULL = RetCode.mark(203006, "web3j is null, please check groupId");
-    RetCode DATA_SIGN_ERROR = RetCode.mark(203007, "data request sign error");
-    RetCode NODE_REQUEST_FAILED = RetCode.mark(203008, "node request failed");
-    RetCode TRANSACTION_FAILED = RetCode.mark(203009, "transaction failed");
-    RetCode IN_FUNCTION_ERROR = RetCode.mark(203010, "request function is error");
-    RetCode REQUEST_SIGN_EXCEPTION = RetCode.mark(203011, "request sign server exception");
     
     // system error
     RetCode SYSTEM_ERROR = RetCode.mark(103001, "system error");
     RetCode PARAM_VAILD_FAIL = RetCode.mark(103002, "param valid fail");
+
+    // config
+    RetCode CHAINID_NOT_CONFIGURED = RetCode.mark(203001, "chainId has not been configured");
+    RetCode GROUPID_NOT_CONFIGURED = RetCode.mark(203002, "groupId has not been configured");
+    RetCode WEB3JMAP_IS_EMPTY = RetCode.mark(203003, "web3jMap is empty");
+    
+    // contract
+    RetCode IN_FUNCPARAM_ERROR = RetCode.mark(203101, "contract funcParam is error");
+    RetCode FUNCTION_NOT_EXISTS = RetCode.mark(203102, "function is not exists");
+    
+    // sign
+    RetCode SIGN_USERID_ERROR = RetCode.mark(203201, "signUserId check failed");
+    RetCode DATA_SIGN_ERROR = RetCode.mark(203202, "data request sign error");
+    RetCode REQUEST_SIGN_EXCEPTION = RetCode.mark(203203, "request sign server exception");
+    
+    // transaction
+    RetCode NODE_REQUEST_FAILED = RetCode.mark(203301, "node request failed");
+    RetCode TRANSACTION_FAILED = RetCode.mark(203302, "transaction failed");
+    RetCode IN_FUNCTION_ERROR = RetCode.mark(203303, "request function is error");
 }

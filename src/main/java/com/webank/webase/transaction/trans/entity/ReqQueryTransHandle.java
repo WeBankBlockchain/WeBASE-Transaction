@@ -10,6 +10,8 @@ import lombok.Data;
 @Data
 public class ReqQueryTransHandle {
     @NotNull
+    private Integer chainId;
+    @NotNull
     private Integer groupId;
     @NotBlank
     private String encodeStr;

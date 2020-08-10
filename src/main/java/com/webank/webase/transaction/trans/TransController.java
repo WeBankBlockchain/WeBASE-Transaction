@@ -15,7 +15,6 @@
 package com.webank.webase.transaction.trans;
 
 import com.webank.webase.transaction.base.BaseController;
-import com.webank.webase.transaction.base.ConstantCode;
 import com.webank.webase.transaction.base.ResponseEntity;
 import com.webank.webase.transaction.base.exception.BaseException;
 import com.webank.webase.transaction.trans.entity.ReqQueryTransHandle;
@@ -29,7 +28,6 @@ import java.time.Duration;
 import java.time.Instant;
 import javax.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.fisco.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
@@ -71,21 +69,27 @@ public class TransController extends BaseController {
     /**
      * get transaction by hash.
      */
-    @GetMapping("/getTransactionByHash/{groupId}/{transHash}")
-    public ResponseEntity getTransactionByHash(@PathVariable("groupId") Integer groupId,
-            @PathVariable("transHash") String transHash) throws BaseException {
-        log.info("start getTransactionByHash groupId:{} transHash:{}", groupId, transHash);
-        return CommonUtils.buildSuccessRsp(transService.getTransactionByHash(groupId, transHash));
+    @GetMapping("/getTransactionByHash/{chainId}/{groupId}/{transHash}")
+    public ResponseEntity getTransactionByHash(@PathVariable("chainId") Integer chainId,
+            @PathVariable("groupId") Integer groupId, @PathVariable("transHash") String transHash)
+            throws BaseException {
+        log.info("start getTransactionByHash chainId:{} groupId:{} transHash:{}", chainId, groupId,
+                transHash);
+        return CommonUtils
+                .buildSuccessRsp(transService.getTransactionByHash(chainId, groupId, transHash));
     }
 
     /**
      * get transaction receipt by hash.
      */
-    @GetMapping("/getTransactionReceipt/{groupId}/{transHash}")
-    public ResponseEntity getTransactionReceipt(@PathVariable("groupId") Integer groupId,
-            @PathVariable("transHash") String transHash) throws BaseException {
-        log.info("start getTransactionReceipt groupId:{} transHash:{}", groupId, transHash);
-        return CommonUtils.buildSuccessRsp(transService.getTransactionReceipt(groupId, transHash));
+    @GetMapping("/getTransactionReceipt/{chainId}/{groupId}/{transHash}")
+    public ResponseEntity getTransactionReceipt(@PathVariable("chainId") Integer chainId,
+            @PathVariable("groupId") Integer groupId, @PathVariable("transHash") String transHash)
+            throws BaseException {
+        log.info("start getTransactionReceipt chainId:{} groupId:{} transHash:{}", chainId, groupId,
+                transHash);
+        return CommonUtils
+                .buildSuccessRsp(transService.getTransactionReceipt(chainId, groupId, transHash));
     }
 
 
@@ -98,9 +102,9 @@ public class TransController extends BaseController {
         log.info("transHandleLocal start. startTime:{}", startTime.toEpochMilli());
 
         checkBindResult(result);
-        TransactionReceipt receipt =
-                transService.sendSignedTransaction(reqSignedTransHandle.getSignedStr(),
-                        reqSignedTransHandle.getSync(), reqSignedTransHandle.getGroupId());
+        TransactionReceipt receipt = transService.sendSignedTransaction(
+                reqSignedTransHandle.getSignedStr(), reqSignedTransHandle.getSync(),
+                reqSignedTransHandle.getChainId(), reqSignedTransHandle.getGroupId());
 
         log.info("transHandleLocal end  useTime:{}",
                 Duration.between(startTime, Instant.now()).toMillis());
@@ -118,7 +122,8 @@ public class TransController extends BaseController {
         checkBindResult(result);
         Object obj = transService.sendQueryTransaction(reqQueryTransHandle.getEncodeStr(),
                 reqQueryTransHandle.getContractAddress(), reqQueryTransHandle.getFuncName(),
-                JsonUtils.toJSONString(reqQueryTransHandle.getFunctionAbi()), reqQueryTransHandle.getGroupId());
+                JsonUtils.toJSONString(reqQueryTransHandle.getFunctionAbi()),
+                reqQueryTransHandle.getChainId(), reqQueryTransHandle.getGroupId());
         log.info("transHandleLocal end  useTime:{}",
                 Duration.between(startTime, Instant.now()).toMillis());
         return CommonUtils.buildSuccessRsp(obj);

@@ -37,8 +37,6 @@ public class Constants {
 
     // constant configuration from file
     public static final String CONSTANT_PREFIX = "constant";
-    public static String version;
-    public static String chainId;
     private String signServer = "127.0.0.1:5004";
     private int transMaxWait = 20;
 }
