@@ -305,7 +305,7 @@ c.异常返回结果示例（信息详情请参看附录1）
 
 #### 接口URL
 
-**http://localhost:5003/WeBASE-Transaction/trans/getTransactionByHash/{groupId}/{transHash}**
+**http://localhost:5003/WeBASE-Transaction/trans/getTransactionByHash/{chainId}/{groupId}/{transHash}**
 
 #### 调用方法
 
@@ -391,7 +391,7 @@ b.异常返回结果示例（信息详情请参看附录1）
 
 #### 接口URL
 
-**http://localhost:5003/WeBASE-Transaction/trans/getTransactionReceipt/{groupId}/{transHash}**
+**http://localhost:5003/WeBASE-Transaction/trans/getTransactionReceipt/{chainId}/{groupId}/{transHash}**
 
 #### 调用方法
 
