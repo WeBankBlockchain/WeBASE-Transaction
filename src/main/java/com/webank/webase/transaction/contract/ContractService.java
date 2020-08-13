@@ -56,12 +56,8 @@ public class ContractService {
      * @return
      */
     public TransactionReceipt deploy(ReqDeployInfo req) throws Exception {
-        // check groupId
+        int chainId = req.getChainId();
         int groupId = req.getGroupId();
-        if (!transService.checkGroupId(groupId)) {
-            log.warn("deploy fail. groupId:{} has not been configured", groupId);
-            throw new BaseException(ConstantCode.GROUPID_NOT_CONFIGURED);
-        }
         // check sign user id
         String signUserId = req.getSignUserId();
         boolean result = keyStoreService.checkSignUserId(signUserId);
@@ -85,13 +81,13 @@ public class ContractService {
         }
         // data sign
         String data = req.getBytecodeBin() + encodedConstructor;
-        String signMsg = transService.signMessage(groupId, req.getSignUserId(), "", data);
+        String signMsg = transService.signMessage(chainId, groupId, req.getSignUserId(), "", data);
         if (StringUtils.isBlank(signMsg)) {
             throw new BaseException(ConstantCode.DATA_SIGN_ERROR);
         }
         // send transaction
         final CompletableFuture<TransactionReceipt> transFuture = new CompletableFuture<>();
-        transService.sendMessage(groupId, signMsg, transFuture);
+        transService.sendMessage(chainId, groupId, signMsg, transFuture);
         TransactionReceipt receipt = transFuture.get(constants.getTransMaxWait(), TimeUnit.SECONDS);
         return receipt;
     }

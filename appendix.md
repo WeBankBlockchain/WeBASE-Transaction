@@ -66,15 +66,28 @@ org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating
 
 ## 3. application.yml配置项说明
 
-| 配置项                                                     | 说明                                   |
-| ---------------------------------------------------------- | -------------------------------------- |
-| server.port                                                | 工程服务端口                           |
-| server.servlet.context-path                                | 工程根URI                              |
-| logging.config                                             | 日志文件路径                           |
-| sdk.orgName                                                | 机构名                                 |
-| sdk.timeout                                                | sdk连接超时时间                        |
-| sdk.encryptType                                            | 切换非国密与国密 0: standard, 1: guomi |
-| sdk.groupConfig.allChannelConnections[0].groupId           | sdk连接的群组id                        |
-| sdk.groupConfig.allChannelConnections[0].connectionsStr[0] | sdk连接的节点的ip和channelPort         |
-| constant.signServer                                        | WeBASE-Sign签名服务ip端口              |
+| 配置项                                                       | 说明                                   |
+| ------------------------------------------------------------ | -------------------------------------- |
+| server.port                                                  | 工程服务端口                           |
+| server.servlet.context-path                                  | 工程根URI                              |
+| sdk.orgName                                                  | 机构名                                 |
+| sdk.timeout                                                  | sdk连接超时时间                        |
+| sdk.corePoolSize                                             | 线程池大小                             |
+| sdk.maxPoolSize                                              | 线程池最大线程数                       |
+| sdk.queueCapacity                                            | 线程池队列大小                         |
+| sdk.keepAlive                                                | 线程存活                               |
+| sdk.encryptType                                              | 切换非国密与国密 0: standard, 1: guomi |
+| sdk.chainConfigList[0].chainId                               | 链编号，自定义                         |
+| sdk.chainConfigList[0].groupConfig.caCert                    | 非国密证书                             |
+| sdk.chainConfigList[0].groupConfig.sslCert                   | 非国密节点证书                         |
+| sdk.chainConfigList[0].groupConfig.sslKey                    | 非国密节点私钥                         |
+| sdk.chainConfigList[0].groupConfig.gmCaCert                  | 国密证书                               |
+| sdk.chainConfigList[0].groupConfig.gmSslCert                 | 国密节点证书                           |
+| sdk.chainConfigList[0].groupConfig.gmSslKey                  | 国密节点私钥                           |
+| sdk.chainConfigList[0].groupConfig.gmEnSslCert               | 国密节点en证书                         |
+| sdk.chainConfigList[0].groupConfig.gmEnSslKey                | 国密节点en私钥                         |
+| sdk.chainConfigList[0].groupConfig.allChannelConnections[0].groupId | sdk连接的群组id                        |
+| sdk.chainConfigList[0].groupConfig.allChannelConnections[0].connectionsStr[0] | sdk连接的节点的ip和channelPort         |
+| constant.signServer                                          | WeBASE-Sign签名服务ip端口              |
+| logging.config                                               | 日志文件路径                           |
 

@@ -15,11 +15,14 @@
 package com.webank.webase.transaction.config;
 
 import com.webank.webase.transaction.base.ConstantCode;
-import com.webank.webase.transaction.base.Constants;
 import com.webank.webase.transaction.base.exception.BaseException;
-import java.util.HashMap;
+import com.webank.webase.transaction.chain.entity.ChainConfigInfo;
+import com.webank.webase.transaction.chain.entity.QueryConfigInfo;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadPoolExecutor.AbortPolicy;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -51,9 +54,10 @@ public class Web3Config {
     private int maxPoolSize = 500;
     private int queueCapacity = 500;
     private int keepAlive = 60;
-    private GroupChannelConnectionsConfig groupConfig;
+    private List<ChainConfigInfo> chainConfigList;
     private int encryptType;
-    
+    private List<QueryConfigInfo> configInfoList = new ArrayList<>();
+
     @Bean(name = "encryptType")
     public EncryptType EncryptType() {
         // 1: guomi, 0: standard
@@ -68,27 +72,37 @@ public class Web3Config {
      */
     @Bean
     @DependsOn("encryptType")
-    public HashMap<Integer, Web3j> web3jMap() throws Exception {
-        HashMap<Integer, Web3j> web3jMap = new HashMap<Integer, Web3j>();
-        List<ChannelConnections> channelConnectList = groupConfig.getAllChannelConnections();
-        for (ChannelConnections connect : channelConnectList) {
-            int groupId = connect.getGroupId();
-            log.info("init groupId:{}", groupId);
-            // set service
-            Service service = new Service();
-            service.setOrgID(orgName);
-            service.setThreadPool(sdkThreadPool());
-            service.setAllChannelConnections(groupConfig);
-            service.setGroupId(groupId);
-            service.run();
-            ChannelEthereumService channelEthereumService = new ChannelEthereumService();
-            channelEthereumService.setTimeout(timeout);
-            channelEthereumService.setChannelService(service);
-            Web3j web3j = Web3j.build(channelEthereumService, groupId);
-            web3j.getGroupList().send().getGroupList();
-            web3jMap.put(groupId, web3j);
+    public Map<Integer, Map<Integer, Web3j>> web3jMapWithChainId() throws Exception {
+        ConcurrentHashMap<Integer, Map<Integer, Web3j>> web3jMapWithChainId =
+                new ConcurrentHashMap<Integer, Map<Integer, Web3j>>(chainConfigList.size());
+        for (ChainConfigInfo chainConfigInfo : chainConfigList) {
+            int chainId = chainConfigInfo.getChainId();
+            GroupChannelConnectionsConfig groupConfig = chainConfigInfo.getGroupConfig();
+            ConcurrentHashMap<Integer, Web3j> web3jMap = new ConcurrentHashMap<Integer, Web3j>(
+                    groupConfig.getAllChannelConnections().size());
+            List<Integer> groupList = new ArrayList<>();
+            for (ChannelConnections connect : groupConfig.getAllChannelConnections()) {
+                int groupId = connect.getGroupId();
+                log.info("init chainId:{} groupId:{}", chainId, groupId);
+                // set service
+                Service service = new Service();
+                service.setOrgID(orgName);
+                service.setThreadPool(sdkThreadPool());
+                service.setAllChannelConnections(groupConfig);
+                service.setGroupId(groupId);
+                service.run();
+                ChannelEthereumService channelEthereumService = new ChannelEthereumService();
+                channelEthereumService.setTimeout(timeout);
+                channelEthereumService.setChannelService(service);
+                Web3j web3j = Web3j.build(channelEthereumService, groupId);
+                web3j.getGroupList().send().getGroupList();
+                web3jMap.put(groupId, web3j);
+                groupList.add(groupId);
+            }
+            web3jMapWithChainId.put(chainId, web3jMap);
+            configInfoList.add(new QueryConfigInfo(chainId, groupList));
         }
-        return web3jMap;
+        return web3jMapWithChainId;
     }
 
     /**
@@ -110,17 +124,22 @@ public class Web3Config {
     }
 
     @Bean
-    public NodeVersion getNodeVersion(HashMap<Integer, Web3j> web3jMap) throws Exception {
-        Set<Integer> iSet = web3jMap.keySet();
-        if (iSet.isEmpty()) {
-            log.error("web3jMap is empty, please check your node status.");
-            throw new BaseException(ConstantCode.WEB3JMAP_IS_EMPTY);
+    public Map<Integer, NodeVersion> versionMap(
+            Map<Integer, Map<Integer, Web3j>> web3jMapWithChainId) throws Exception {
+        ConcurrentHashMap<Integer, NodeVersion> versionMap =
+                new ConcurrentHashMap<Integer, NodeVersion>(web3jMapWithChainId.size());
+        for (Integer s : web3jMapWithChainId.keySet()) {
+            Map<Integer, Web3j> web3jMap = web3jMapWithChainId.get(s);
+            Set<Integer> iSet = web3jMap.keySet();
+            if (iSet.isEmpty()) {
+                log.error("web3jMap is empty, please check your node status.");
+                throw new BaseException(ConstantCode.WEB3JMAP_IS_EMPTY);
+            }
+            // get random index to get web3j
+            Integer index = iSet.iterator().next();
+            NodeVersion version = web3jMap.get(index).getNodeVersion().send();
+            versionMap.put(s, version);
         }
-        // get random index to get web3j
-        Integer index = iSet.iterator().next();
-        NodeVersion version = web3jMap.get(index).getNodeVersion().send();
-        Constants.version = version.getNodeVersion().getVersion();
-        Constants.chainId = version.getNodeVersion().getChainID();
-        return version;
+        return versionMap;
     }
 }

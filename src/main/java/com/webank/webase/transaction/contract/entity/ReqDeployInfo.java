@@ -28,6 +28,8 @@ import lombok.Data;
 @Data
 public class ReqDeployInfo {
     @NotNull
+    private Integer chainId;
+    @NotNull
     private Integer groupId;
     @NotBlank
     private String signUserId;

@@ -22,6 +22,7 @@ import com.webank.webase.transaction.keystore.KeyStoreService;
 import com.webank.webase.transaction.keystore.entity.EncodeInfo;
 import com.webank.webase.transaction.trans.entity.ContractFunction;
 import com.webank.webase.transaction.trans.entity.ReqTransSendInfo;
+import com.webank.webase.transaction.trans.entity.TransResultDto;
 import com.webank.webase.transaction.util.CommonUtils;
 import com.webank.webase.transaction.util.ContractAbiUtil;
 import com.webank.webase.transaction.util.JsonUtils;
@@ -39,7 +40,6 @@ import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.fisco.bcos.channel.client.TransactionSucCallback;
-import org.fisco.bcos.channel.handler.ChannelConnections;
 import org.fisco.bcos.web3j.abi.FunctionEncoder;
 import org.fisco.bcos.web3j.abi.FunctionReturnDecoder;
 import org.fisco.bcos.web3j.abi.TypeReference;
@@ -56,9 +56,11 @@ import org.fisco.bcos.web3j.protocol.Web3j;
 import org.fisco.bcos.web3j.protocol.core.Request;
 import org.fisco.bcos.web3j.protocol.core.methods.request.Transaction;
 import org.fisco.bcos.web3j.protocol.core.methods.response.AbiDefinition;
+import org.fisco.bcos.web3j.protocol.core.methods.response.NodeVersion;
 import org.fisco.bcos.web3j.protocol.core.methods.response.SendTransaction;
 import org.fisco.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.fisco.bcos.web3j.utils.Numeric;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -70,7 +72,9 @@ import org.springframework.stereotype.Service;
 @Service
 public class TransService {
     @Autowired
-    Map<Integer, Web3j> web3jMap;
+    Map<Integer, Map<Integer, Web3j>> web3jMapWithChainId;
+    @Autowired
+    Map<Integer, NodeVersion> versionMap;
     @Autowired
     Web3Config web3Config;
     @Autowired
@@ -84,14 +88,9 @@ public class TransService {
      * @param req parameter
      * @return
      */
-    public Object send(ReqTransSendInfo req) throws Exception {
-        // check groupId
+    public TransResultDto send(ReqTransSendInfo req) throws Exception {
+        int chainId = req.getChainId();
         int groupId = req.getGroupId();
-        if (!checkGroupId(groupId)) {
-            log.error("send fail. groupId:{} has not been configured", groupId);
-            throw new BaseException(ConstantCode.GROUPID_NOT_CONFIGURED);
-        }
-
         // check param ,get function of abi
         ContractFunction contractFunction =
                 buildContractFunction(req.getFunctionAbi(), req.getFuncName(), req.getFuncParam());
@@ -101,23 +100,24 @@ public class TransService {
                 contractFunction.getFinalOutputs());
         String encodedFunction = FunctionEncoder.encode(function);
 
-        Object response;
+        TransResultDto transResultDto = new TransResultDto();
         String contractAddress = req.getContractAddress();
         if (contractFunction.getConstant()) {
-            String callOutput =
-                    web3jMap.get(groupId)
-                            .call(Transaction.createEthCallTransaction(
-                                    keyStoreService.getRandomAddress(), contractAddress,
-                                    encodedFunction))
-                            .send().getValue().getOutput();
+            String callOutput = getWeb3j(chainId, groupId)
+                    .call(Transaction.createEthCallTransaction(keyStoreService.getRandomAddress(),
+                            contractAddress, encodedFunction))
+                    .send().getValue().getOutput();
             List<Type> typeList =
                     FunctionReturnDecoder.decode(callOutput, function.getOutputParameters());
+            Object response;
             if (typeList.size() > 0) {
                 response =
                         ContractAbiUtil.callResultParse(contractFunction.getOutputList(), typeList);
             } else {
                 response = typeList;
             }
+            transResultDto.setQueryInfo(JsonUtils.objToString(response));
+            transResultDto.setConstant(true);
         } else {
             // check sign user id
             String signUserId = req.getSignUserId();
@@ -127,35 +127,33 @@ public class TransService {
                 throw new BaseException(ConstantCode.SIGN_USERID_ERROR);
             }
             // data sign
-            String signMsg = signMessage(groupId, signUserId, contractAddress, encodedFunction);
+            String signMsg =
+                    signMessage(chainId, groupId, signUserId, contractAddress, encodedFunction);
             if (StringUtils.isBlank(signMsg)) {
                 throw new BaseException(ConstantCode.DATA_SIGN_ERROR);
             }
             // send transaction
             final CompletableFuture<TransactionReceipt> transFuture = new CompletableFuture<>();
-            sendMessage(groupId, signMsg, transFuture);
+            sendMessage(chainId, groupId, signMsg, transFuture);
             TransactionReceipt receipt =
                     transFuture.get(constants.getTransMaxWait(), TimeUnit.SECONDS);
-            response = receipt;
+            BeanUtils.copyProperties(receipt, transResultDto);
+            transResultDto.setConstant(false);
         }
-        return response;
+        return transResultDto;
     }
 
     /**
      * get transaction by hash.
      * 
      */
-    public Object getTransactionByHash(Integer groupId, String transHash) throws BaseException {
-        // check groupId
-        if (!checkGroupId(groupId)) {
-            log.error("getTransactionByHash fail. groupId:{} has not been configured", groupId);
-            throw new BaseException(ConstantCode.GROUPID_NOT_CONFIGURED);
-        }
-
+    public Object getTransactionByHash(int chainId, int groupId, String transHash)
+            throws BaseException {
         Object transaction = null;
         try {
             Optional<org.fisco.bcos.web3j.protocol.core.methods.response.Transaction> opt =
-                    getWeb3j(groupId).getTransactionByHash(transHash).send().getTransaction();
+                    getWeb3j(chainId, groupId).getTransactionByHash(transHash).send()
+                            .getTransaction();
             if (opt.isPresent()) {
                 transaction = opt.get();
             }
@@ -170,17 +168,12 @@ public class TransService {
      * get transaction receipt by hash.
      * 
      */
-    public Object getTransactionReceipt(Integer groupId, String transHash) throws BaseException {
-        // check groupId
-        if (!checkGroupId(groupId)) {
-            log.error("getTransactionReceipt fail. groupId:{} has not been configured", groupId);
-            throw new BaseException(ConstantCode.GROUPID_NOT_CONFIGURED);
-        }
-
+    public Object getTransactionReceipt(int chainId, int groupId, String transHash)
+            throws BaseException {
         Object transactionReceipt = null;
         try {
-            Optional<TransactionReceipt> opt = getWeb3j(groupId).getTransactionReceipt(transHash)
-                    .send().getTransactionReceipt();
+            Optional<TransactionReceipt> opt = getWeb3j(chainId, groupId)
+                    .getTransactionReceipt(transHash).send().getTransactionReceipt();
             if (opt.isPresent()) {
                 transactionReceipt = opt.get();
             }
@@ -200,13 +193,13 @@ public class TransService {
      * @param data info
      * @return
      */
-    public String signMessage(int groupId, String signUserId, String contractAddress, String data)
-            throws BaseException {
+    public String signMessage(int chainId, int groupId, String signUserId, String contractAddress,
+            String data) throws BaseException {
         Random r = new Random();
         BigInteger randomid = new BigInteger(250, r);
 
-        BigInteger blockLimit = getWeb3j(groupId).getBlockNumberCache();
-        String versionContent = Constants.version;
+        BigInteger blockLimit = getWeb3j(chainId, groupId).getBlockNumberCache();
+        String versionContent = versionMap.get(chainId).getNodeVersion().getVersion();
         String signMsg;
         if (versionContent.contains("2.0.0-rc1") || versionContent.contains("release-2.0.1")) {
             RawTransaction rawTransaction = RawTransaction.createTransaction(randomid,
@@ -228,11 +221,11 @@ public class TransService {
             byte[] signedMessage = TransactionEncoder.encode(rawTransaction, signData);
             signMsg = Numeric.toHexString(signedMessage);
         } else {
-            String chainId = Constants.chainId;
+            String chainID = versionMap.get(chainId).getNodeVersion().getChainID();
             ExtendedRawTransaction extendedRawTransaction =
                     ExtendedRawTransaction.createTransaction(randomid, Constants.GAS_PRICE,
                             Constants.GAS_LIMIT, blockLimit, contractAddress, BigInteger.ZERO, data,
-                            new BigInteger(chainId), BigInteger.valueOf(groupId), "");
+                            new BigInteger(chainID), BigInteger.valueOf(groupId), "");
             byte[] encodedTransaction = ExtendedTransactionEncoder.encode(extendedRawTransaction);
             String encodedDataStr = Numeric.toHexString(encodedTransaction);
 
@@ -264,9 +257,10 @@ public class TransService {
      * @param signMsg signMsg
      * @param future future
      */
-    public void sendMessage(int groupId, String signMsg,
+    public void sendMessage(int chainId, int groupId, String signMsg,
             final CompletableFuture<TransactionReceipt> future) throws IOException, BaseException {
-        Request<?, SendTransaction> request = getWeb3j(groupId).sendRawTransaction(signMsg);
+        Request<?, SendTransaction> request =
+                getWeb3j(chainId, groupId).sendRawTransaction(signMsg);
         request.setNeedTransCallback(true);
         request.setTransactionSucCallback(new TransactionSucCallback() {
             @Override
@@ -280,36 +274,42 @@ public class TransService {
     }
 
     /**
-     * check groupId.
+     * check id.
      * 
-     * @param groupId info
+     * @param chainId
+     * @param groupId
      * @return
      */
-    public boolean checkGroupId(int groupId) {
-        List<ChannelConnections> connList = web3Config.getGroupConfig().getAllChannelConnections();
-        for (ChannelConnections conn : connList) {
-            if (groupId == conn.getGroupId()) {
-                return true;
-            }
+    public void checkId(int chainId, int groupId) throws BaseException {
+        Map<Integer, Web3j> web3jMap = web3jMapWithChainId.get(chainId);
+        if (web3jMap.isEmpty()) {
+            log.error("chainId:{} has not been configured.", chainId);
+            throw new BaseException(ConstantCode.CHAINID_NOT_CONFIGURED);
         }
-        return false;
+        Web3j web3j = web3jMap.get(groupId);
+        if (Objects.isNull(web3j)) {
+            log.error("chainId:{} groupId:{} has not been configured.", chainId, groupId);
+            throw new BaseException(ConstantCode.GROUPID_NOT_CONFIGURED);
+        }
     }
 
     /**
      * get target group's web3j
      * 
+     * @param chainId
      * @param groupId
      * @return
      */
-    public Web3j getWeb3j(Integer groupId) throws BaseException {
-        if (web3jMap.isEmpty()) {
-            log.error("web3jMap is empty, please check your node status.");
-            throw new BaseException(ConstantCode.WEB3JMAP_IS_EMPTY);
+    public Web3j getWeb3j(int chainId, int groupId) throws BaseException {
+        Map<Integer, Web3j> web3jMap = web3jMapWithChainId.get(chainId);
+        if (Objects.isNull(web3jMap) || web3jMap.isEmpty()) {
+            log.error("chainId:{} has not been configured.", chainId);
+            throw new BaseException(ConstantCode.CHAINID_NOT_CONFIGURED);
         }
         Web3j web3j = web3jMap.get(groupId);
         if (Objects.isNull(web3j)) {
-            log.error("web3j of {} is null, please check groupId", groupId);
-            throw new BaseException(ConstantCode.WEB3J_IS_NULL);
+            log.error("chainId:{} groupId:{} has not been configured.", chainId, groupId);
+            throw new BaseException(ConstantCode.GROUPID_NOT_CONFIGURED);
         }
         return web3j;
     }
@@ -368,9 +368,9 @@ public class TransService {
         request.send();
     }
 
-    public TransactionReceipt sendSignedTransaction(String signedStr, Boolean sync, int groupId)
-            throws BaseException {
-        Web3j web3j = getWeb3j(groupId);
+    public TransactionReceipt sendSignedTransaction(String signedStr, Boolean sync, int chainId,
+            int groupId) throws BaseException {
+        Web3j web3j = getWeb3j(chainId, groupId);
         if (sync) {
             final CompletableFuture<TransactionReceipt> transFuture = new CompletableFuture<>();
             TransactionReceipt receipt;
@@ -390,8 +390,8 @@ public class TransService {
     }
 
     public Object sendQueryTransaction(String encodeStr, String contractAddress, String funcName,
-            String functionAbi, int groupId) throws BaseException {
-        Web3j web3j = getWeb3j(groupId);
+            String functionAbi, int chainId, int groupId) throws BaseException {
+        Web3j web3j = getWeb3j(chainId, groupId);
         String callOutput;
         try {
             callOutput = web3j
