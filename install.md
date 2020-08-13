@@ -71,7 +71,18 @@ dist目录提供了一份配置模板conf_template：
 cd conf
 ```
 
-将节点所在目录`nodes/${ip}/sdk`下的`ca.crt`、`node.crt`和`node.key`文件拷贝到当前conf目录，供SDK与节点建立连接时使用。
+在conf目录创建对应链的证书目录（如：cert），将节点所在目录的证书文件拷贝到创建的目录（区分国密非国密，二选一），然后在4.3的配置文件中配置证书信息，供SDK与节点建立连接时使用。
+
+```
+# 创建目录
+mkdir cert
+
+# 复制非国密证书（ca.crt、node.crt、node.key）：
+cp -rf  nodes/${ip}/sdk/* cert/
+
+# 复制国密证书（gmca.crt、gmsdk.crt、gmsdk.key、gmensdk.crt、gmensdk.key）：
+cp -rf  nodes/${ip}/sdk/mg/* cert/
+```
 
 ### 4.3 修改配置
 
@@ -91,17 +102,35 @@ sdk:
   # 机构名
   orgName: webank
   timeout: 10000
-  # 群组信息，可配置多群组和多节点
-  groupConfig:
-    allChannelConnections:
-    - groupId: 1
-      connectionsStr:
-      - 127.0.0.1:23200
-      - 127.0.0.1:23200
-    - groupId: 2
-      connectionsStr:
-      - 127.0.0.1:23200
-      - 127.0.0.1:23200
+  corePoolSize: 50
+  maxPoolSize: 100
+  queueCapacity: 100
+  keepAlive: 60
+  # 切换非国密与国密 0: standard, 1: guomi
+  encryptType: 0
+  # 链信息，可配置多链（多链需同时为非国密或时同为国密，对应sdk.encryptType）
+  chainConfigList:
+  - chainId: 1
+    # 群组信息，可配置多群组和多节点
+    groupConfig:
+      # 复制对应非国密或国密证书
+      caCert: classpath:cert/ca.crt
+      sslCert: classpath:cert/node.crt
+      sslKey: classpath:cert/node.key
+      gmCaCert: classpath:cert/gmca.crt
+      gmSslCert: classpath:cert/gmsdk.crt
+      gmSslKey: classpath:cert/gmsdk.key
+      gmEnSslCert: classpath:cert/gmensdk.crt
+      gmEnSslKey: classpath:cert/gmensdk.key
+      allChannelConnections:
+      - groupId: 1
+        connectionsStr:
+        - 127.0.0.1:20200
+        - 127.0.0.1:20201
+      - groupId: 2
+        connectionsStr:
+        - 127.0.0.1:20200
+        - 127.0.0.1:20201
 
 constant: 
   # WeBASE-Sign签名服务ip端口
