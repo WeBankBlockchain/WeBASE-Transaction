@@ -20,6 +20,7 @@ import com.webank.webase.transaction.base.ConstantProperties;
 import com.webank.webase.transaction.trans.TransMapper;
 import com.webank.webase.transaction.trans.TransService;
 import com.webank.webase.transaction.trans.entity.TransInfoDto;
+import java.util.Iterator;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,8 +51,14 @@ public class TransHandleDataflowJob implements DataflowJob<TransInfoDto> {
         log.debug("trans fetchData item:{}", context.getShardingItem());
         // query untreated data
         List<TransInfoDto> transInfoList = transMapper.selectUnStatTransByJob(
-                properties.getRequestCountMax(), properties.getSelectCount(),
+                properties.getRequestCountMax(), properties.getSelectCount() * shardingTotalCount,
                 properties.getIntervalTime(), shardingTotalCount, context.getShardingItem());
+        Iterator<TransInfoDto> iterator = transInfoList.iterator();
+        while (iterator.hasNext()) {
+            if (iterator.next().getId() % shardingTotalCount != context.getShardingItem()) {
+                iterator.remove();
+            }
+        }
         return transInfoList;
     }
 
