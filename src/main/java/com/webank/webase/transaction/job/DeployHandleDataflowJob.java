@@ -20,6 +20,7 @@ import com.webank.webase.transaction.base.ConstantProperties;
 import com.webank.webase.transaction.contract.ContractMapper;
 import com.webank.webase.transaction.contract.ContractService;
 import com.webank.webase.transaction.contract.entity.DeployInfoDto;
+import java.util.Iterator;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,9 +50,15 @@ public class DeployHandleDataflowJob implements DataflowJob<DeployInfoDto> {
     public List<DeployInfoDto> fetchData(ShardingContext context) {
         log.debug("deploy fetchData item:{}", context.getShardingItem());
         // query untreated data
-        List<DeployInfoDto> deployInfoList = contractMapper.selectUnStatTransByJob(
-                properties.getRequestCountMax(), properties.getSelectCount(),
-                properties.getIntervalTime(), shardingTotalCount, context.getShardingItem());
+        List<DeployInfoDto> deployInfoList = contractMapper.selectUnStatTrans(
+                properties.getRequestCountMax(), properties.getSelectCount() * shardingTotalCount,
+                properties.getIntervalTime());
+        Iterator<DeployInfoDto> iterator = deployInfoList.iterator();
+        while (iterator.hasNext()) {
+            if (iterator.next().getId() % shardingTotalCount != context.getShardingItem()) {
+                iterator.remove();
+            }
+        }
         return deployInfoList;
     }
 
