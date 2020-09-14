@@ -43,10 +43,9 @@ public class ExceptionsHandler {
     public ResponseEntity myExceptionHandler(BaseException frontException) throws Exception {
         log.warn("catch frontException: {}", frontException.getMessage());
         Map<String, Object> map = new HashMap<>();
-        map.put("errorMessage", frontException.getMessage());
+        map.put("message", frontException.getMessage());
         map.put("code", frontException.getRetCode().getCode());
         return ResponseEntity.status(422).body(map);
-
     }
 
     /**
@@ -58,7 +57,7 @@ public class ExceptionsHandler {
         log.warn("catch typeMismatchException", ex);
 
         Map<String, Object> map = new HashMap<>();
-        map.put("errorMessage", ex.getMessage());
+        map.put("message", ex.getMessage());
         map.put("code", 400);
         log.warn("typeMismatchException return:{}", JsonUtils.toJSONString(map));
         return ResponseEntity.status(400).body(map);
@@ -70,7 +69,7 @@ public class ExceptionsHandler {
         log.warn("catch bindExceptionHandler", ex);
 
         Map<String, Object> map = new HashMap<>();
-        map.put("errorMessage", ex.getMessage());
+        map.put("message", ex.getMessage());
         map.put("code", 400);
         log.warn("bindExceptionHandler return:{}", JsonUtils.toJSONString(map));
         return ResponseEntity.status(400).body(map);
@@ -86,7 +85,7 @@ public class ExceptionsHandler {
     public ResponseEntity exceptionHandler(Exception exc) {
         log.info("catch  exception: ", exc);
         Map<String, Object> map = new HashMap<>();
-        map.put("errorMessage", exc.getMessage());
+        map.put("message", exc.getMessage());
         map.put("code", 500);
         return ResponseEntity.status(500).body(map);
     }

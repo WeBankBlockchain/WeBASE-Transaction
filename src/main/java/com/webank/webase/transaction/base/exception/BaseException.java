@@ -26,13 +26,13 @@ public class BaseException extends Exception {
     private RetCode retCode;
 
     public BaseException(RetCode retCode) {
-        super(retCode.getMsg());
+        super(retCode.getMessage());
         this.retCode = retCode;
     }
 
-    public BaseException(int code, String msg) {
-        super(msg);
-        this.retCode = new RetCode(code, msg);
+    public BaseException(int code, String message) {
+        super(message);
+        this.retCode = new RetCode(code, message);
     }
 
     public RetCode getRetCode() {

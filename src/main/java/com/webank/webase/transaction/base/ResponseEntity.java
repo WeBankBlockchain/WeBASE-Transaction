@@ -34,7 +34,7 @@ public class ResponseEntity {
 
     public ResponseEntity(RetCode rsc) {
         this.code = rsc.getCode();
-        this.message = rsc.getMsg();
+        this.message = rsc.getMessage();
     }
 
     /**
@@ -45,7 +45,7 @@ public class ResponseEntity {
      */
     public ResponseEntity(RetCode rsc, Object obj) {
         this.code = rsc.getCode();
-        this.message = rsc.getMsg();
+        this.message = rsc.getMessage();
         this.data = obj;
     }
 

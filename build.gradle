@@ -18,7 +18,7 @@ repositories {
     mavenCentral()
 }
 
-def springboot_version="2.1.10.RELEASE"
+def springboot_version="2.1.16.RELEASE"
 List springboot = [
     "org.springframework.boot:spring-boot-starter-web:$springboot_version",
     "org.springframework.boot:spring-boot-autoconfigure:$springboot_version",

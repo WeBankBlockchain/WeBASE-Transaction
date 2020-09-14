@@ -23,9 +23,9 @@ public class ParamException extends RuntimeException {
     private static final long serialVersionUID = 1L;
     private RetCode retCode;
 
-    public ParamException(int code, String msg) {
-        super(msg);
-        this.retCode = new RetCode(code, msg);
+    public ParamException(int code, String message) {
+        super(message);
+        this.retCode = new RetCode(code, message);
     }
 
     public RetCode getRetCode() {
