@@ -14,21 +14,23 @@
 
 package com.webank.webase.transaction.job;
 
-import com.dangdang.ddframe.job.config.JobCoreConfiguration;
-import com.dangdang.ddframe.job.config.JobRootConfiguration;
-import com.dangdang.ddframe.job.config.dataflow.DataflowJobConfiguration;
-import com.dangdang.ddframe.job.lite.api.JobScheduler;
-import com.dangdang.ddframe.job.lite.config.LiteJobConfiguration;
-import com.dangdang.ddframe.job.lite.spring.api.SpringJobScheduler;
-import com.dangdang.ddframe.job.reg.zookeeper.ZookeeperRegistryCenter;
 import javax.annotation.Resource;
-import lombok.Data;
+
+import org.apache.shardingsphere.elasticjob.api.JobConfiguration;
+import org.apache.shardingsphere.elasticjob.lite.api.bootstrap.impl.ScheduleJobBootstrap;
+import org.apache.shardingsphere.elasticjob.reg.base.CoordinatorRegistryCenter;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
+
+import com.webank.webase.transaction.util.CommonUtils;
+
+import io.shardingsphere.core.keygen.DefaultKeyGenerator;
+import lombok.Data;
 
 /**
  * DataflowJobConfig.
@@ -36,71 +38,55 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
  */
 @Data
 @Configuration
-@ConditionalOnProperty(value = {"constant.ifDistributedTask"}, matchIfMissing = false)
+@ConditionalOnProperty(value = {"constant.ifDistributedTask"}, havingValue = "true", matchIfMissing = false)
 @EnableTransactionManagement(proxyTargetClass = true)
 @ConfigurationProperties(prefix = "job.dataflow")
-public class DataflowJobConfig {
-    @Resource
-    private ZookeeperRegistryCenter regCenter;
+public class DataflowJobConfig implements InitializingBean {
+	
+	@Resource
+	private CoordinatorRegistryCenter regCenter;
+	@Autowired
+	private DeployHandleDataflowJob deployHandleDataflowJob;
+	@Autowired
+	private TransHandleDataflowJob transHandleDataflowJob;
 
-    private int shardingTotalCount;
-    @Value("${constant.cronTrans}")
-    private String cronMonitor;
-
-    /**
-     * transScheduler.
-     * 
-     * @param dataflowJob instance
-     * @return
-     */
-    @Bean(initMethod = "init")
-    public JobScheduler transScheduler(final TransHandleDataflowJob dataflowJob) {
-        return new SpringJobScheduler(dataflowJob, regCenter, transDataflowConfig());
+	private int shardingTotalCount;
+	@Value("${constant.cronTrans}")
+	private String cronMonitor;
+	
+	static {
+        DefaultKeyGenerator.setWorkerId(CommonUtils.getWorkerId());
     }
 
-    /**
-     * deployScheduler.
-     * 
-     * @param dataflowJob instance
-     * @return
-     */
-    @Bean(initMethod = "init")
-    public JobScheduler deployScheduler(final DeployHandleDataflowJob dataflowJob) {
-        return new SpringJobScheduler(dataflowJob, regCenter, deployDataflowConfig());
-    }
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		ScheduleJobBootstrap deploySchedule = new ScheduleJobBootstrap(regCenter, deployHandleDataflowJob,
+				deployDataflowConfig());
+		deploySchedule.schedule();
+		ScheduleJobBootstrap transSchedule = new ScheduleJobBootstrap(regCenter, transHandleDataflowJob,
+				transDataflowConfig());
+		transSchedule.schedule();
+	}
 
-    /**
-     * transDataflowConfig.
-     * 
-     * @return
-     */
-    private LiteJobConfiguration transDataflowConfig() {
-        JobCoreConfiguration dataflowCoreConfig = JobCoreConfiguration
-                .newBuilder(TransHandleDataflowJob.class.getName(), cronMonitor, shardingTotalCount)
-                .shardingItemParameters(null).build();
-        DataflowJobConfiguration dataflowJobConfig = new DataflowJobConfiguration(
-                dataflowCoreConfig, TransHandleDataflowJob.class.getCanonicalName(), false);
-        JobRootConfiguration dataflowJobRootConfig =
-                LiteJobConfiguration.newBuilder(dataflowJobConfig).overwrite(true).build();
+	/**
+	 * deployDataflowConfig.
+	 * 
+	 * @return
+	 */
+	private JobConfiguration deployDataflowConfig() {
+		JobConfiguration jobConfiguration = JobConfiguration
+				.newBuilder(DeployHandleDataflowJob.class.getName(), shardingTotalCount).cron(cronMonitor).build();
+		return jobConfiguration;
+	}
 
-        return (LiteJobConfiguration) dataflowJobRootConfig;
-    }
-
-    /**
-     * deployDataflowConfig.
-     * 
-     * @return
-     */
-    private LiteJobConfiguration deployDataflowConfig() {
-        JobCoreConfiguration dataflowCoreConfig =
-                JobCoreConfiguration.newBuilder(DeployHandleDataflowJob.class.getName(),
-                        cronMonitor, shardingTotalCount).shardingItemParameters(null).build();
-        DataflowJobConfiguration dataflowJobConfig = new DataflowJobConfiguration(
-                dataflowCoreConfig, DeployHandleDataflowJob.class.getCanonicalName(), false);
-        JobRootConfiguration dataflowJobRootConfig =
-                LiteJobConfiguration.newBuilder(dataflowJobConfig).overwrite(true).build();
-
-        return (LiteJobConfiguration) dataflowJobRootConfig;
-    }
-
+	/**
+	 * transDataflowConfig.
+	 * 
+	 * @return
+	 */
+	private JobConfiguration transDataflowConfig() {
+		JobConfiguration jobConfiguration = JobConfiguration
+				.newBuilder(TransHandleDataflowJob.class.getName(), shardingTotalCount).cron(cronMonitor).build();
+		return jobConfiguration;
+	}
 }

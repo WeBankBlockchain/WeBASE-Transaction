@@ -14,19 +14,22 @@
 
 package com.webank.webase.transaction.job;
 
-import com.dangdang.ddframe.job.api.ShardingContext;
-import com.dangdang.ddframe.job.api.dataflow.DataflowJob;
-import com.webank.webase.transaction.base.ConstantProperties;
-import com.webank.webase.transaction.trans.TransMapper;
-import com.webank.webase.transaction.trans.TransService;
-import com.webank.webase.transaction.trans.entity.TransInfoDto;
 import java.util.Iterator;
 import java.util.List;
-import lombok.extern.slf4j.Slf4j;
+
+import org.apache.shardingsphere.elasticjob.api.ShardingContext;
+import org.apache.shardingsphere.elasticjob.dataflow.job.DataflowJob;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
+
+import com.webank.webase.transaction.base.ConstantProperties;
+import com.webank.webase.transaction.trans.TransMapper;
+import com.webank.webase.transaction.trans.TransService;
+import com.webank.webase.transaction.trans.entity.TransInfoDto;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * TransHandleDataflowJob.
@@ -34,7 +37,7 @@ import org.springframework.stereotype.Component;
  */
 @Slf4j
 @Component
-@ConditionalOnProperty(value = {"constant.ifDistributedTask"}, matchIfMissing = false)
+@ConditionalOnProperty(value = {"constant.ifDistributedTask"}, havingValue = "true", matchIfMissing = false)
 public class TransHandleDataflowJob implements DataflowJob<TransInfoDto> {
     @Autowired
     TransService transService;
@@ -50,9 +53,9 @@ public class TransHandleDataflowJob implements DataflowJob<TransInfoDto> {
     public List<TransInfoDto> fetchData(ShardingContext context) {
         log.debug("trans fetchData item:{}", context.getShardingItem());
         // query untreated data
-        List<TransInfoDto> transInfoList = transMapper.selectUnStatTransByJob(
+        List<TransInfoDto> transInfoList = transMapper.selectUnStatTrans(
                 properties.getRequestCountMax(), properties.getSelectCount() * shardingTotalCount,
-                properties.getIntervalTime(), shardingTotalCount, context.getShardingItem());
+                properties.getIntervalTime());
         Iterator<TransInfoDto> iterator = transInfoList.iterator();
         while (iterator.hasNext()) {
             if (iterator.next().getId() % shardingTotalCount != context.getShardingItem()) {

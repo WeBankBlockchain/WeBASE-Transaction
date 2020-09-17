@@ -14,8 +14,9 @@
 
 package com.webank.webase.transaction.job;
 
-import com.dangdang.ddframe.job.reg.zookeeper.ZookeeperConfiguration;
-import com.dangdang.ddframe.job.reg.zookeeper.ZookeeperRegistryCenter;
+import org.apache.shardingsphere.elasticjob.reg.base.CoordinatorRegistryCenter;
+import org.apache.shardingsphere.elasticjob.reg.zookeeper.ZookeeperConfiguration;
+import org.apache.shardingsphere.elasticjob.reg.zookeeper.ZookeeperRegistryCenter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -27,12 +28,12 @@ import org.springframework.context.annotation.Configuration;
  * 
  */
 @Configuration
-@ConditionalOnProperty(value = {"constant.ifDistributedTask"}, matchIfMissing = false)
+@ConditionalOnProperty(value = {"constant.ifDistributedTask"}, havingValue = "true", matchIfMissing = false)
 @ConditionalOnExpression("'${job.regCenter.serverLists}'.length() > 0")
 public class JobRegistryCenterConfig {
 
     @Bean(initMethod = "init")
-    public ZookeeperRegistryCenter regCenter(
+    public CoordinatorRegistryCenter regCenter(
             @Value("${job.regCenter.serverLists}") final String serverLists,
             @Value("${job.regCenter.namespace}") final String namespace) {
         return new ZookeeperRegistryCenter(new ZookeeperConfiguration(serverLists, namespace));

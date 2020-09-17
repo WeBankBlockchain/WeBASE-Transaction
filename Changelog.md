@@ -1,9 +1,29 @@
+### v1.4.1
+
+ (2020-09-25)
+
+**Fix**
+
+- 多活时分库分表空指针
+- 升级依赖包：spring:4.3.28.RELEASE；elasticjob:3.0.0-alpha；zookeeper :3.6.2；web3sdk:2.5.1
+
+**兼容性**
+
+- 支持FISCO-BCOS v2.0.0-rc1 版本
+- 支持FISCO-BCOS v2.0.0-rc2 版本
+- 支持FISCO-BCOS v2.0.0-rc3 版本
+- 支持FISCO-BCOS v2.0.0 及以上版本
+- WeBASE-Sign v1.4.0+
+
+详细了解，请阅读[**技术文档**](https://webasedoc.readthedocs.io/zh_CN/latest/)。
+
 ### v1.4.0
 
  (2020-08-06)
- 
+
 
 **Add**
+
 - 增加返回 Version 版本接口
 
 **兼容性**
@@ -20,7 +40,7 @@
 ### v1.3.2
 
  (2020-06-17)
- 
+
 **Fix**
 - 移除Fastjson，替换为Jackson 2.11.0; web3sdk升级为2.4.1
 - 升级依赖包：spring: 4.3.27; log4j: 2.13.3; slf4j: 1.7.30;
@@ -38,7 +58,7 @@
 ### v1.3.1
 
  (2020-06-01)
- 
+
 **Add**
 - 引入fisco-solcJ jar包，支持自动切换国密后台编译
 
@@ -55,7 +75,7 @@
 ### v1.3.0
 
  (2020-04-29)
- 
+
 **Add**
 - 使用签名服务进行交易签名时，传入`Integer userId`改为`String signUserId`（国密或非国密由对应user的加密类型决定）
 
