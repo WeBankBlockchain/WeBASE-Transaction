@@ -23,12 +23,13 @@ repositories {
 def spring_boot_version="1.5.22.RELEASE"
 List spring_boot =[ 
     "org.springframework.boot:spring-boot-starter-web:$spring_boot_version",
+    "org.springframework.boot:spring-boot-starter-jdbc:$spring_boot_version",
     "org.springframework.boot:spring-boot-autoconfigure:$spring_boot_version",
     "org.springframework.boot:spring-boot-configuration-processor:$spring_boot_version",
 ]
 
 // cover old version
-def spring_version="4.3.27.RELEASE"
+def spring_version="4.3.28.RELEASE"
 List spring =[
     "org.springframework:spring-web:$spring_version",
     "org.springframework:spring-webmvc:$spring_version",
@@ -54,13 +55,13 @@ List log4j = [
     "org.apache.logging.log4j:log4j-web:$log4j_version"
 ]
 
-List dangdang = [
-    'com.dangdang:elastic-job-lite-core:2.1.5',
-    'com.dangdang:elastic-job-lite-spring:2.1.5'
+List elasticjob = [
+    'org.apache.shardingsphere.elasticjob:elasticjob-lite-core:3.0.0-alpha',
+    'io.shardingsphere:sharding-jdbc-spring-boot-starter:3.1.0'
 ]
 
 List zookeeper = [
-    'org.apache.zookeeper:zookeeper:3.4.10',
+    'org.apache.zookeeper:zookeeper:3.6.2',
     'com.github.sgroschupf:zkclient:0.1'
 ]
 
@@ -94,17 +95,15 @@ List tomcat = [
 ]
 
 dependencies {
-    compile spring_boot,spring,mysql,swagger,log4j,dangdang,zookeeper,jaxb,jackson,tomcat
-    compile "org.fisco-bcos:web3sdk:2.4.2"
+    compile spring_boot,spring,mysql,swagger,log4j,elasticjob,zookeeper,jaxb,jackson,tomcat
+    compile "org.fisco-bcos:web3sdk:2.5.1"
     // support guomi/ecdsa same time, support solcJ-0.5.2
     compile "org.fisco-bcos:solcJ:0.4.25-rc1"
     compile "org.slf4j:jcl-over-slf4j:1.7.30"
     compile "org.apache.commons:commons-lang3:3.6"
     compile "commons-io:commons-io:2.4"
-    compile "io.shardingsphere:sharding-jdbc-spring-boot-starter:3.1.0"
-    compile 'org.projectlombok:lombok:1.18.2'
     compile 'com.alibaba:druid:1.1.23'
-    compile ('com.google.guava:guava:20.0'){force = true}
+    compile 'org.projectlombok:lombok:1.18.2'
     annotationProcessor 'org.projectlombok:lombok:1.18.2'
 }
 
