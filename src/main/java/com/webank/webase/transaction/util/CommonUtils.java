@@ -14,9 +14,6 @@
 
 package com.webank.webase.transaction.util;
 
-import com.webank.webase.transaction.util.JsonUtils;
-import com.webank.webase.transaction.base.ConstantCode;
-import com.webank.webase.transaction.base.exception.BaseException;
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -26,15 +23,21 @@ import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Enumeration;
+import java.util.Random;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
-import lombok.extern.slf4j.Slf4j;
+
 import org.fisco.bcos.web3j.crypto.EncryptType;
 import org.fisco.bcos.web3j.crypto.Sign.SignatureData;
 import org.fisco.bcos.web3j.utils.Numeric;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.web.multipart.MultipartFile;
+
+import com.webank.webase.transaction.base.ConstantCode;
+import com.webank.webase.transaction.base.exception.BaseException;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * CommonUtils.
@@ -318,7 +321,8 @@ public class CommonUtils {
 		try {
 			address = InetAddress.getLocalHost();
 		} catch (final UnknownHostException e) {
-			throw new IllegalStateException("Cannot get LocalHost InetAddress, please check your network!");
+			log.warn("Cannot get LocalHost InetAddress, please check your network!");
+			return (long) new Random().nextInt(100);
 		}
 		log.info("getWorkerId. address:{}", address);
 		byte[] ipAddressByteArray = address.getAddress();

@@ -14,15 +14,10 @@
 
 package com.webank.webase.transaction.config;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
-import com.webank.webase.transaction.base.ConstantCode;
-import com.webank.webase.transaction.base.exception.BaseException;
 import java.util.concurrent.ThreadPoolExecutor.AbortPolicy;
 
-import lombok.Data;
-import lombok.extern.slf4j.Slf4j;
 import org.fisco.bcos.channel.client.Service;
 import org.fisco.bcos.channel.handler.ChannelConnections;
 import org.fisco.bcos.channel.handler.GroupChannelConnectionsConfig;
@@ -34,6 +29,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+
+import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * init web3sdk.
@@ -64,16 +62,15 @@ public class Web3Config {
     public HashMap<Integer, Web3j> web3j() throws Exception {
         HashMap<Integer, Web3j> web3jMap = new HashMap<Integer, Web3j>();
 
-        Service service = new Service();
-        service.setOrgID(orgName);
-        service.setThreadPool(sdkThreadPool());
-        service.setAllChannelConnections(groupConfig);
-
         List<ChannelConnections> channelConnectList = groupConfig.getAllChannelConnections();
         for (ChannelConnections connect : channelConnectList) {
             int groupId = connect.getGroupId();
             log.info("init groupId:{}", groupId);
             // set groupId
+            Service service = new Service();
+            service.setOrgID(orgName);
+            service.setThreadPool(sdkThreadPool());
+            service.setAllChannelConnections(groupConfig);
             service.setGroupId(groupId);
             service.run();
             ChannelEthereumService channelEthereumService = new ChannelEthereumService();
