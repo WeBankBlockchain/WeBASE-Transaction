@@ -67,7 +67,13 @@ public class ContractService {
         // check parameters
         String contractAbi = JsonUtils.toJSONString(req.getContractAbi());
         List<Object> params = req.getFuncParam();
-        AbiDefinition abiDefinition = ContractAbiUtil.getAbiDefinition(contractAbi);
+        AbiDefinition abiDefinition = null;
+        try {
+            abiDefinition = ContractAbiUtil.getAbiDefinition(contractAbi);
+        } catch (Exception e) {
+            log.error("abi parse error. abi:{}", contractAbi);
+            throw new BaseException(ConstantCode.ABI_PARSE_ERROR);
+        }
         List<String> funcInputTypes = ContractAbiUtil.getFuncInputType(abiDefinition);
         if (funcInputTypes.size() != params.size()) {
             log.warn("deploy fail. funcInputTypes:{}, params:{}", funcInputTypes, params);
