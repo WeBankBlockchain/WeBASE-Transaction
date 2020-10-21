@@ -320,8 +320,13 @@ public class TransService {
     private ContractFunction buildContractFunction(List<Object> functionAbi, String funcName,
             List<Object> params) throws BaseException {
         // check function name
-        AbiDefinition abiDefinition =
-                ContractAbiUtil.getAbiDefinition(funcName, JsonUtils.toJSONString(functionAbi));
+        AbiDefinition abiDefinition = null;
+        try {
+            abiDefinition = ContractAbiUtil.getAbiDefinition(funcName, JsonUtils.toJSONString(functionAbi));
+        } catch (Exception e) {
+            log.error("abi parse error. abi:{}", JsonUtils.toJSONString(functionAbi));
+            throw new BaseException(ConstantCode.ABI_PARSE_ERROR);
+        }
         if (Objects.isNull(abiDefinition)) {
             log.warn("transaction fail. func:{} is not existed", funcName);
             throw new BaseException(ConstantCode.FUNCTION_NOT_EXISTS);

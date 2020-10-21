@@ -34,6 +34,7 @@ public interface ConstantCode {
     // contract
     RetCode IN_FUNCPARAM_ERROR = RetCode.mark(203101, "contract funcParam is error");
     RetCode FUNCTION_NOT_EXISTS = RetCode.mark(203102, "function is not exists");
+    RetCode ABI_PARSE_ERROR = RetCode.mark(203103, "abi parse error");
     
     // sign
     RetCode SIGN_USERID_ERROR = RetCode.mark(203201, "signUserId check failed");
