@@ -2,11 +2,12 @@
 
 ## 1. 前提条件
 
-| 环境        | 版本              |
-| ----------- | ----------------- |
-| FISCO-BCOS  | v2.0.0 及以上版本 |
-| Java        | JDK8或以上版本    |
-| WeBASE-Sign | bsn               |
+| 环境                 | 版本              |
+| -------------------- | ----------------- |
+| FISCO-BCOS           | v2.0.0 及以上版本 |
+| Java                 | JDK8或以上版本    |
+| WeBASE-Sign          | master            |
+| WeBASE-Chain-Manager | dev-v0.2          |
 
 **备注：**
 
@@ -63,33 +64,14 @@ dist目录提供了一份配置模板conf_template：
 例如：cp conf_template conf -r
 ```
 
-### 4.2 复制证书
-
-进入配置目录conf：
-
-```shell
-cd conf
-```
-
-在conf目录创建对应链的证书目录（如：cert），将节点所在目录的证书文件拷贝到创建的目录（区分国密非国密，二选一），然后在4.3的配置文件中配置证书信息，供SDK与节点建立连接时使用。
-
-```
-# 创建目录
-mkdir cert
-
-# 复制非国密证书（ca.crt、node.crt、node.key）：
-cp -rf  nodes/${ip}/sdk/* cert/
-
-# 复制国密证书（gmca.crt、gmsdk.crt、gmsdk.key、gmensdk.crt、gmensdk.key）：
-cp -rf  nodes/${ip}/sdk/mg/* cert/
-```
-
-### 4.3 修改配置
+### 4.2 修改配置
 
 **说明：** 根据实际情况修改，完整配置项说明请查看 [配置说明](./appendix.md#3-applicationyml配置项说明)
 
+**数据库连接使用WeBASE-Chain-Manager服务的数据库连接（WeBASE-Chain-Manager需先部署）**
+
 ```shell
-vi application.yml
+vi conf/application.yml
 ```
 
 ```
@@ -98,46 +80,18 @@ server:
   servlet:
     context-path: /WeBASE-Transaction
 
-sdk:
-  # 机构名
-  orgName: webank
-  timeout: 10000
-  corePoolSize: 50
-  maxPoolSize: 100
-  queueCapacity: 100
-  keepAlive: 60
-  # 切换非国密与国密 0: standard, 1: guomi
-  encryptType: 0
-  # 链信息，可配置多链（多链需同时为非国密或时同为国密，对应sdk.encryptType）
-  chainConfigList:
-  - chainId: 1
-    # 群组信息，可配置多群组和多节点
-    groupConfig:
-      # 复制对应非国密或国密证书
-      caCert: classpath:cert/ca.crt
-      sslCert: classpath:cert/node.crt
-      sslKey: classpath:cert/node.key
-      gmCaCert: classpath:cert/gmca.crt
-      gmSslCert: classpath:cert/gmsdk.crt
-      gmSslKey: classpath:cert/gmsdk.key
-      gmEnSslCert: classpath:cert/gmensdk.crt
-      gmEnSslKey: classpath:cert/gmensdk.key
-      allChannelConnections:
-      - groupId: 1
-        connectionsStr:
-        - 127.0.0.1:20200
-        - 127.0.0.1:20201
-      - groupId: 2
-        connectionsStr:
-        - 127.0.0.1:20200
-        - 127.0.0.1:20201
+spring:
+  # 数据库连接，需和WeBASE-Chain-Manager服务相同
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://127.0.0.1:3306/webasechainmanager?serverTimezone=GMT%2B8&useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=false
+    username: "defaultAccount"
+    password: "defaultPassword"
 
 constant: 
-  # WeBASE-Sign签名服务ip端口
+  ## WeBASE-Sign签名服务ip端口
   signServer: 127.0.0.1:5004
-
-logging: 
-  config: classpath:log4j2.xml
+...
 ```
 
 ## 5. 服务启停

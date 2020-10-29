@@ -66,28 +66,21 @@ org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating
 
 ## 3. application.yml配置项说明
 
-| 配置项                                                       | 说明                                   |
-| ------------------------------------------------------------ | -------------------------------------- |
-| server.port                                                  | 工程服务端口                           |
-| server.servlet.context-path                                  | 工程根URI                              |
-| sdk.orgName                                                  | 机构名                                 |
-| sdk.timeout                                                  | sdk连接超时时间                        |
-| sdk.corePoolSize                                             | 线程池大小                             |
-| sdk.maxPoolSize                                              | 线程池最大线程数                       |
-| sdk.queueCapacity                                            | 线程池队列大小                         |
-| sdk.keepAlive                                                | 线程存活                               |
-| sdk.encryptType                                              | 切换非国密与国密 0: standard, 1: guomi |
-| sdk.chainConfigList[0].chainId                               | 链编号，自定义                         |
-| sdk.chainConfigList[0].groupConfig.caCert                    | 非国密证书                             |
-| sdk.chainConfigList[0].groupConfig.sslCert                   | 非国密节点证书                         |
-| sdk.chainConfigList[0].groupConfig.sslKey                    | 非国密节点私钥                         |
-| sdk.chainConfigList[0].groupConfig.gmCaCert                  | 国密证书                               |
-| sdk.chainConfigList[0].groupConfig.gmSslCert                 | 国密节点证书                           |
-| sdk.chainConfigList[0].groupConfig.gmSslKey                  | 国密节点私钥                           |
-| sdk.chainConfigList[0].groupConfig.gmEnSslCert               | 国密节点en证书                         |
-| sdk.chainConfigList[0].groupConfig.gmEnSslKey                | 国密节点en私钥                         |
-| sdk.chainConfigList[0].groupConfig.allChannelConnections[0].groupId | sdk连接的群组id                        |
-| sdk.chainConfigList[0].groupConfig.allChannelConnections[0].connectionsStr[0] | sdk连接的节点的ip和channelPort         |
-| constant.signServer                                          | WeBASE-Sign签名服务ip端口              |
-| logging.config                                               | 日志文件路径                           |
-
+| 配置项                                             | 说明                         |
+| -------------------------------------------------- | ---------------------------- |
+| server.port                                        | 工程服务端口                 |
+| server.servlet.context-path                        | 工程根URI                    |
+| spring.datasource.driver-class-name                | mysql驱动                    |
+| spring.datasource.url                              | mysql连接地址                |
+| spring.datasource.username                         | mysql账号                    |
+| spring.datasource.password                         | mysql密码                    |
+| constant.signServer                                | WeBASE-Sign签名服务ip端口    |
+| constant.httpTimeOut                               | rest请求超时时间             |
+| constant.contractDeployTimeOut                     | 合约部署请求超时时间         |
+| constant.maxRequestFail                            | 最大失败数                   |
+| constant.sleepWhenHttpMaxFail                      | 最多失败后sleep时间          |
+| constant.frontGroupCacheClearTaskCron              | 前置群组缓存信息清除任务时间 |
+| mybatis.typeAliasesPackage                         | mapper类扫描路径             |
+| mybatis.configuration.map-underscore-to-camel-case | mybatis支持是否支持驼峰      |
+| logging.config                                     | 日志配置文件目录             |
+| logging.level                                      | 日志级别                     |

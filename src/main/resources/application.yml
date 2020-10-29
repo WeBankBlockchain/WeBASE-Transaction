@@ -3,43 +3,31 @@ server:
   servlet:
     context-path: /WeBASE-Transaction
 
-sdk:
-  # 机构名
-  orgName: webank
-  timeout: 10000
-  corePoolSize: 50
-  maxPoolSize: 100
-  queueCapacity: 100
-  keepAlive: 60
-  # 切换非国密与国密 0: standard, 1: guomi
-  encryptType: 0
-  # 链信息，可配置多链（多链需同时为非国密或时同为国密，对应sdk.encryptType）
-  chainConfigList:
-  - chainId: 1
-    # 群组信息，可配置多群组和多节点
-    groupConfig:
-      # 复制对应非国密或国密证书
-      caCert: classpath:cert/ca.crt
-      sslCert: classpath:cert/node.crt
-      sslKey: classpath:cert/node.key
-      gmCaCert: classpath:cert/gmca.crt
-      gmSslCert: classpath:cert/gmsdk.crt
-      gmSslKey: classpath:cert/gmsdk.key
-      gmEnSslCert: classpath:cert/gmensdk.crt
-      gmEnSslKey: classpath:cert/gmensdk.key
-      allChannelConnections:
-      - groupId: 1
-        connectionsStr:
-        - 127.0.0.1:20200
-        - 127.0.0.1:20201
-      - groupId: 2
-        connectionsStr:
-        - 127.0.0.1:20200
-        - 127.0.0.1:20201
+spring:
+  # 数据库连接，需和WeBASE-Chain-Manager服务相同
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://127.0.0.1:3306/webasechainmanager?serverTimezone=GMT%2B8&useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=false
+    username: "defaultAccount"
+    password: "defaultPassword"
 
 constant: 
-  # WeBASE-Sign签名服务ip端口
+  ## WeBASE-Sign签名服务ip端口
   signServer: 127.0.0.1:5004
 
+  ## front request
+  httpTimeOut: 5000
+  contractDeployTimeOut: 30000
+  maxRequestFail: 3
+  sleepWhenHttpMaxFail: 60000
+  frontGroupCacheClearTaskCron: 0 0 1 * * ? 
+  
+mybatis:
+  configuration:
+    map-underscore-to-camel-case: true
+  typeAliasesPackage: com.webank.webase.transaction.repository.bean
+  
 logging: 
-  config: classpath:log4j2.xml
+  config: classpath:log/log4j2.xml
+  level:
+    com.webank.webase.transaction: info

@@ -1,5 +1,5 @@
-/*
- * Copyright 2014-2019 the original author or authors.
+/**
+ * Copyright 2014-2019  the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -11,25 +11,15 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+package com.webank.webase.transaction.frontinterface.entity;
 
-package com.webank.webase.transaction.chain.entity;
-
-import java.util.List;
+import java.time.Instant;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
-/**
- * QueryConfigInfo.
- * 
- */
 @Data
-@NoArgsConstructor
-public class QueryConfigInfo {
-    private Integer chainId;
-    private List<Integer> groupList;
-    
-    public QueryConfigInfo(Integer chainId, List<Integer> groupList) {
-        this.chainId = chainId;
-        this.groupList = groupList;
-    }
+public class FailInfo {
+
+    private Instant latestTime;
+    private int failCount;
+    private String failUrl;
 }

@@ -15,16 +15,16 @@
 package com.webank.webase.transaction.contract;
 
 import com.webank.webase.transaction.base.ConstantCode;
-import com.webank.webase.transaction.base.Constants;
 import com.webank.webase.transaction.base.exception.BaseException;
 import com.webank.webase.transaction.contract.entity.ReqDeployInfo;
+import com.webank.webase.transaction.frontinterface.FrontInterfaceService;
 import com.webank.webase.transaction.keystore.KeyStoreService;
 import com.webank.webase.transaction.trans.TransService;
 import com.webank.webase.transaction.util.ContractAbiUtil;
 import com.webank.webase.transaction.util.JsonUtils;
+import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
+import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.fisco.bcos.web3j.abi.FunctionEncoder;
@@ -41,13 +41,13 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @Service
 public class ContractService {
+
     @Autowired
     TransService transService;
     @Autowired
-    private Constants constants;
-    @Autowired
     private KeyStoreService keyStoreService;
-
+    @Autowired
+    FrontInterfaceService frontInterfaceService;
 
     /**
      * contract deploy.
@@ -92,9 +92,8 @@ public class ContractService {
             throw new BaseException(ConstantCode.DATA_SIGN_ERROR);
         }
         // send transaction
-        final CompletableFuture<TransactionReceipt> transFuture = new CompletableFuture<>();
-        transService.sendMessage(chainId, groupId, signMsg, transFuture);
-        TransactionReceipt receipt = transFuture.get(constants.getTransMaxWait(), TimeUnit.SECONDS);
+        TransactionReceipt receipt =
+                frontInterfaceService.sendSignedTransaction(chainId, groupId, signMsg, true);
         return receipt;
     }
 }

@@ -24,7 +24,6 @@ import com.webank.webase.transaction.keystore.entity.ReqUserInfo;
 import com.webank.webase.transaction.keystore.entity.RspUserInfo;
 import com.webank.webase.transaction.keystore.entity.SignInfo;
 import com.webank.webase.transaction.util.CommonUtils;
-import com.webank.webase.transaction.util.SignRestTools;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.fisco.bcos.web3j.crypto.Credentials;
@@ -93,11 +92,7 @@ public class KeyStoreService {
         log.debug("checkSignUserId url:{}", url);
         ResponseEntity response = signRestTools.getFromSign(url, ResponseEntity.class);
         if (response.getCode() == 0) {
-            RspUserInfo rspUserInfo =
-                    CommonUtils.object2JavaBean(response.getData(), RspUserInfo.class);
-            if (rspUserInfo.getEncryptType() == EncryptType.encryptType) {
-                return true;
-            }
+            return true;
         }
         return false;
     }

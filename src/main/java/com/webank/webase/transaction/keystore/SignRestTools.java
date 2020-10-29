@@ -12,14 +12,16 @@
  * the License.
  */
 
-package com.webank.webase.transaction.util;
+package com.webank.webase.transaction.keystore;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.webank.webase.transaction.base.ConstantCode;
 import com.webank.webase.transaction.base.exception.BaseException;
+import com.webank.webase.transaction.util.JsonUtils;
 import java.util.Objects;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -45,6 +47,7 @@ public class SignRestTools {
     public static final String SIGN_GET_USER_LIST_URL = "http://%s/WeBASE-Sign/user/list/%s/%s/%s";
 
     @Autowired
+    @Qualifier(value = "genericRestTemplate")
     private RestTemplate restTemplate;
 
     /**
