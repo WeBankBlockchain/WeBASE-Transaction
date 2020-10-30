@@ -40,6 +40,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
@@ -294,6 +295,7 @@ public class FrontRestTools {
 
         while (list != null && list.size() > 0) {
             String url = buildFrontUrl(list, uri, method);// build url
+            log.info("restTemplateExchange url:{}", url);
             try {
                 HttpEntity entity = buildHttpEntity(param);// build entity
                 if (null == restTemplate) {
@@ -312,7 +314,7 @@ public class FrontRestTools {
                 log.info("continue next front", ex);
                 continue;
             } catch (HttpStatusCodeException e) {
-                errorFormat(JsonUtils.stringToJsonNode(e.getResponseBodyAsString()));
+                errorFormat(e.getResponseBodyAsString());
             }
         }
         return null;
@@ -323,17 +325,19 @@ public class FrontRestTools {
      * 
      * @param error
      */
-    public static void errorFormat(JsonNode error) {
-        log.error("http request fail. error:{}", JsonUtils.toJSONString(error));
-        String errorMessage = error.get("errorMessage").asText();
-        if (StringUtils.isBlank(errorMessage)) {
+    public static void errorFormat(String str) {
+        JsonNode error = JsonUtils.stringToJsonNode(str);
+        log.error("requestFront fail. error:{}", error);
+        if (ObjectUtils.isEmpty(error.get("errorMessage"))) {
             throw new BaseException(ConstantCode.REQUEST_NODE_EXCEPTION);
         }
+        String errorMessage = error.get("errorMessage").asText();
         if (errorMessage.contains("code")) {
-            JsonNode errorInside = JsonUtils.stringToJsonNode(errorMessage).get("error");
-            throw new BaseException(ConstantCode.REQUEST_NODE_EXCEPTION.getCode(),
+            JsonNode errorInside =
+                    JsonUtils.stringToJsonNode(error.get("errorMessage").asText()).get("error");
+            throw new BaseException(errorInside.get("code").asInt(),
                     errorInside.get("message").asText());
         }
-        throw new BaseException(ConstantCode.REQUEST_FRONT_FAIL.getCode(), errorMessage);
+        throw new BaseException(error.get("code").asInt(), errorMessage);
     }
 }

@@ -19,12 +19,11 @@ import com.webank.webase.transaction.base.exception.BaseException;
 import com.webank.webase.transaction.contract.entity.ReqDeployInfo;
 import com.webank.webase.transaction.frontinterface.FrontInterfaceService;
 import com.webank.webase.transaction.keystore.KeyStoreService;
+import com.webank.webase.transaction.keystore.entity.RspUserInfo;
 import com.webank.webase.transaction.trans.TransService;
 import com.webank.webase.transaction.util.ContractAbiUtil;
 import com.webank.webase.transaction.util.JsonUtils;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.fisco.bcos.web3j.abi.FunctionEncoder;
@@ -60,8 +59,8 @@ public class ContractService {
         int groupId = req.getGroupId();
         // check sign user id
         String signUserId = req.getSignUserId();
-        boolean result = keyStoreService.checkSignUserId(signUserId);
-        if (!result) {
+        RspUserInfo rspUserInfo = keyStoreService.checkSignUserId(signUserId);
+        if (rspUserInfo == null) {
             throw new BaseException(ConstantCode.SIGN_USERID_ERROR);
         }
         // check parameters
@@ -87,7 +86,8 @@ public class ContractService {
         }
         // data sign
         String data = req.getBytecodeBin() + encodedConstructor;
-        String signMsg = transService.signMessage(chainId, groupId, req.getSignUserId(), "", data);
+        String signMsg = transService.signMessage(chainId, groupId, req.getSignUserId(),
+                rspUserInfo.getEncryptType(), "", data);
         if (StringUtils.isBlank(signMsg)) {
             throw new BaseException(ConstantCode.DATA_SIGN_ERROR);
         }

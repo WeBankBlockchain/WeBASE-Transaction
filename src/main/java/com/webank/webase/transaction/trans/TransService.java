@@ -20,6 +20,7 @@ import com.webank.webase.transaction.base.exception.BaseException;
 import com.webank.webase.transaction.frontinterface.FrontInterfaceService;
 import com.webank.webase.transaction.keystore.KeyStoreService;
 import com.webank.webase.transaction.keystore.entity.EncodeInfo;
+import com.webank.webase.transaction.keystore.entity.RspUserInfo;
 import com.webank.webase.transaction.trans.entity.ContractFunction;
 import com.webank.webase.transaction.trans.entity.ReqTransSendInfo;
 import com.webank.webase.transaction.trans.entity.TransResultDto;
@@ -40,6 +41,7 @@ import org.fisco.bcos.web3j.abi.FunctionEncoder;
 import org.fisco.bcos.web3j.abi.TypeReference;
 import org.fisco.bcos.web3j.abi.datatypes.Function;
 import org.fisco.bcos.web3j.abi.datatypes.Type;
+import org.fisco.bcos.web3j.crypto.EncryptType;
 import org.fisco.bcos.web3j.crypto.ExtendedRawTransaction;
 import org.fisco.bcos.web3j.crypto.ExtendedTransactionEncoder;
 import org.fisco.bcos.web3j.crypto.RawTransaction;
@@ -95,14 +97,14 @@ public class TransService {
         } else {
             // check sign user id
             String signUserId = req.getSignUserId();
-            boolean result = keyStoreService.checkSignUserId(signUserId);
-            if (!result) {
+            RspUserInfo rspUserInfo = keyStoreService.checkSignUserId(signUserId);
+            if (rspUserInfo == null) {
                 log.error("checkSignUserId fail.");
                 throw new BaseException(ConstantCode.SIGN_USERID_ERROR);
             }
             // data sign
-            String signMsg =
-                    signMessage(chainId, groupId, signUserId, contractAddress, encodedFunction);
+            String signMsg = signMessage(chainId, groupId, signUserId, rspUserInfo.getEncryptType(),
+                    contractAddress, encodedFunction);
             if (StringUtils.isBlank(signMsg)) {
                 throw new BaseException(ConstantCode.DATA_SIGN_ERROR);
             }
@@ -157,15 +159,16 @@ public class TransService {
      * @param data info
      * @return
      */
-    public String signMessage(int chainId, int groupId, String signUserId, String contractAddress,
-            String data) throws BaseException {
+    public synchronized String signMessage(int chainId, int groupId, String signUserId,
+            int encryptType, String contractAddress, String data) throws BaseException {
         Random r = new Random();
         BigInteger randomid = new BigInteger(250, r);
-
         BigInteger blockLimit = frontInterfaceService.getLatestBlockNumber(chainId, groupId)
                 .add(Constants.LIMIT_VALUE);
         Version version = frontInterfaceService.getClientVersion(chainId, groupId);
         String signMsg;
+        new EncryptType(encryptType);
+        log.info("signMessage encryptType: {}", encryptType);
         if (version.getVersion().contains("2.0.0-rc1")
                 || version.getVersion().contains("release-2.0.1")) {
             RawTransaction rawTransaction = RawTransaction.createTransaction(randomid,

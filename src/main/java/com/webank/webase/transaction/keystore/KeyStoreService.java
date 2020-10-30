@@ -82,19 +82,21 @@ public class KeyStoreService {
      * @param signUserId business id of user in sign
      * @return
      */
-    public boolean checkSignUserId(String signUserId) throws BaseException {
+    public RspUserInfo checkSignUserId(String signUserId) throws BaseException {
         if (StringUtils.isBlank(signUserId)) {
             log.error("signUserId is null");
-            return false;
+            return null;
         }
         String url = String.format(SignRestTools.SIGN_USERINFO_URL, properties.getSignServer(),
                 signUserId);
         log.debug("checkSignUserId url:{}", url);
         ResponseEntity response = signRestTools.getFromSign(url, ResponseEntity.class);
-        if (response.getCode() == 0) {
-            return true;
+        if (response.getCode() != 0) {
+            return null;
         }
-        return false;
+        RspUserInfo rspUserInfo =
+                CommonUtils.object2JavaBean(response.getData(), RspUserInfo.class);
+        return rspUserInfo;
     }
 
     /**
