@@ -17,47 +17,38 @@ package com.webank.webase.transaction.trans;
 import com.webank.webase.transaction.base.ConstantCode;
 import com.webank.webase.transaction.base.Constants;
 import com.webank.webase.transaction.base.exception.BaseException;
-import com.webank.webase.transaction.config.Web3Config;
+import com.webank.webase.transaction.frontinterface.FrontInterfaceService;
 import com.webank.webase.transaction.keystore.KeyStoreService;
 import com.webank.webase.transaction.keystore.entity.EncodeInfo;
+import com.webank.webase.transaction.keystore.entity.RspUserInfo;
 import com.webank.webase.transaction.trans.entity.ContractFunction;
 import com.webank.webase.transaction.trans.entity.ReqTransSendInfo;
 import com.webank.webase.transaction.trans.entity.TransResultDto;
 import com.webank.webase.transaction.util.CommonUtils;
 import com.webank.webase.transaction.util.ContractAbiUtil;
 import com.webank.webase.transaction.util.JsonUtils;
-import java.io.IOException;
 import java.math.BigInteger;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Random;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.fisco.bcos.channel.client.TransactionSucCallback;
 import org.fisco.bcos.web3j.abi.FunctionEncoder;
-import org.fisco.bcos.web3j.abi.FunctionReturnDecoder;
 import org.fisco.bcos.web3j.abi.TypeReference;
-import org.fisco.bcos.web3j.abi.Utils;
 import org.fisco.bcos.web3j.abi.datatypes.Function;
 import org.fisco.bcos.web3j.abi.datatypes.Type;
+import org.fisco.bcos.web3j.crypto.EncryptType;
 import org.fisco.bcos.web3j.crypto.ExtendedRawTransaction;
 import org.fisco.bcos.web3j.crypto.ExtendedTransactionEncoder;
-import org.fisco.bcos.web3j.crypto.Hash;
 import org.fisco.bcos.web3j.crypto.RawTransaction;
 import org.fisco.bcos.web3j.crypto.Sign.SignatureData;
 import org.fisco.bcos.web3j.crypto.TransactionEncoder;
-import org.fisco.bcos.web3j.protocol.Web3j;
-import org.fisco.bcos.web3j.protocol.core.Request;
-import org.fisco.bcos.web3j.protocol.core.methods.request.Transaction;
 import org.fisco.bcos.web3j.protocol.core.methods.response.AbiDefinition;
-import org.fisco.bcos.web3j.protocol.core.methods.response.NodeVersion;
-import org.fisco.bcos.web3j.protocol.core.methods.response.SendTransaction;
+import org.fisco.bcos.web3j.protocol.core.methods.response.NodeVersion.Version;
 import org.fisco.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.fisco.bcos.web3j.utils.Numeric;
 import org.springframework.beans.BeanUtils;
@@ -71,16 +62,11 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @Service
 public class TransService {
-    @Autowired
-    Map<Integer, Map<Integer, Web3j>> web3jMapWithChainId;
-    @Autowired
-    Map<Integer, NodeVersion> versionMap;
-    @Autowired
-    Web3Config web3Config;
-    @Autowired
-    private Constants constants;
+
     @Autowired
     private KeyStoreService keyStoreService;
+    @Autowired
+    FrontInterfaceService frontInterfaceService;
 
     /**
      * send transaction.
@@ -103,40 +89,28 @@ public class TransService {
         TransResultDto transResultDto = new TransResultDto();
         String contractAddress = req.getContractAddress();
         if (contractFunction.getConstant()) {
-            String callOutput = getWeb3j(chainId, groupId)
-                    .call(Transaction.createEthCallTransaction(keyStoreService.getRandomAddress(),
-                            contractAddress, encodedFunction))
-                    .send().getValue().getOutput();
-            List<Type> typeList =
-                    FunctionReturnDecoder.decode(callOutput, function.getOutputParameters());
-            Object response;
-            if (typeList.size() > 0) {
-                response =
-                        ContractAbiUtil.callResultParse(contractFunction.getOutputList(), typeList);
-            } else {
-                response = typeList;
-            }
+            Object response =
+                    sendQueryTransaction(encodedFunction, contractAddress, req.getFuncName(),
+                            JsonUtils.toJSONString(req.getFunctionAbi()), chainId, groupId);
             transResultDto.setQueryInfo(JsonUtils.objToString(response));
             transResultDto.setConstant(true);
         } else {
             // check sign user id
             String signUserId = req.getSignUserId();
-            boolean result = keyStoreService.checkSignUserId(signUserId);
-            if (!result) {
+            RspUserInfo rspUserInfo = keyStoreService.checkSignUserId(signUserId);
+            if (rspUserInfo == null) {
                 log.error("checkSignUserId fail.");
                 throw new BaseException(ConstantCode.SIGN_USERID_ERROR);
             }
             // data sign
-            String signMsg =
-                    signMessage(chainId, groupId, signUserId, contractAddress, encodedFunction);
+            String signMsg = signMessage(chainId, groupId, signUserId, rspUserInfo.getEncryptType(),
+                    contractAddress, encodedFunction);
             if (StringUtils.isBlank(signMsg)) {
                 throw new BaseException(ConstantCode.DATA_SIGN_ERROR);
             }
             // send transaction
-            final CompletableFuture<TransactionReceipt> transFuture = new CompletableFuture<>();
-            sendMessage(chainId, groupId, signMsg, transFuture);
             TransactionReceipt receipt =
-                    transFuture.get(constants.getTransMaxWait(), TimeUnit.SECONDS);
+                    frontInterfaceService.sendSignedTransaction(chainId, groupId, signMsg, true);
             BeanUtils.copyProperties(receipt, transResultDto);
             transResultDto.setConstant(false);
         }
@@ -147,41 +121,33 @@ public class TransService {
      * get transaction by hash.
      * 
      */
-    public Object getTransactionByHash(int chainId, int groupId, String transHash)
-            throws BaseException {
-        Object transaction = null;
-        try {
-            Optional<org.fisco.bcos.web3j.protocol.core.methods.response.Transaction> opt =
-                    getWeb3j(chainId, groupId).getTransactionByHash(transHash).send()
-                            .getTransaction();
-            if (opt.isPresent()) {
-                transaction = opt.get();
-            }
-        } catch (IOException e) {
-            log.error("getTransactionByHash fail. transHash:{} ", transHash);
-            throw new BaseException(ConstantCode.NODE_REQUEST_FAILED);
-        }
-        return transaction;
+    public Object getTransactionByHash(int chainId, int groupId, String transHash) {
+        return frontInterfaceService.getTransactionByHash(chainId, groupId, transHash);
     }
 
     /**
      * get transaction receipt by hash.
      * 
      */
-    public Object getTransactionReceipt(int chainId, int groupId, String transHash)
-            throws BaseException {
-        Object transactionReceipt = null;
-        try {
-            Optional<TransactionReceipt> opt = getWeb3j(chainId, groupId)
-                    .getTransactionReceipt(transHash).send().getTransactionReceipt();
-            if (opt.isPresent()) {
-                transactionReceipt = opt.get();
-            }
-        } catch (IOException e) {
-            log.error("getTransactionReceipt fail. transHash:{} ", transHash);
-            throw new BaseException(ConstantCode.NODE_REQUEST_FAILED);
-        }
-        return transactionReceipt;
+    public Object getTransactionReceipt(int chainId, int groupId, String transHash) {
+        return frontInterfaceService.getTransactionReceipt(chainId, groupId, transHash);
+    }
+
+    public TransactionReceipt sendSignedTransaction(String signedStr, Boolean sync, int chainId,
+            int groupId) {
+        return frontInterfaceService.sendSignedTransaction(chainId, groupId, signedStr, sync);
+    }
+
+    public Object sendQueryTransaction(String encodeStr, String contractAddress, String funcName,
+            String functionAbi, int chainId, int groupId) {
+        // transaction param
+        Map<String, Object> params = new HashMap<>();
+        params.put("groupId", groupId);
+        params.put("contractAddress", contractAddress);
+        params.put("funcName", funcName);
+        params.put("contractAbi", functionAbi);
+        params.put("encodeStr", encodeStr);
+        return frontInterfaceService.sendQueryTransaction(chainId, groupId, params);
     }
 
     /**
@@ -193,15 +159,18 @@ public class TransService {
      * @param data info
      * @return
      */
-    public String signMessage(int chainId, int groupId, String signUserId, String contractAddress,
-            String data) throws BaseException {
+    public synchronized String signMessage(int chainId, int groupId, String signUserId,
+            int encryptType, String contractAddress, String data) throws BaseException {
         Random r = new Random();
         BigInteger randomid = new BigInteger(250, r);
-
-        BigInteger blockLimit = getWeb3j(chainId, groupId).getBlockNumberCache();
-        String versionContent = versionMap.get(chainId).getNodeVersion().getVersion();
+        BigInteger blockLimit = frontInterfaceService.getLatestBlockNumber(chainId, groupId)
+                .add(Constants.LIMIT_VALUE);
+        Version version = frontInterfaceService.getClientVersion(chainId, groupId);
         String signMsg;
-        if (versionContent.contains("2.0.0-rc1") || versionContent.contains("release-2.0.1")) {
+        new EncryptType(encryptType);
+        log.info("signMessage encryptType: {}", encryptType);
+        if (version.getVersion().contains("2.0.0-rc1")
+                || version.getVersion().contains("release-2.0.1")) {
             RawTransaction rawTransaction = RawTransaction.createTransaction(randomid,
                     Constants.GAS_PRICE, Constants.GAS_LIMIT, blockLimit, contractAddress,
                     BigInteger.ZERO, data);
@@ -221,7 +190,7 @@ public class TransService {
             byte[] signedMessage = TransactionEncoder.encode(rawTransaction, signData);
             signMsg = Numeric.toHexString(signedMessage);
         } else {
-            String chainID = versionMap.get(chainId).getNodeVersion().getChainID();
+            String chainID = version.getChainID();
             ExtendedRawTransaction extendedRawTransaction =
                     ExtendedRawTransaction.createTransaction(randomid, Constants.GAS_PRICE,
                             Constants.GAS_LIMIT, blockLimit, contractAddress, BigInteger.ZERO, data,
@@ -252,69 +221,6 @@ public class TransService {
     }
 
     /**
-     * send message to node.
-     * 
-     * @param signMsg signMsg
-     * @param future future
-     */
-    public void sendMessage(int chainId, int groupId, String signMsg,
-            final CompletableFuture<TransactionReceipt> future) throws IOException, BaseException {
-        Request<?, SendTransaction> request =
-                getWeb3j(chainId, groupId).sendRawTransaction(signMsg);
-        request.setNeedTransCallback(true);
-        request.setTransactionSucCallback(new TransactionSucCallback() {
-            @Override
-            public void onResponse(TransactionReceipt receipt) {
-                log.info("onResponse receipt:{}", receipt);
-                future.complete(receipt);
-                return;
-            }
-        });
-        request.send();
-    }
-
-    /**
-     * check id.
-     * 
-     * @param chainId
-     * @param groupId
-     * @return
-     */
-    public void checkId(int chainId, int groupId) throws BaseException {
-        Map<Integer, Web3j> web3jMap = web3jMapWithChainId.get(chainId);
-        if (web3jMap.isEmpty()) {
-            log.error("chainId:{} has not been configured.", chainId);
-            throw new BaseException(ConstantCode.CHAINID_NOT_CONFIGURED);
-        }
-        Web3j web3j = web3jMap.get(groupId);
-        if (Objects.isNull(web3j)) {
-            log.error("chainId:{} groupId:{} has not been configured.", chainId, groupId);
-            throw new BaseException(ConstantCode.GROUPID_NOT_CONFIGURED);
-        }
-    }
-
-    /**
-     * get target group's web3j
-     * 
-     * @param chainId
-     * @param groupId
-     * @return
-     */
-    public Web3j getWeb3j(int chainId, int groupId) throws BaseException {
-        Map<Integer, Web3j> web3jMap = web3jMapWithChainId.get(chainId);
-        if (Objects.isNull(web3jMap) || web3jMap.isEmpty()) {
-            log.error("chainId:{} has not been configured.", chainId);
-            throw new BaseException(ConstantCode.CHAINID_NOT_CONFIGURED);
-        }
-        Web3j web3j = web3jMap.get(groupId);
-        if (Objects.isNull(web3j)) {
-            log.error("chainId:{} groupId:{} has not been configured.", chainId, groupId);
-            throw new BaseException(ConstantCode.GROUPID_NOT_CONFIGURED);
-        }
-        return web3j;
-    }
-
-    /**
      * build Function with abi.
      */
     private ContractFunction buildContractFunction(List<Object> functionAbi, String funcName,
@@ -322,7 +228,8 @@ public class TransService {
         // check function name
         AbiDefinition abiDefinition = null;
         try {
-            abiDefinition = ContractAbiUtil.getAbiDefinition(funcName, JsonUtils.toJSONString(functionAbi));
+            abiDefinition =
+                    ContractAbiUtil.getAbiDefinition(funcName, JsonUtils.toJSONString(functionAbi));
         } catch (Exception e) {
             log.error("abi parse error. abi:{}", JsonUtils.toJSONString(functionAbi));
             throw new BaseException(ConstantCode.ABI_PARSE_ERROR);
@@ -350,77 +257,5 @@ public class TransService {
                         .inputList(funcInputTypes).outputList(funOutputTypes)
                         .finalInputs(finalInputs).finalOutputs(finalOutputs).build();
         return cf;
-    }
-
-    /**
-     * send message to node.
-     *
-     * @param signMsg signMsg
-     * @param future future
-     */
-    public void sendMessage(Web3j web3j, String signMsg,
-            final CompletableFuture<TransactionReceipt> future) throws IOException {
-        Request<?, SendTransaction> request = web3j.sendRawTransaction(signMsg);
-        request.setNeedTransCallback(true);
-        request.setTransactionSucCallback(new TransactionSucCallback() {
-            @Override
-            public void onResponse(TransactionReceipt receipt) {
-                log.info("onResponse receipt:{}", receipt);
-                future.complete(receipt);
-                return;
-            }
-        });
-        request.send();
-    }
-
-    public TransactionReceipt sendSignedTransaction(String signedStr, Boolean sync, int chainId,
-            int groupId) throws BaseException {
-        Web3j web3j = getWeb3j(chainId, groupId);
-        if (sync) {
-            final CompletableFuture<TransactionReceipt> transFuture = new CompletableFuture<>();
-            TransactionReceipt receipt;
-            try {
-                sendMessage(web3j, signedStr, transFuture);
-                receipt = transFuture.get(constants.getTransMaxWait(), TimeUnit.SECONDS);
-            } catch (Exception e) {
-                throw new BaseException(ConstantCode.TRANSACTION_FAILED);
-            }
-            return receipt;
-        } else {
-            TransactionReceipt transactionReceipt = new TransactionReceipt();
-            web3j.sendRawTransaction(signedStr).sendAsync();
-            transactionReceipt.setTransactionHash(Hash.sha3(signedStr));
-            return transactionReceipt;
-        }
-    }
-
-    public Object sendQueryTransaction(String encodeStr, String contractAddress, String funcName,
-            String functionAbi, int chainId, int groupId) throws BaseException {
-        Web3j web3j = getWeb3j(chainId, groupId);
-        String callOutput;
-        try {
-            callOutput = web3j
-                    .call(Transaction.createEthCallTransaction(keyStoreService.getRandomAddress(),
-                            contractAddress, encodeStr))
-                    .send().getValue().getOutput();
-        } catch (IOException e) {
-            throw new BaseException(ConstantCode.TRANSACTION_FAILED);
-        }
-
-        AbiDefinition abiDefinition = ContractAbiUtil.getAbiDefinition(funcName, functionAbi);
-        if (Objects.isNull(abiDefinition)) {
-            throw new BaseException(ConstantCode.IN_FUNCTION_ERROR);
-        }
-        List<String> funOutputTypes = ContractAbiUtil.getFuncOutputType(abiDefinition);
-        List<TypeReference<?>> finalOutputs = ContractAbiUtil.outputFormat(funOutputTypes);
-
-        List<Type> typeList = FunctionReturnDecoder.decode(callOutput, Utils.convert(finalOutputs));
-        Object response;
-        if (typeList.size() > 0) {
-            response = ContractAbiUtil.callResultParse(funOutputTypes, typeList);
-        } else {
-            response = typeList;
-        }
-        return response;
     }
 }

@@ -30,6 +30,7 @@ public class Constants {
     public static final BigInteger GAS_PRICE = new BigInteger("100000000");
     public static final BigInteger GAS_LIMIT = new BigInteger("100000000");
     public static final BigInteger INITIAL_WEI_VALUE = new BigInteger("0");
+    public static final BigInteger LIMIT_VALUE = new BigInteger("600");
 
     public static final String TYPE_CONSTRUCTOR = "constructor";
     public static final String TYPE_FUNCTION = "function";
@@ -39,4 +40,11 @@ public class Constants {
     public static final String CONSTANT_PREFIX = "constant";
     private String signServer = "127.0.0.1:5004";
     private int transMaxWait = 20;
+    
+    // front http request
+    private String frontUrl;
+    private Integer httpTimeOut = 5000;
+    private Integer contractDeployTimeOut = 30000;
+    private Integer maxRequestFail = 3;
+    private Long sleepWhenHttpMaxFail = 60000L; // default 1min
 }

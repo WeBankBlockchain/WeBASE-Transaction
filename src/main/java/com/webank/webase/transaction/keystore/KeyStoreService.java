@@ -24,7 +24,6 @@ import com.webank.webase.transaction.keystore.entity.ReqUserInfo;
 import com.webank.webase.transaction.keystore.entity.RspUserInfo;
 import com.webank.webase.transaction.keystore.entity.SignInfo;
 import com.webank.webase.transaction.util.CommonUtils;
-import com.webank.webase.transaction.util.SignRestTools;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.fisco.bcos.web3j.crypto.Credentials;
@@ -83,23 +82,21 @@ public class KeyStoreService {
      * @param signUserId business id of user in sign
      * @return
      */
-    public boolean checkSignUserId(String signUserId) throws BaseException {
+    public RspUserInfo checkSignUserId(String signUserId) throws BaseException {
         if (StringUtils.isBlank(signUserId)) {
             log.error("signUserId is null");
-            return false;
+            return null;
         }
         String url = String.format(SignRestTools.SIGN_USERINFO_URL, properties.getSignServer(),
                 signUserId);
         log.debug("checkSignUserId url:{}", url);
         ResponseEntity response = signRestTools.getFromSign(url, ResponseEntity.class);
-        if (response.getCode() == 0) {
-            RspUserInfo rspUserInfo =
-                    CommonUtils.object2JavaBean(response.getData(), RspUserInfo.class);
-            if (rspUserInfo.getEncryptType() == EncryptType.encryptType) {
-                return true;
-            }
+        if (response.getCode() != 0) {
+            return null;
         }
-        return false;
+        RspUserInfo rspUserInfo =
+                CommonUtils.object2JavaBean(response.getData(), RspUserInfo.class);
+        return rspUserInfo;
     }
 
     /**

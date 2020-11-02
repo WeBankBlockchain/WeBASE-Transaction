@@ -13,17 +13,14 @@
  */
 package com.webank.webase.transaction.config;
 
-import java.util.concurrent.TimeUnit;
+import com.webank.webase.transaction.base.Constants;
 import lombok.Data;
-import org.apache.http.client.HttpClient;
-import org.apache.http.impl.client.DefaultConnectionKeepAliveStrategy;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Scope;
 import org.springframework.http.client.ClientHttpRequestFactory;
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 
 /**
@@ -32,6 +29,10 @@ import org.springframework.web.client.RestTemplate;
 @Data
 @Configuration
 public class RestTemplateConfig {
+    
+    @Autowired
+    private Constants constantProperties;
+    
     /**
      * new RestTemplate.
      * 
@@ -44,26 +45,34 @@ public class RestTemplateConfig {
     }
 
     /**
-     * init httpRequestFactory.
-     * 
-     * @return
+     * resttemplate for generic http request.
      */
-    @Bean
-    public ClientHttpRequestFactory simpleClientHttpRequestFactory() {
-        PoolingHttpClientConnectionManager pollingConnectionManager =
-                new PoolingHttpClientConnectionManager(30, TimeUnit.SECONDS);
-        // max connection
-        pollingConnectionManager.setMaxTotal(1000);
-        pollingConnectionManager.setDefaultMaxPerRoute(100);
-        HttpClientBuilder httpClientBuilder = HttpClients.custom();
-        httpClientBuilder.setConnectionManager(pollingConnectionManager);
-        // add Keep-Alive
-        httpClientBuilder.setKeepAliveStrategy(new DefaultConnectionKeepAliveStrategy());
-        HttpClient httpClient = httpClientBuilder.build();
-        HttpComponentsClientHttpRequestFactory clientHttpRequestFactory =
-                new HttpComponentsClientHttpRequestFactory(httpClient);
-        clientHttpRequestFactory.setReadTimeout(100000);
-        clientHttpRequestFactory.setConnectTimeout(100000);
-        return clientHttpRequestFactory;
+    @Bean(name = "genericRestTemplate")
+    public RestTemplate getRestTemplate() {
+        SimpleClientHttpRequestFactory factory = getHttpFactoryForDeploy();
+        factory.setReadTimeout(constantProperties.getHttpTimeOut());// ms
+        factory.setConnectTimeout(constantProperties.getHttpTimeOut());// ms
+        return new RestTemplate(factory);
+    }
+
+    /**
+     * resttemplate for deploy contract.
+     */
+    @Bean(name = "deployRestTemplate")
+    public RestTemplate getDeployRestTemplate() {
+        SimpleClientHttpRequestFactory factory = getHttpFactoryForDeploy();
+        factory.setReadTimeout(constantProperties.getContractDeployTimeOut());// ms
+        factory.setConnectTimeout(constantProperties.getContractDeployTimeOut());// ms
+        return new RestTemplate(factory);
+    }
+    
+    /**
+     * factory for deploy.
+     */
+    @Bean()
+    @Scope("prototype")
+    public SimpleClientHttpRequestFactory getHttpFactoryForDeploy() {
+        SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
+        return factory;
     }
 }
