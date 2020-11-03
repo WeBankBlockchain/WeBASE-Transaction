@@ -13,15 +13,24 @@
  */
 package com.webank.webase.transaction.frontinterface;
 
+import com.webank.webase.transaction.base.exception.BaseException;
+import com.webank.webase.transaction.frontinterface.entity.PeerInfo;
+import com.webank.webase.transaction.frontinterface.entity.SyncStatus;
+import com.webank.webase.transaction.frontinterface.entity.TransactionCount;
+import com.webank.webase.transaction.util.JsonUtils;
 import java.math.BigInteger;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import lombok.extern.slf4j.Slf4j;
+import org.fisco.bcos.web3j.protocol.core.methods.response.BcosBlock.Block;
 import org.fisco.bcos.web3j.protocol.core.methods.response.NodeVersion.Version;
 import org.fisco.bcos.web3j.protocol.core.methods.response.Transaction;
 import org.fisco.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 public class FrontInterfaceService {
 
@@ -33,11 +42,23 @@ public class FrontInterfaceService {
                 FrontRestTools.URI_CLIENT_VERSION, Version.class);
         return result;
     }
-    
+
     public BigInteger getLatestBlockNumber(Integer chainId, Integer groupId) {
         BigInteger latestBlockNmber = frontRestTools.getForEntity(chainId, groupId,
                 FrontRestTools.URI_BLOCK_NUMBER, BigInteger.class);
         return latestBlockNmber;
+    }
+
+    public Block getBlockByNumber(Integer chainId, Integer groupId, BigInteger blockNmber) {
+        String uri = String.format(FrontRestTools.URI_BLOCK_BY_NUMBER, blockNmber);
+        Block result = frontRestTools.getForEntity(chainId, groupId, uri, Block.class);
+        return result;
+    }
+
+    public TransactionCount getTotalTransactionCount(Integer chainId, Integer groupId) {
+        TransactionCount result = frontRestTools.getForEntity(chainId, groupId,
+                FrontRestTools.URI_TRANS_TOTAL, TransactionCount.class);
+        return result;
     }
 
     public Transaction getTransactionByHash(Integer chainId, Integer groupId, String transHash) {
@@ -52,6 +73,59 @@ public class FrontInterfaceService {
         TransactionReceipt result =
                 frontRestTools.getForEntity(chainId, groupId, uri, TransactionReceipt.class);
         return result;
+    }
+
+    public String getContractCode(Integer chainId, Integer groupId, String address,
+            BigInteger blockNumber) throws BaseException {
+        String uri = String.format(FrontRestTools.URI_CODE, address, blockNumber);
+        String contractCode = frontRestTools.getForEntity(chainId, groupId, uri, String.class);
+        return contractCode;
+    }
+
+    public PeerInfo[] getPeers(Integer chainId, Integer groupId) {
+        return frontRestTools.getForEntity(chainId, groupId, FrontRestTools.URI_PEERS,
+                PeerInfo[].class);
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<String> getNodeIDList(Integer chainId, Integer groupId) {
+        List<String> list = frontRestTools.getForEntity(chainId, groupId,
+                FrontRestTools.URI_NODEID_LIST, List.class);
+        return list;
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<String> getGroupPeers(Integer chainId, Integer groupId) {
+        log.debug("start getGroupPeers. groupId:{}", groupId);
+        List<String> groupPeers = frontRestTools.getForEntity(chainId, groupId,
+                FrontRestTools.URI_GROUP_PEERS, List.class);
+        log.debug("end getGroupPeers. groupPeers:{}", JsonUtils.toJSONString(groupPeers));
+        return groupPeers;
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<String> getObserverList(Integer chainId, Integer groupId) {
+        log.debug("start getObserverList. groupId:{}", groupId);
+        List<String> observers = frontRestTools.getForEntity(chainId, groupId,
+                FrontRestTools.URI_GET_OBSERVER_LIST, List.class);
+        log.info("end getObserverList. observers:{}", JsonUtils.toJSONString(observers));
+        return observers;
+    }
+
+    public String getConsensusStatus(Integer chainId, Integer groupId) {
+        log.debug("start getConsensusStatus. groupId:{}", groupId);
+        String consensusStatus = frontRestTools.getForEntity(chainId, groupId,
+                FrontRestTools.URI_CONSENSUS_STATUS, String.class);
+        log.debug("end getConsensusStatus. consensusStatus:{}", consensusStatus);
+        return consensusStatus;
+    }
+
+    public SyncStatus getSyncStatus(Integer chainId, Integer groupId) {
+        log.debug("start getSyncStatus. groupId:{}", groupId);
+        SyncStatus ststus = frontRestTools.getForEntity(chainId, groupId,
+                FrontRestTools.URI_CSYNC_STATUS, SyncStatus.class);
+        log.debug("end getSyncStatus. ststus:{}", JsonUtils.toJSONString(ststus));
+        return ststus;
     }
 
     public TransactionReceipt sendSignedTransaction(Integer chainId, Integer groupId,

@@ -1,5 +1,5 @@
-/*
- * Copyright 2014-2019 the original author or authors.
+/**
+ * Copyright 2014-2019  the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -11,23 +11,23 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.webank.webase.transaction.trans.entity;
+package com.webank.webase.transaction.frontinterface.entity;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.List;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
-/**
- * transHandler interface parameter. handle transactions of deploy/call contract
- */
 @Data
-public class ReqSignedTransHandle {
-    @NotNull
-    private Integer chainId;
-    @NotNull
-    private Integer groupId;
-    @NotBlank
-    private String signedStr;
-    @NotNull
-    private Boolean sync;
+@NoArgsConstructor
+public class PeerInfo {
+
+    private String IPAndPort;
+    @JsonProperty("NodeID")
+    private String nodeId;
+    private List<Object> Topic;
+
+    public PeerInfo(String nodeId) {
+        this.nodeId = nodeId;
+    }
 }
