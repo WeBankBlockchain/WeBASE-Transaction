@@ -1,5 +1,5 @@
 /**
- * Copyright 2014-2019 the original author or authors.
+ * Copyright 2014-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -118,144 +118,6 @@ public class FrontRestTools {
 
     private static Map<String, FailInfo> failRequestMap = new HashMap<>();
 
-
-    /**
-     * append groupId to uri.
-     */
-    public static String uriAddGroupId(Integer groupId, String uri) {
-        if (groupId == null || StringUtils.isBlank(uri)) {
-            return null;
-        }
-
-        final String tempUri = uri.contains("?") ? uri.substring(0, uri.indexOf("?")) : uri;
-
-        long count = URI_NOT_CONTAIN_GROUP_ID.stream().filter(u -> u.contains(tempUri)).count();
-        if (count > 0) {
-            return uri;
-        }
-        return groupId + "/" + uri;
-    }
-
-    /**
-     * check url status.
-     */
-    private boolean isServiceSleep(String url, String methType) {
-        // get failInfo
-        String key = buildKey(url, methType);
-        FailInfo failInfo = failRequestMap.get(key);
-
-        // cehck server status
-        if (failInfo == null) {
-            return false;
-        }
-        int failCount = failInfo.getFailCount();
-        Long subTime = Duration.between(failInfo.getLatestTime(), Instant.now()).toMillis();
-        if (failCount > cproperties.getMaxRequestFail()
-                && subTime < cproperties.getSleepWhenHttpMaxFail()) {
-            return true;
-        } else if (subTime > cproperties.getSleepWhenHttpMaxFail()) {
-            // service is sleep
-            deleteKeyOfMap(failRequestMap, key);
-        }
-        return false;
-    }
-
-    /**
-     * set request fail times.
-     */
-    private void setFailCount(String url, String methodType) {
-        // get failInfo
-        String key = buildKey(url, methodType);
-        FailInfo failInfo = failRequestMap.get(key);
-        if (failInfo == null) {
-            failInfo = new FailInfo();
-            failInfo.setFailUrl(url);
-        }
-
-        // reset failInfo
-        failInfo.setLatestTime(Instant.now());
-        failInfo.setFailCount(failInfo.getFailCount() + 1);
-        failRequestMap.put(key, failInfo);
-    }
-
-
-    /**
-     * build key description: frontIp$frontPort example: 2651654951545$8081
-     */
-    private String buildKey(String url, String methodType) {
-        return url.hashCode() + "$" + methodType;
-    }
-
-
-    /**
-     * delete key of map
-     */
-    private static void deleteKeyOfMap(Map<String, FailInfo> map, String rkey) {
-        log.info("start deleteKeyOfMap. rkey:{} map:{}", rkey, JsonUtils.toJSONString(map));
-        Iterator<String> iter = map.keySet().iterator();
-        while (iter.hasNext()) {
-            String key = iter.next();
-            if (rkey.equals(key)) {
-                iter.remove();
-            }
-        }
-    }
-
-    /**
-     * build url of front service.
-     */
-    private String buildFrontUrl(ArrayList<FrontGroup> list, String uri, HttpMethod httpMethod) {
-        Collections.shuffle(list);// random one
-        Iterator<FrontGroup> iterator = list.iterator();
-        while (iterator.hasNext()) {
-            FrontGroup frontGroup = iterator.next();
-
-            uri = uriAddGroupId(frontGroup.getGroupId(), uri);// append groupId to uri
-            String url = String
-                    .format(FRONT_URL, frontGroup.getFrontIp(), frontGroup.getFrontPort(), uri)
-                    .replaceAll(" ", "");
-            iterator.remove();
-
-            if (isServiceSleep(url, httpMethod.toString())) {
-                log.warn("front url[{}] is sleep,jump over", url);
-                continue;
-            }
-            return url;
-        }
-        log.info("end buildFrontUrl. url is null");
-        return null;
-    }
-
-    /**
-     * build httpEntity
-     */
-    @SuppressWarnings({"rawtypes", "unchecked"})
-    public static HttpEntity buildHttpEntity(Object param) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        String paramStr = null;
-        if (Objects.nonNull(param)) {
-            paramStr = JsonUtils.toJSONString(param);
-        }
-        HttpEntity requestEntity = new HttpEntity(paramStr, headers);
-        return requestEntity;
-    }
-
-    /**
-     * case restTemplate by uri.
-     */
-    public RestTemplate caseRestemplate(String uri) {
-        if (StringUtils.isBlank(uri)) {
-            return null;
-        }
-        if (uri.contains(URI_CONTRACT_DEPLOY) || uri.contains(URI_MULTI_CONTRACT_COMPILE)
-                || uri.contains(URI_SIGNED_TRANSACTION)) {
-            return deployRestTemplate;
-        }
-        return genericRestTemplate;
-    }
-
-
     /**
      * get from front for entity.
      */
@@ -321,11 +183,145 @@ public class FrontRestTools {
     }
 
     /**
+     * append groupId to uri.
+     */
+    private static String uriAddGroupId(Integer groupId, String uri) {
+        if (groupId == null || StringUtils.isBlank(uri)) {
+            return null;
+        }
+
+        final String tempUri = uri.contains("?") ? uri.substring(0, uri.indexOf("?")) : uri;
+
+        long count = URI_NOT_CONTAIN_GROUP_ID.stream().filter(u -> u.contains(tempUri)).count();
+        if (count > 0) {
+            return uri;
+        }
+        return groupId + "/" + uri;
+    }
+
+    /**
+     * check url status.
+     */
+    private boolean isServiceSleep(String url, String methType) {
+        // get failInfo
+        String key = buildKey(url, methType);
+        FailInfo failInfo = failRequestMap.get(key);
+
+        // cehck server status
+        if (failInfo == null) {
+            return false;
+        }
+        int failCount = failInfo.getFailCount();
+        Long subTime = Duration.between(failInfo.getLatestTime(), Instant.now()).toMillis();
+        if (failCount > cproperties.getMaxRequestFail()
+                && subTime < cproperties.getSleepWhenHttpMaxFail()) {
+            return true;
+        } else if (subTime > cproperties.getSleepWhenHttpMaxFail()) {
+            // service is sleep
+            deleteKeyOfMap(failRequestMap, key);
+        }
+        return false;
+    }
+
+    /**
+     * set request fail times.
+     */
+    private void setFailCount(String url, String methodType) {
+        // get failInfo
+        String key = buildKey(url, methodType);
+        FailInfo failInfo = failRequestMap.get(key);
+        if (failInfo == null) {
+            failInfo = new FailInfo();
+            failInfo.setFailUrl(url);
+        }
+
+        // reset failInfo
+        failInfo.setLatestTime(Instant.now());
+        failInfo.setFailCount(failInfo.getFailCount() + 1);
+        failRequestMap.put(key, failInfo);
+    }
+
+    /**
+     * build key description: frontIp$frontPort example: 2651654951545$8081
+     */
+    private String buildKey(String url, String methodType) {
+        return url.hashCode() + "$" + methodType;
+    }
+
+    /**
+     * delete key of map
+     */
+    private static void deleteKeyOfMap(Map<String, FailInfo> map, String rkey) {
+        log.info("start deleteKeyOfMap. rkey:{} map:{}", rkey, JsonUtils.toJSONString(map));
+        Iterator<String> iter = map.keySet().iterator();
+        while (iter.hasNext()) {
+            String key = iter.next();
+            if (rkey.equals(key)) {
+                iter.remove();
+            }
+        }
+    }
+
+    /**
+     * build url of front service.
+     */
+    private String buildFrontUrl(ArrayList<FrontGroup> list, String uri, HttpMethod httpMethod) {
+        Collections.shuffle(list);// random one
+        Iterator<FrontGroup> iterator = list.iterator();
+        while (iterator.hasNext()) {
+            FrontGroup frontGroup = iterator.next();
+
+            uri = uriAddGroupId(frontGroup.getGroupId(), uri);// append groupId to uri
+            String url = String
+                    .format(FRONT_URL, frontGroup.getFrontIp(), frontGroup.getFrontPort(), uri)
+                    .replaceAll(" ", "");
+            iterator.remove();
+
+            if (isServiceSleep(url, httpMethod.toString())) {
+                log.warn("front url[{}] is sleep,jump over", url);
+                continue;
+            }
+            return url;
+        }
+        log.info("end buildFrontUrl. url is null");
+        return null;
+    }
+
+    /**
+     * build httpEntity
+     */
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    private static HttpEntity buildHttpEntity(Object param) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        String paramStr = null;
+        if (Objects.nonNull(param)) {
+            paramStr = JsonUtils.toJSONString(param);
+        }
+        HttpEntity requestEntity = new HttpEntity(paramStr, headers);
+        return requestEntity;
+    }
+
+    /**
+     * case restTemplate by uri.
+     */
+    private RestTemplate caseRestemplate(String uri) {
+        if (StringUtils.isBlank(uri)) {
+            return null;
+        }
+        if (uri.contains(URI_CONTRACT_DEPLOY) || uri.contains(URI_MULTI_CONTRACT_COMPILE)
+                || uri.contains(URI_SIGNED_TRANSACTION)) {
+            return deployRestTemplate;
+        }
+        return genericRestTemplate;
+    }
+    
+    /**
      * front error format
      * 
      * @param error
      */
-    public static void errorFormat(String str) {
+    private static void errorFormat(String str) {
         JsonNode error = JsonUtils.stringToJsonNode(str);
         log.error("requestFront fail. error:{}", error);
         if (ObjectUtils.isEmpty(error.get("errorMessage"))) {

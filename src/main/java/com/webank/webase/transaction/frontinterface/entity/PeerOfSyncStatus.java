@@ -15,14 +15,13 @@
  */
 package com.webank.webase.transaction.frontinterface.entity;
 
+import java.math.BigInteger;
 import lombok.Data;
 
 @Data
-public class FrontGroup {
-    private Integer mapId;
-    private Integer chainId;
-    private Integer groupId;
-    private Integer frontId;
-    private String frontIp;
-    private Integer frontPort;
+public class PeerOfSyncStatus {
+    private BigInteger blockNumber;
+    private String genesisHash;
+    private String latestHash;
+    private String nodeId;
 }

@@ -13,13 +13,19 @@
  */
 package com.webank.webase.transaction.frontinterface.entity;
 
-import java.time.Instant;
+import java.math.BigInteger;
+import java.util.List;
 import lombok.Data;
 
 @Data
-public class FailInfo {
+public class SyncStatus {
 
-    private Instant latestTime;
-    private int failCount;
-    private String failUrl;
+    private BigInteger blockNumber;
+    private String genesisHash;
+    private Boolean isSyncing;
+    private String latestHash;
+    private String nodeId;
+    private Integer protocolId;
+    private String txPoolSize;
+    private List<PeerOfSyncStatus> peers;
 }

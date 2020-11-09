@@ -13,13 +13,21 @@
  */
 package com.webank.webase.transaction.frontinterface.entity;
 
-import java.time.Instant;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.List;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
-public class FailInfo {
+@NoArgsConstructor
+public class PeerInfo {
 
-    private Instant latestTime;
-    private int failCount;
-    private String failUrl;
+    private String IPAndPort;
+    @JsonProperty("NodeID")
+    private String nodeId;
+    private List<Object> Topic;
+
+    public PeerInfo(String nodeId) {
+        this.nodeId = nodeId;
+    }
 }
