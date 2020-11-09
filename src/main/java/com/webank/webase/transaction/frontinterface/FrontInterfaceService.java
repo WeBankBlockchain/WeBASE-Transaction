@@ -13,22 +13,26 @@
  */
 package com.webank.webase.transaction.frontinterface;
 
-import com.webank.webase.transaction.base.exception.BaseException;
-import com.webank.webase.transaction.frontinterface.entity.PeerInfo;
-import com.webank.webase.transaction.frontinterface.entity.SyncStatus;
-import com.webank.webase.transaction.frontinterface.entity.TransactionCount;
-import com.webank.webase.transaction.util.JsonUtils;
 import java.math.BigInteger;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import lombok.extern.slf4j.Slf4j;
+
 import org.fisco.bcos.web3j.protocol.core.methods.response.BcosBlock.Block;
 import org.fisco.bcos.web3j.protocol.core.methods.response.NodeVersion.Version;
 import org.fisco.bcos.web3j.protocol.core.methods.response.Transaction;
 import org.fisco.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import com.webank.webase.transaction.base.exception.BaseException;
+import com.webank.webase.transaction.frontinterface.entity.PeerInfo;
+import com.webank.webase.transaction.frontinterface.entity.SyncStatus;
+import com.webank.webase.transaction.frontinterface.entity.TransactionCount;
+import com.webank.webase.transaction.util.JsonUtils;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
@@ -82,13 +86,14 @@ public class FrontInterfaceService {
         return contractCode;
     }
 
-    public PeerInfo[] getPeers(Integer chainId, Integer groupId) {
-        return frontRestTools.getForEntity(chainId, groupId, FrontRestTools.URI_PEERS,
+    public List<PeerInfo> getPeers(Integer chainId, Integer groupId) {
+        PeerInfo[] result =  frontRestTools.getForEntity(chainId, groupId, FrontRestTools.URI_PEERS,
                 PeerInfo[].class);
+        return Arrays.asList(result);
     }
 
     @SuppressWarnings("unchecked")
-    public List<String> getNodeIDList(Integer chainId, Integer groupId) {
+    public List<String> getNodeIdList(Integer chainId, Integer groupId) {
         List<String> list = frontRestTools.getForEntity(chainId, groupId,
                 FrontRestTools.URI_NODEID_LIST, List.class);
         return list;
