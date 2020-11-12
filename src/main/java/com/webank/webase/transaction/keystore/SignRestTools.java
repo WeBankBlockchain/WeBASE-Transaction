@@ -116,6 +116,6 @@ public class SignRestTools {
             throw new BaseException(ConstantCode.REQUEST_SIGN_EXCEPTION);
         }
         String errorMessage = error.get("errorMessage").asText();
-        throw new BaseException(ConstantCode.REQUEST_SIGN_EXCEPTION.getCode(), errorMessage);
+        throw new BaseException(error.get("code").asInt(), errorMessage);
     }
 }

@@ -74,9 +74,19 @@ public class TransService {
      * @param req parameter
      * @return
      */
-    public TransResultDto send(ReqTransSendInfo req) throws Exception {
+    public synchronized TransResultDto send(ReqTransSendInfo req) throws Exception {
         int chainId = req.getChainId();
         int groupId = req.getGroupId();
+        // check sign user id
+        String signUserId = req.getSignUserId();
+        RspUserInfo rspUserInfo = keyStoreService.checkSignUserId(signUserId);
+        if (rspUserInfo == null) {
+            log.error("checkSignUserId fail.");
+            throw new BaseException(ConstantCode.SIGN_USERID_ERROR);
+        }
+        // set encryptType
+        new EncryptType(rspUserInfo.getEncryptType());
+        log.info("send encryptType: {}", rspUserInfo.getEncryptType());
         // check param ,get function of abi
         ContractFunction contractFunction =
                 buildContractFunction(req.getFunctionAbi(), req.getFuncName(), req.getFuncParam());
@@ -95,15 +105,8 @@ public class TransService {
             transResultDto.setQueryInfo(JsonUtils.objToString(response));
             transResultDto.setConstant(true);
         } else {
-            // check sign user id
-            String signUserId = req.getSignUserId();
-            RspUserInfo rspUserInfo = keyStoreService.checkSignUserId(signUserId);
-            if (rspUserInfo == null) {
-                log.error("checkSignUserId fail.");
-                throw new BaseException(ConstantCode.SIGN_USERID_ERROR);
-            }
             // data sign
-            String signMsg = signMessage(chainId, groupId, signUserId, rspUserInfo.getEncryptType(),
+            String signMsg = signMessage(chainId, groupId, signUserId,
                     contractAddress, encodedFunction);
             if (StringUtils.isBlank(signMsg)) {
                 throw new BaseException(ConstantCode.DATA_SIGN_ERROR);
@@ -160,15 +163,13 @@ public class TransService {
      * @return
      */
     public synchronized String signMessage(int chainId, int groupId, String signUserId,
-            int encryptType, String contractAddress, String data) throws BaseException {
+            String contractAddress, String data) throws BaseException {
         Random r = new Random();
         BigInteger randomid = new BigInteger(250, r);
         BigInteger blockLimit = frontInterfaceService.getLatestBlockNumber(chainId, groupId)
                 .add(Constants.LIMIT_VALUE);
         Version version = frontInterfaceService.getClientVersion(chainId, groupId);
         String signMsg;
-        new EncryptType(encryptType);
-        log.info("signMessage encryptType: {}", encryptType);
         if (version.getVersion().contains("2.0.0-rc1")
                 || version.getVersion().contains("release-2.0.1")) {
             RawTransaction rawTransaction = RawTransaction.createTransaction(randomid,

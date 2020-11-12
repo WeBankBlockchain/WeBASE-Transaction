@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright 2014-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
@@ -11,41 +11,57 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.webank.webase.transaction.base.exception;
 
-import com.webank.webase.transaction.util.JsonUtils;
-import java.util.HashMap;
-import java.util.Map;
-import lombok.extern.slf4j.Slf4j;
+import java.util.Optional;
+
 import org.springframework.beans.TypeMismatchException;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.ServletRequestBindingException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
+
+import com.webank.webase.transaction.base.ConstantCode;
+import com.webank.webase.transaction.base.ResponseEntity;
+import com.webank.webase.transaction.base.RetCode;
+
+import lombok.extern.log4j.Log4j2;
 
 /**
- * ExceptionsHandler.
- * 
+ * catch an handler exception.
  */
 @ControllerAdvice
-@Slf4j
+@Log4j2
 public class ExceptionsHandler {
 
     /**
-     * myExceptionHandler.
-     *
-     * @param frontException e
+     * catch：NodeMgrException.
      */
     @ResponseBody
     @ExceptionHandler(value = BaseException.class)
-    public ResponseEntity myExceptionHandler(BaseException frontException) throws Exception {
-        log.warn("catch frontException: {}", frontException.getMessage());
-        Map<String, Object> map = new HashMap<>();
-        map.put("message", frontException.getMessage());
-        map.put("code", frontException.getRetCode().getCode());
-        return ResponseEntity.status(422).body(map);
+    @ResponseStatus(value = HttpStatus.BAD_REQUEST)
+    public ResponseEntity myExceptionHandler(BaseException baseException) {
+        log.warn("catch business exception", baseException);
+        RetCode retCode = Optional.ofNullable(baseException).map(BaseException::getRetCode)
+                .orElse(ConstantCode.SYSTEM_ERROR);
+        ResponseEntity bre = new ResponseEntity(retCode);
+        return bre;
+    }
+
+    /**
+     * catch:paramException
+     */
+    @ResponseBody
+    @ExceptionHandler(value = ParamException.class)
+    @ResponseStatus(value = HttpStatus.BAD_REQUEST)
+    public ResponseEntity paramExceptionHandler(ParamException paramException) {
+        log.warn("catch param exception", paramException);
+        RetCode retCode = Optional.ofNullable(paramException).map(ParamException::getRetCode)
+                .orElse(ConstantCode.SYSTEM_ERROR);
+        ResponseEntity bre = new ResponseEntity(retCode);
+        return bre;
     }
 
     /**
@@ -53,40 +69,36 @@ public class ExceptionsHandler {
      */
     @ResponseBody
     @ExceptionHandler(value = TypeMismatchException.class)
+    @ResponseStatus(value = HttpStatus.BAD_REQUEST)
     public ResponseEntity typeMismatchExceptionHandler(TypeMismatchException ex) {
         log.warn("catch typeMismatchException", ex);
-
-        Map<String, Object> map = new HashMap<>();
-        map.put("message", ex.getMessage());
-        map.put("code", 400);
-        log.warn("typeMismatchException return:{}", JsonUtils.toJSONString(map));
-        return ResponseEntity.status(400).body(map);
+        RetCode retCode = new RetCode(ConstantCode.PARAM_VAILD_FAIL.getCode(), ex.getMessage());
+        ResponseEntity bre = new ResponseEntity(retCode);
+        return bre;
     }
-
+    
+    /**
+     * parameter exception:HttpMessageNotReadableException
+     */
     @ResponseBody
-    @ExceptionHandler(value = ServletRequestBindingException.class)
-    public ResponseEntity bindExceptionHandler(ServletRequestBindingException ex) {
-        log.warn("catch bindExceptionHandler", ex);
-
-        Map<String, Object> map = new HashMap<>();
-        map.put("message", ex.getMessage());
-        map.put("code", 400);
-        log.warn("bindExceptionHandler return:{}", JsonUtils.toJSONString(map));
-        return ResponseEntity.status(400).body(map);
+    @ExceptionHandler(value = HttpMessageNotReadableException.class)
+    @ResponseStatus(value = HttpStatus.BAD_REQUEST)
+    public ResponseEntity httpMessageNotReadableExceptionHandler(HttpMessageNotReadableException ex) {
+        log.warn("catch HttpMessageNotReadableException", ex);
+        RetCode retCode = new RetCode(ConstantCode.PARAM_VAILD_FAIL.getCode(), ex.getMessage());
+        ResponseEntity bre = new ResponseEntity(retCode);
+        return bre;
     }
 
     /**
-     * exceptionHandler.
-     *
-     * @param exc e
+     * catch：RuntimeException.
      */
     @ResponseBody
-    @ExceptionHandler(value = Exception.class)
-    public ResponseEntity exceptionHandler(Exception exc) {
-        log.info("catch  exception: ", exc);
-        Map<String, Object> map = new HashMap<>();
-        map.put("message", exc.getMessage());
-        map.put("code", 500);
-        return ResponseEntity.status(500).body(map);
+    @ExceptionHandler(value = RuntimeException.class)
+    @ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
+    public ResponseEntity exceptionHandler(RuntimeException exc) {
+        log.warn("catch RuntimeException", exc);
+        ResponseEntity bre = new ResponseEntity(ConstantCode.SYSTEM_ERROR);
+        return bre;
     }
 }
