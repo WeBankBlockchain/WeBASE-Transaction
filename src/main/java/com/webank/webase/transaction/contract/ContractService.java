@@ -27,6 +27,7 @@ import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.fisco.bcos.web3j.abi.FunctionEncoder;
+import org.fisco.bcos.web3j.abi.datatypes.Address;
 import org.fisco.bcos.web3j.abi.datatypes.Type;
 import org.fisco.bcos.web3j.crypto.EncryptType;
 import org.fisco.bcos.web3j.protocol.core.methods.response.AbiDefinition;
@@ -90,14 +91,19 @@ public class ContractService {
         }
         // data sign
         String data = req.getBytecodeBin() + encodedConstructor;
-        String signMsg = transService.signMessage(chainId, groupId, req.getSignUserId(),
-                "", data);
+        String signMsg = transService.signMessage(chainId, groupId, req.getSignUserId(), "", data);
         if (StringUtils.isBlank(signMsg)) {
             throw new BaseException(ConstantCode.DATA_SIGN_ERROR);
         }
         // send transaction
         TransactionReceipt receipt =
                 frontInterfaceService.sendSignedTransaction(chainId, groupId, signMsg, true);
+        String contractAddress = receipt.getContractAddress();
+        if (StringUtils.isBlank(contractAddress)
+                || Address.DEFAULT.getValue().equals(contractAddress)) {
+            log.error("fail deploy, receipt:{}", JsonUtils.toJSONString(receipt));
+            throw new BaseException(ConstantCode.CONTRACT_DEPLOY_FAIL);
+        }
         return receipt;
     }
 }
