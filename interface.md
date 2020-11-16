@@ -884,6 +884,7 @@ b.异常返回结果示例
 | 203101 | contract funcParam is error   |      | 合约方法参数错误     |
 | 203102 | function is not exists        |      | 方法名不存在         |
 | 203103 | abi parse error               |      | abi解析错误          |
+| 203104 | contract deploy fail          |      | 合约部署失败         |
 | 203201 | signUserId check failed       |      | 签名用户编号校验失败 |
 | 203202 | data request sign error       |      | 数据请求签名异常     |
 | 203203 | request sign server exception |      | 请求签名服务异常     |
