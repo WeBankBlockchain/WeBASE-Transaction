@@ -134,7 +134,7 @@ HTTP POST
 | 4        | 方法Abi      | functionAbi     | List\<Object\> |              | 是       | JSON数组，所调用方法的Abi（备注：合约有重载方法时，传全部Abi会有问题） |
 | 5        | 调用方法名   | funcName        | String         |              | 是       |                                                              |
 | 6        | 方法参数     | funcParam       | List\<Object\> |              | 否       | JSON数组，多个参数以逗号分隔（参数为数组时同理），如：["str1",["arr1","arr2"]] |
-| 7        | 签名用户编号 | signUserId      | int            |              | 否       | WeBASE-Sign用户，数据上链时必填                              |
+| 7        | 签名用户编号 | signUserId      | String         |              | 是       | WeBASE-Sign用户                                              |
 
 **2）数据格式**
 
@@ -143,7 +143,7 @@ HTTP POST
   "contractAddress": "0x93a17e78d08e1a0d98269b3bf5656eaed2c2416c",
   "funcName": "set",
   "funcParam": ["hello"],
-  "functionAbi": [{"constant":true,"inputs":[],"name":"get","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"}],
+  "functionAbi": [{"constant":false,"inputs":[{"name":"n","type":"string"}],"name":"set","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"}],
   "chainId": 1,
   "groupId": 1,
   "signUserId": "user1001"
@@ -582,10 +582,10 @@ HTTP POST
 
 | **序号** | **中文** | **参数名**  | **类型** | **最大长度** | **必填** | **说明**                                     |
 | -------- | -------- | ----------- | -------- | ------------ | -------- | -------------------------------------------- |
-| 1        | 私钥     | privateKey  | String   |              | 是       | 通过Base64加密后的私钥内容                   |
+| 1        | 私钥     | privateKey  | String   |              | 否       | 通过Base64加密后的私钥内容，私钥为空则新建   |
 | 2        | 用户编号 | signUserId  | String   | 64           | 是       | 私钥用户的唯一业务编号，仅支持数字字母下划线 |
 | 3        | 应用编号 | appId       | String   | 64           | 是       | 用于标志用户的应用编号,仅支持数字字母下划线  |
-| 4        | 加密类型 | encryptType | Integer  |              | 否       | 默认为0，0: ECDSA, 1: 国密                   |
+| 4        | 加密类型 | encryptType | Integer  |              | 是       | 默认为0，0: ECDSA, 1: 国密                   |
 
 **2）数据格式**
 

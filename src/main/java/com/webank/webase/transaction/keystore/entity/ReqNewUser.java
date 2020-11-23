@@ -32,6 +32,5 @@ public class ReqNewUser {
 	private String appId;
 	@NotNull
 	private Integer encryptType;
-	@NotNull
 	private String privateKey;
 }

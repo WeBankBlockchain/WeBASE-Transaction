@@ -33,6 +33,7 @@ public class ReqTransSendInfo {
     private Integer groupId;
     @NotBlank
     private String contractAddress;
+    @NotBlank
     private String signUserId;
     @NotBlank
     private String funcName;
