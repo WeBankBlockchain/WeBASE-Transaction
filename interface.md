@@ -134,7 +134,7 @@ HTTP POST
 | 4        | 方法Abi      | functionAbi     | List\<Object\> |              | 是       | JSON数组，所调用方法的Abi（备注：合约有重载方法时，传全部Abi会有问题） |
 | 5        | 调用方法名   | funcName        | String         |              | 是       |                                                              |
 | 6        | 方法参数     | funcParam       | List\<Object\> |              | 否       | JSON数组，多个参数以逗号分隔（参数为数组时同理），如：["str1",["arr1","arr2"]] |
-| 7        | 签名用户编号 | signUserId      | int            |              | 否       | WeBASE-Sign用户，数据上链时必填                              |
+| 7        | 签名用户编号 | signUserId      | String         |              | 是       | WeBASE-Sign用户                                              |
 
 **2）数据格式**
 
@@ -143,7 +143,7 @@ HTTP POST
   "contractAddress": "0x93a17e78d08e1a0d98269b3bf5656eaed2c2416c",
   "funcName": "set",
   "funcParam": ["hello"],
-  "functionAbi": [{"constant":true,"inputs":[],"name":"get","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"}],
+  "functionAbi": [{"constant":false,"inputs":[{"name":"n","type":"string"}],"name":"set","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"}],
   "chainId": 1,
   "groupId": 1,
   "signUserId": "user1001"
@@ -566,7 +566,7 @@ HTTP POST
 
 #### 接口描述
 
-导入私钥到Sign
+导入私钥到WeBASE-Sign，私钥为空则新建。
 
 #### 接口URL
 
@@ -580,12 +580,12 @@ HTTP POST
 
 **1）参数表**
 
-| **序号** | **中文** | **参数名**  | **类型** | **最大长度** | **必填** | **说明**                                     |
-| -------- | -------- | ----------- | -------- | ------------ | -------- | -------------------------------------------- |
-| 1        | 私钥     | privateKey  | String   |              | 是       | 通过Base64加密后的私钥内容                   |
-| 2        | 用户编号 | signUserId  | String   | 64           | 是       | 私钥用户的唯一业务编号，仅支持数字字母下划线 |
-| 3        | 应用编号 | appId       | String   | 64           | 是       | 用于标志用户的应用编号,仅支持数字字母下划线  |
-| 4        | 加密类型 | encryptType | Integer  |              | 否       | 默认为0，0: ECDSA, 1: 国密                   |
+| **序号** | **中文** | **参数名**  | **类型** | **最大长度** | **必填** | **说明**                                       |
+| -------- | -------- | ----------- | -------- | ------------ | -------- | ---------------------------------------------- |
+| 1        | 私钥     | privateKey  | String   |              | 否       | 通过**Base64加密**后的私钥内容，私钥为空则新建 |
+| 2        | 用户编号 | signUserId  | String   | 64           | 是       | 私钥用户的唯一业务编号，仅支持数字字母下划线   |
+| 3        | 应用编号 | appId       | String   | 64           | 是       | 用于标志用户的应用编号,仅支持数字字母下划线    |
+| 4        | 加密类型 | encryptType | Integer  |              | 是       | 默认为0，0: ECDSA, 1: 国密                     |
 
 **2）数据格式**
 
@@ -598,7 +598,7 @@ http://localhost:5003/WeBASE-Transaction/user/newUser
   "appId": "app1001",
   "encryptType": 1,
   "privateKey": "YzAwNDYzYWU4MjM2OTVhNjk1MGNmZGUwNmVkODg0YjI2MzUzNmE2ODg2MGEwNWZjMTE4NTM4ODIxYTQ5OTcyNQ==",
-  "signUserId": "user1003"
+  "signUserId": "user1001"
 }
 ```
 
@@ -627,17 +627,17 @@ ECDSA用户：
 
 ```
 {
-    "code": 0,
-    "message": "success",
-    "data": {
-        "signUserId": "user_111",
-        "appId": "group_01",
-        "address": "0x2df87ff79e8c85a318c00c82ee76e2581fbab0a8",
-        "publicKey": "0x1befc9824623dfc2f1541d2fc1df4bc445d9dd26816b0884e24628881d5bb572bf7dfd69520d540adc2d16d295df954d9c34bef4381dbc207942fcbf43c7d622",
-        "privateKey": "", //不返回私钥
-        "description": null,
-        "encryptType": 0
-    }
+  "code": 0,
+  "message": "success",
+  "data": {
+    "signUserId": "user1001",
+    "appId": "app1001",
+    "address": "0xdb4ed7a548623c219235aa68156f117dff959a17",
+    "publicKey": "0x46af4341acd0c404aab06a75cd950e2c04f8507a2f77abfe9e8b6d22014f897daaea457eb75dbdf26a0e74c4f1ee360c9d836ba6bfdd63754736231773904d4b",
+    "privateKey": "",
+    "description": null,
+    "encryptType": 1
+  }
 }
 ```
 
@@ -869,6 +869,589 @@ b.异常返回结果示例
     "code": 303002,
     "message": "user does not exist",
     "data": null
+}
+```
+
+## 5. web3接口
+
+### 5.1. 获取节点版本
+
+#### 接口描述
+
+> 获取节点版本
+
+#### 接口URL
+
+**http://localhost:5003/WeBASE-Transaction/front/getClientVersion/{chainId}/{groupId}**
+
+#### 调用方法
+
+HTTP GET
+
+#### 请求参数
+
+**1）参数表**
+
+| **序号** | **中文** | **参数名** | **类型** | **最大长度** | **必填** | **说明** |
+| -------- | -------- | ---------- | -------- | ------------ | -------- | -------- |
+| 1        | 链编号   | chainId    | int      |              | 是       |          |
+| 2        | 群组编号 | groupId    | int      |              | 是       |          |
+
+**2）数据格式**
+
+```
+http://localhost:5003/WeBASE-Transaction/front/getClientVersion/3/3
+```
+
+#### 响应参数
+
+**1）参数表**
+
+| **序号** | **中文**      | **参数名**         | **类型** | **最大长度** | **必填** | **说明**          |
+| -------- | ------------- | ------------------ | -------- | ------------ | -------- | ----------------- |
+| 1        | 返回码        | code               | String   |              | 是       | 返回码信息请附录1 |
+| 2        | 提示信息      | message            | String   |              | 是       |                   |
+| 3        | 返回数据      | data               | Object   |              | 是       |                   |
+| 3.1      | 编译时间      | Build Time         | String   |              | 是       |                   |
+| 3.2      | 编译类型      | Build Type         | String   |              | 是       |                   |
+| 3.3      | 链编号        | Chain Id           | String   |              | 是       |                   |
+| 3.4      | 版本          | FISCO-BCOS Version | String   |              | 是       |                   |
+| 3.5      | git分支       | Git Branch         | String   |              | 是       |                   |
+| 3.6      | git提交的hash | Git Commit Hash    | String   |              | 是       |                   |
+| 3.7      | 支持版本      | Supported Version  | String   |              | 是       |                   |
+
+**2）数据格式**
+
+```
+{
+  "code": 0,
+  "message": "success",
+  "data": {
+    "Build Time": "20200619 17:34:45",
+    "Build Type": "Linux/g++/RelWithDebInfo",
+    "Chain Id": "1",
+    "FISCO-BCOS Version": "2.5.0 gm",
+    "Git Branch": "master",
+    "Git Commit Hash": "3969c21fa34196182d9f236bcf80dfa978d90a41",
+    "Supported Version": "2.6.0"
+  }
+}
+```
+
+### 5.2. 获取块高
+
+#### 接口描述
+
+> 获取节点最新块高
+
+#### 接口URL
+
+**http://localhost:5003/WeBASE-Transaction/front/getBlockNumber/{chainId}/{groupId}**
+
+#### 调用方法
+
+HTTP GET
+
+#### 请求参数
+
+**1）参数表**
+
+| **序号** | **中文** | **参数名** | **类型** | **最大长度** | **必填** | **说明** |
+| -------- | -------- | ---------- | -------- | ------------ | -------- | -------- |
+| 1        | 链编号   | chainId    | int      |              | 是       |          |
+| 2        | 群组编号 | groupId    | int      |              | 是       |          |
+
+**2）数据格式**
+
+```
+http://localhost:5003/WeBASE-Transaction/front/getBlockNumber/3/3
+```
+
+#### 响应参数
+
+**1）参数表**
+
+| **序号** | **中文** | **参数名** | **类型** | **最大长度** | **必填** | **说明**          |
+| -------- | -------- | ---------- | -------- | ------------ | -------- | ----------------- |
+| 1        | 返回码   | code       | String   |              | 是       | 返回码信息请附录1 |
+| 2        | 提示信息 | message    | String   |              | 是       |                   |
+| 3        | 返回数据 | data       | Object   |              | 是       | 块高              |
+
+**2）数据格式**
+
+```
+{
+  "code": 0,
+  "message": "success",
+  "data": 2
+}
+```
+
+### 5.3. 根据块高获取块信息
+
+#### 接口描述
+
+> 通过块高获取块信息
+
+#### 接口URL
+
+**http://localhost:5003/WeBASE-Transaction/front/getBlockNumber/{chainId}/{groupId}/{blockNumber}**
+
+#### 调用方法
+
+HTTP GET
+
+#### 请求参数
+
+**1）参数表**
+
+| **序号** | **中文** | **参数名**  | **类型**   | **最大长度** | **必填** | **说明** |
+| -------- | -------- | ----------- | ---------- | ------------ | -------- | -------- |
+| 1        | 链编号   | chainId     | int        |              | 是       |          |
+| 2        | 群组编号 | groupId     | int        |              | 是       |          |
+| 3        | 块高     | blockNumber | BigInteger |              | 是       |          |
+
+**2）数据格式**
+
+```
+http://localhost:5003/WeBASE-Transaction/front/getBlockByNumber/3/3/1
+```
+
+#### 响应参数
+
+**1）参数表**
+
+| **序号** | **中文** | **参数名** | **类型** | **最大长度** | **必填** | **说明**          |
+| -------- | -------- | ---------- | -------- | ------------ | -------- | ----------------- |
+| 1        | 返回码   | code       | String   |              | 是       | 返回码信息请附录1 |
+| 2        | 提示信息 | message    | String   |              | 是       |                   |
+| 3        | 返回数据 | data       | Object   |              | 是       |                   |
+
+**2）数据格式**
+
+```
+{
+  "code": 0,
+  "message": "success",
+  "data": {
+    // 区块高度
+    "number": 1,
+    // 区块哈希
+    "hash": "0x89ace100600382e87caa11007c9bbb601b4e2c59e286de69ac5f18fb5aaaf481",
+    // 父区块哈希
+    "parentHash": "0x0e5e9226739919971d91f053d7af4800198fcc01e485f4b45d162efd8c02c895",
+    "nonce": 0,
+    "sha3Uncles": null,
+    // log的布隆过滤器值
+    "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+    "transactionsRoot": "0x36865bfa3815734f1efe84399a34a4850d5d61036ef31f1316761b8cf590df9b",
+    // 状态根哈希
+    "stateRoot": "0x47936c2041d091a19b86588562d40be4686c15ed918bdb0718eef1a638649baf",
+    "receiptsRoot": "0xfc049802936de9da8138f4f8efe49bf049d3b8be13c908bc0c67c7c2baf75163",
+    "author": null,
+    // 共识节点序号
+    "sealer": "0x1",
+    "mixHash": null,
+    // 附加数据
+    "extraData": [],
+    // 区块中允许的gas最大值
+    "gasLimit": 0,
+    // 区块中所有交易消耗的gas
+    "gasUsed": 0,
+    // 区块时间戳
+    "timestamp": 1605099514670,
+    // 交易列表
+    "transactions": [
+      {
+        // 交易哈希
+        "hash": "0xaade516407c66110315bc7be2b0e8c7785619338df61c1e06dd68d30bf10c948",
+        // 交易的nonce值
+        "nonce": 1.535965128333624e+75,
+        // 包含该交易的区块哈希
+        "blockHash": "0x89ace100600382e87caa11007c9bbb601b4e2c59e286de69ac5f18fb5aaaf481",
+        // 包含该交易的区块高度
+        "blockNumber": 1,
+        // 交易的序号
+        "transactionIndex": 0,
+        // 发送者的地址
+        "from": "0xd0596545d623270e0ea531a8ade61f1c87ed338c",
+        // 接收者的地址，创建合约交易的该值为0x0000000000000000000000000000000000000000
+        "to": null,
+        // 转移的值
+        "value": 0,
+        // 发送者提供的gas的价格
+        "gasPrice": 100000000,
+        // 发送者提供的gas
+        "gas": 100000000,
+        // 交易的输入
+        "input": "0xxxx",
+        "creates": null,
+        "publicKey": null,
+        "raw": null,
+        "r": null,
+        "s": null,
+        "v": 0,
+        "nonceRaw": "1535965128333624051747207101758648597983133507894685428908599813835539246127",
+        "gasRaw": "100000000",
+        "valueRaw": "0",
+        "gasPriceRaw": "100000000",
+        "blockNumberRaw": "1",
+        "transactionIndexRaw": "0"
+      }
+    ],
+    "uncles": null,
+    // 共识节点列表
+    "sealerList": [
+ "18568c1fd1d736697687dfdc0d7f09df4edba8192ed7520ca9c1ca69be2b6483024f6cf54ff2fb87012ecc6200a3cfe5a83888adac68ac746ae0dfce1df65373",  "c547fdabb8feca63c71dc971c4a9f2ab1b855be11b63bc47a089f1c136d205790950a29e0a2f0ae26bf3be9c168b479e17d94f5263bf87c831734c7ca3d49915"
+    ],
+    "numberRaw": "1",
+    "gasLimitRaw": "0",
+    "timestampRaw": "1605099514670",
+    "nonceRaw": "0",
+    "gasUsedRaw": "0"
+  }
+}
+```
+
+### 5.4. 获取群组交易数
+
+#### 接口描述
+
+> 获取群组交易数，返回获取群组交易数和最新块高
+
+#### 接口URL
+
+**http://localhost:5003/WeBASE-Transaction/front/getTotalTransactionCount/{chainId}/{groupId}**
+
+#### 调用方法
+
+HTTP GET
+
+#### 请求参数
+
+**1）参数表**
+
+| **序号** | **中文** | **参数名** | **类型** | **最大长度** | **必填** | **说明** |
+| -------- | -------- | ---------- | -------- | ------------ | -------- | -------- |
+| 1        | 链编号   | chainId    | int      |              | 是       |          |
+| 2        | 群组编号 | groupId    | int      |              | 是       |          |
+
+**2）数据格式**
+
+```
+http://localhost:5003/WeBASE-Transaction/front/getTotalTransactionCount/3/3
+```
+
+#### 响应参数
+
+**1）参数表**
+
+| **序号** | **中文** | **参数名** | **类型** | **最大长度** | **必填** | **说明**          |
+| -------- | -------- | ---------- | -------- | ------------ | -------- | ----------------- |
+| 1        | 返回码   | code       | String   |              | 是       | 返回码信息请附录1 |
+| 2        | 提示信息 | message    | String   |              | 是       |                   |
+| 3        | 返回数据 | data       | Object   |              | 是       |                   |
+
+**2）数据格式**
+
+```
+{
+  "code": 0,
+  "message": "success",
+  "data": {
+    // 交易总数
+    "txSum": 2,
+    // 区块高度
+    "blockNumber": 2
+  }
+}
+```
+
+### 5.5. 获取已连接的p2p节点信息
+
+#### 接口描述
+
+> 已连接的p2p节点信息
+
+#### 接口URL
+
+**http://localhost:5003/WeBASE-Transaction/front/getPeers/{chainId}/{groupId}**
+
+#### 调用方法
+
+HTTP GET
+
+#### 请求参数
+
+**1）参数表**
+
+| **序号** | **中文** | **参数名** | **类型** | **最大长度** | **必填** | **说明** |
+| -------- | -------- | ---------- | -------- | ------------ | -------- | -------- |
+| 1        | 链编号   | chainId    | int      |              | 是       |          |
+| 2        | 群组编号 | groupId    | int      |              | 是       |          |
+
+**2）数据格式**
+
+```
+http://localhost:5003/WeBASE-Transaction/front/getPeers/3/3
+```
+
+#### 响应参数
+
+**1）参数表**
+
+| **序号** | **中文** | **参数名** | **类型** | **最大长度** | **必填** | **说明**          |
+| -------- | -------- | ---------- | -------- | ------------ | -------- | ----------------- |
+| 1        | 返回码   | code       | String   |              | 是       | 返回码信息请附录1 |
+| 2        | 提示信息 | message    | String   |              | 是       |                   |
+| 3        | 返回数据 | data       | Object   |              | 是       |                   |
+
+**2）数据格式**
+
+```
+{
+  "code": 0,
+  "message": "success",
+  "data": [
+    {
+      // 节点关注的topic信息
+      "topic": null,
+      // 节点连接的ip和端口
+      "ipandPort": "10.107.119.91:30300",
+      // 节点的ID
+      "NodeID": "18568c1fd1d736697687dfdc0d7f09df4edba8192ed7520ca9c1ca69be2b6483024f6cf54ff2fb87012ecc6200a3cfe5a83888adac68ac746ae0dfce1df65373"
+    }
+  ]
+}
+```
+
+### 5.6. 获取节点本身和已连接的p2p节点列表
+
+#### 接口描述
+
+> 返回节点本身和已连接的p2p节点列表
+
+#### 接口URL
+
+**http://localhost:5003/WeBASE-Transaction/front/getNodeIdList/{chainId}/{groupId}**
+
+#### 调用方法
+
+HTTP GET
+
+#### 请求参数
+
+**1）参数表**
+
+| **序号** | **中文** | **参数名** | **类型** | **最大长度** | **必填** | **说明** |
+| -------- | -------- | ---------- | -------- | ------------ | -------- | -------- |
+| 1        | 链编号   | chainId    | int      |              | 是       |          |
+| 2        | 群组编号 | groupId    | int      |              | 是       |          |
+
+**2）数据格式**
+
+```
+http://localhost:5003/WeBASE-Transaction/front/getNodeIdList/3/3
+```
+
+#### 响应参数
+
+**1）参数表**
+
+| **序号** | **中文** | **参数名** | **类型** | **最大长度** | **必填** | **说明**                        |
+| -------- | -------- | ---------- | -------- | ------------ | -------- | ------------------------------- |
+| 1        | 返回码   | code       | String   |              | 是       | 返回码信息请附录1               |
+| 2        | 提示信息 | message    | String   |              | 是       |                                 |
+| 3        | 返回数据 | data       | Object   |              | 是       | 节点本身和已连接p2p节点的ID列表 |
+
+**2）数据格式**
+
+```
+{
+  "code": 0,
+  "message": "success",
+  "data": [
+ "c547fdabb8feca63c71dc971c4a9f2ab1b855be11b63bc47a089f1c136d205790950a29e0a2f0ae26bf3be9c168b479e17d94f5263bf87c831734c7ca3d49915",
+ "18568c1fd1d736697687dfdc0d7f09df4edba8192ed7520ca9c1ca69be2b6483024f6cf54ff2fb87012ecc6200a3cfe5a83888adac68ac746ae0dfce1df65373"
+  ]
+}
+```
+
+### 5.7. 获取群组内的共识节点和观察节点列表
+
+#### 接口描述
+
+> 获取群组内的共识节点和观察节点列表
+
+#### 接口URL
+
+**http://localhost:5003/WeBASE-Transaction/front/getGroupPeers/{chainId}/{groupId}**
+
+#### 调用方法
+
+HTTP GET
+
+#### 请求参数
+
+**1）参数表**
+
+| **序号** | **中文** | **参数名** | **类型** | **最大长度** | **必填** | **说明** |
+| -------- | -------- | ---------- | -------- | ------------ | -------- | -------- |
+| 1        | 链编号   | chainId    | int      |              | 是       |          |
+| 2        | 群组编号 | groupId    | int      |              | 是       |          |
+
+**2）数据格式**
+
+```
+http://localhost:5003/WeBASE-Transaction/front/getGroupPeers/3/3
+```
+
+#### 响应参数
+
+**1）参数表**
+
+| **序号** | **中文** | **参数名** | **类型** | **最大长度** | **必填** | **说明**                       |
+| -------- | -------- | ---------- | -------- | ------------ | -------- | ------------------------------ |
+| 1        | 返回码   | code       | String   |              | 是       | 返回码信息请附录1              |
+| 2        | 提示信息 | message    | String   |              | 是       |                                |
+| 3        | 返回数据 | data       | Object   |              | 是       | 群组内的共识节点和观察节点列表 |
+
+**2）数据格式**
+
+```
+{
+  "code": 0,
+  "message": "success",
+  "data": [
+ "18568c1fd1d736697687dfdc0d7f09df4edba8192ed7520ca9c1ca69be2b6483024f6cf54ff2fb87012ecc6200a3cfe5a83888adac68ac746ae0dfce1df65373",
+ "c547fdabb8feca63c71dc971c4a9f2ab1b855be11b63bc47a089f1c136d205790950a29e0a2f0ae26bf3be9c168b479e17d94f5263bf87c831734c7ca3d49915"
+  ]
+}
+```
+
+### 5.8. 获取群组内的观察节点列表
+
+#### 接口描述
+
+> 获取群组内的观察节点列表
+
+#### 接口URL
+
+**http://localhost:5003/WeBASE-Transaction/front/getObserverList/{chainId}/{groupId}**
+
+#### 调用方法
+
+HTTP GET
+
+#### 请求参数
+
+**1）参数表**
+
+| **序号** | **中文** | **参数名** | **类型** | **最大长度** | **必填** | **说明** |
+| -------- | -------- | ---------- | -------- | ------------ | -------- | -------- |
+| 1        | 链编号   | chainId    | int      |              | 是       |          |
+| 2        | 群组编号 | groupId    | int      |              | 是       |          |
+
+**2）数据格式**
+
+```
+http://localhost:5003/WeBASE-Transaction/front/getObserverList/3/3
+```
+
+#### 响应参数
+
+**1）参数表**
+
+| **序号** | **中文** | **参数名** | **类型** | **最大长度** | **必填** | **说明**             |
+| -------- | -------- | ---------- | -------- | ------------ | -------- | -------------------- |
+| 1        | 返回码   | code       | String   |              | 是       | 返回码信息请附录1    |
+| 2        | 提示信息 | message    | String   |              | 是       |                      |
+| 3        | 返回数据 | data       | Object   |              | 是       | 群组内的观察节点列表 |
+
+**2）数据格式**
+
+```
+{
+  "code": 0,
+  "message": "success",
+  "data": []
+}
+```
+
+### 5.9. 获取群组内的同步状态信息
+
+#### 接口描述
+
+> 获取群组内的同步状态信息
+
+#### 接口URL
+
+**http://localhost:5003/WeBASE-Transaction/front/getSyncStatus/{chainId}/{groupId}**
+
+#### 调用方法
+
+HTTP GET
+
+#### 请求参数
+
+**1）参数表**
+
+| **序号** | **中文** | **参数名** | **类型** | **最大长度** | **必填** | **说明** |
+| -------- | -------- | ---------- | -------- | ------------ | -------- | -------- |
+| 1        | 链编号   | chainId    | int      |              | 是       |          |
+| 2        | 群组编号 | groupId    | int      |              | 是       |          |
+
+**2）数据格式**
+
+```
+http://localhost:5003/WeBASE-Transaction/front/getSyncStatus/3/3
+```
+
+#### 响应参数
+
+**1）参数表**
+
+| **序号** | **中文** | **参数名** | **类型** | **最大长度** | **必填** | **说明**          |
+| -------- | -------- | ---------- | -------- | ------------ | -------- | ----------------- |
+| 1        | 返回码   | code       | String   |              | 是       | 返回码信息请附录1 |
+| 2        | 提示信息 | message    | String   |              | 是       |                   |
+| 3        | 返回数据 | data       | Object   |              | 是       |                   |
+
+**2）数据格式**
+
+```
+{
+  "code": 0,
+  "message": "success",
+  "data": {
+    // 最新区块高度
+    "blockNumber": 2,
+    // 创世块哈希
+    "genesisHash": "0e5e9226739919971d91f053d7af4800198fcc01e485f4b45d162efd8c02c895",
+    // 正在同步标志
+    "isSyncing": false,
+    // 最新区块哈希
+    "latestHash": "4092d4a50e4f56ad50162a0db31daeb2b8de052e1242d8793fda46c430968fd7",
+    // 节点的ID
+    "nodeId": "18568c1fd1d736697687dfdc0d7f09df4edba8192ed7520ca9c1ca69be2b6483024f6cf54ff2fb87012ecc6200a3cfe5a83888adac68ac746ae0dfce1df65373",
+    // 协议ID号
+    "protocolId": 196617,
+    // 交易池中交易的数量
+    "txPoolSize": "0",
+    // 已连接的指定群组内p2p节点
+    "peers": [
+      {
+        // 最新区块高度
+        "blockNumber": 2,
+        // 创始区块哈希
+        "genesisHash": "0e5e9226739919971d91f053d7af4800198fcc01e485f4b45d162efd8c02c895",
+        // 最新块哈希
+        "latestHash": "4092d4a50e4f56ad50162a0db31daeb2b8de052e1242d8793fda46c430968fd7",
+        // 节点的ID
+        "nodeId": "c547fdabb8feca63c71dc971c4a9f2ab1b855be11b63bc47a089f1c136d205790950a29e0a2f0ae26bf3be9c168b479e17d94f5263bf87c831734c7ca3d49915"
+      }
+    ]
+  }
 }
 ```
 
