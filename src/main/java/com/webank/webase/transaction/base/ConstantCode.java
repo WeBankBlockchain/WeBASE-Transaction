@@ -36,9 +36,11 @@ public interface ConstantCode {
     RetCode SIGN_USERID_ERROR = RetCode.mark(203201, "signUserId check failed");
     RetCode DATA_SIGN_ERROR = RetCode.mark(203202, "data request sign error");
     RetCode REQUEST_SIGN_EXCEPTION = RetCode.mark(203203, "request sign server exception");
+    RetCode INVALID_ENCRYPT_TYPE = RetCode.mark(203204, "invalid encrypt type");
 
     // front
     RetCode REQUEST_NODE_EXCEPTION = RetCode.mark(203301, "request node exception");
     RetCode REQUEST_FRONT_FAIL = RetCode.mark(203302, "request front fail");
     RetCode FRONT_LIST_NOT_FOUNT = RetCode.mark(203303, "not fount any front");
+    RetCode AVAILABLE_FRONT_URL_IS_NULL = RetCode.mark(203304, "Available front url is empty, check front status");
 }

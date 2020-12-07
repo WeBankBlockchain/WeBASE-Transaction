@@ -33,7 +33,6 @@ import java.util.Objects;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -105,12 +104,8 @@ public class FrontRestTools {
             URI_CHECK_NODE_PROCESS, URI_GET_GROUP_SIZE_INFOS);
 
 
-    @Qualifier(value = "genericRestTemplate")
     @Autowired
-    private RestTemplate genericRestTemplate;
-    @Qualifier(value = "deployRestTemplate")
-    @Autowired
-    private RestTemplate deployRestTemplate;
+    private RestTemplate restTemplate;
     @Autowired
     private Constants cproperties;
     @Autowired
@@ -153,15 +148,13 @@ public class FrontRestTools {
             throw new BaseException(ConstantCode.FRONT_LIST_NOT_FOUNT);
         }
         ArrayList<FrontGroup> list = new ArrayList<>(frontList);
-        RestTemplate restTemplate = caseRestemplate(uri);
-
         while (list != null && list.size() > 0) {
             String url = buildFrontUrl(list, uri, method);// build url
             log.info("restTemplateExchange url:{}", url);
             try {
                 HttpEntity entity = buildHttpEntity(param);// build entity
                 if (null == restTemplate) {
-                    log.error("fail restTemplateExchange, rest is null. groupId:{} uri:{}", chainId,
+                    log.error("fail restTemplateExchange, restTemplate is null. groupId:{} uri:{}", chainId,
                             uri);
                     throw new BaseException(ConstantCode.SYSTEM_ERROR);
                 }
@@ -173,13 +166,13 @@ public class FrontRestTools {
                 if (isServiceSleep(url, method.toString())) {
                     throw ex;
                 }
-                log.info("continue next front", ex);
+                log.info("continue next front.");
                 continue;
             } catch (HttpStatusCodeException e) {
                 errorFormat(e.getResponseBodyAsString());
             }
         }
-        return null;
+        throw new BaseException(ConstantCode.REQUEST_FRONT_FAIL);
     }
 
     /**
@@ -283,8 +276,8 @@ public class FrontRestTools {
             }
             return url;
         }
-        log.info("end buildFrontUrl. url is null");
-        return null;
+        log.error("end buildFrontUrl. url is null");
+        throw new BaseException(ConstantCode.AVAILABLE_FRONT_URL_IS_NULL);
     }
 
     /**
@@ -300,20 +293,6 @@ public class FrontRestTools {
         }
         HttpEntity requestEntity = new HttpEntity(paramStr, headers);
         return requestEntity;
-    }
-
-    /**
-     * case restTemplate by uri.
-     */
-    private RestTemplate caseRestemplate(String uri) {
-        if (StringUtils.isBlank(uri)) {
-            return null;
-        }
-        if (uri.contains(URI_CONTRACT_DEPLOY) || uri.contains(URI_MULTI_CONTRACT_COMPILE)
-                || uri.contains(URI_SIGNED_TRANSACTION)) {
-            return deployRestTemplate;
-        }
-        return genericRestTemplate;
     }
     
     /**

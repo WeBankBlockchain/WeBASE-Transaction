@@ -19,7 +19,6 @@ import com.webank.webase.transaction.base.ConstantCode;
 import com.webank.webase.transaction.base.ResponseEntity;
 import java.io.File;
 import lombok.extern.slf4j.Slf4j;
-import org.fisco.bcos.web3j.crypto.EncryptType;
 import org.fisco.bcos.web3j.crypto.Sign.SignatureData;
 import org.fisco.bcos.web3j.utils.Numeric;
 import org.springframework.http.HttpHeaders;
@@ -70,13 +69,13 @@ public class CommonUtils {
      * @param signatureData signatureData
      * @return
      */
-    public static SignatureData stringToSignatureData(String signatureData) {
+    public static SignatureData stringToSignatureData(String signatureData, int encryptType) {
         byte[] byteArr = Numeric.hexStringToByteArray(signatureData);
         byte[] signR = new byte[32];
         System.arraycopy(byteArr, 1, signR, 0, signR.length);
         byte[] signS = new byte[32];
         System.arraycopy(byteArr, 1 + signR.length, signS, 0, signS.length);
-        if (EncryptType.encryptType == 1) {
+        if (encryptType == 1) {
             byte[] pub = new byte[64];
             System.arraycopy(byteArr, 1 + signR.length + signS.length, pub, 0, pub.length);
             return new SignatureData(byteArr[0], signR, signS, pub);
@@ -90,9 +89,9 @@ public class CommonUtils {
      * 19/12/24 support guomi： add byte[] pub in signatureData
      * @param signatureData signatureData
      */
-    public static String signatureDataToString(SignatureData signatureData) {
+    public static String signatureDataToString(SignatureData signatureData, int encryptType) {
         byte[] byteArr;
-        if(EncryptType.encryptType == 1) {
+        if(encryptType == 1) {
             byteArr = new byte[1 + signatureData.getR().length + signatureData.getS().length + 64];
             byteArr[0] = signatureData.getV();
             System.arraycopy(signatureData.getR(), 0, byteArr, 1, signatureData.getR().length);

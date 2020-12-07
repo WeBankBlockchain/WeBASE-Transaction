@@ -14,6 +14,8 @@
 package com.webank.webase.transaction.frontinterface;
 
 import java.math.BigInteger;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -24,6 +26,7 @@ import org.fisco.bcos.web3j.protocol.core.methods.response.NodeVersion.Version;
 import org.fisco.bcos.web3j.protocol.core.methods.response.Transaction;
 import org.fisco.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import com.webank.webase.transaction.base.exception.BaseException;
@@ -41,6 +44,7 @@ public class FrontInterfaceService {
     @Autowired
     private FrontRestTools frontRestTools;
 
+    @Cacheable(cacheNames = "clientVersion")
     public Version getClientVersion(Integer chainId, Integer groupId) {
         Version result = frontRestTools.getForEntity(chainId, groupId,
                 FrontRestTools.URI_CLIENT_VERSION, Version.class);
@@ -135,12 +139,15 @@ public class FrontInterfaceService {
 
     public TransactionReceipt sendSignedTransaction(Integer chainId, Integer groupId,
             String signMsg, Boolean sync) {
+        Instant startTime = Instant.now();
         Map<String, Object> params = new HashMap<>();
         params.put("groupId", groupId);
         params.put("signedStr", signMsg);
         params.put("sync", sync);
         TransactionReceipt receipt = frontRestTools.postForEntity(chainId, groupId,
                 FrontRestTools.URI_SIGNED_TRANSACTION, params, TransactionReceipt.class);
+        log.info("sendSignedTransaction to front useTime: {}",
+                Duration.between(startTime, Instant.now()).toMillis());
         return receipt;
     }
 

@@ -22,14 +22,13 @@ import com.webank.webase.transaction.keystore.KeyStoreService;
 import com.webank.webase.transaction.keystore.entity.RspUserInfo;
 import com.webank.webase.transaction.trans.TransService;
 import com.webank.webase.transaction.util.ContractAbiUtil;
+import com.webank.webase.transaction.util.EncoderUtil;
 import com.webank.webase.transaction.util.JsonUtils;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.fisco.bcos.web3j.abi.FunctionEncoder;
 import org.fisco.bcos.web3j.abi.datatypes.Address;
 import org.fisco.bcos.web3j.abi.datatypes.Type;
-import org.fisco.bcos.web3j.crypto.EncryptType;
 import org.fisco.bcos.web3j.protocol.core.methods.response.AbiDefinition;
 import org.fisco.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,7 +55,7 @@ public class ContractService {
      * @param req parameter
      * @return
      */
-    public synchronized TransactionReceipt deploy(ReqDeployInfo req) throws Exception {
+    public TransactionReceipt deploy(ReqDeployInfo req) throws Exception {
         int chainId = req.getChainId();
         int groupId = req.getGroupId();
         // check sign user id
@@ -65,9 +64,6 @@ public class ContractService {
         if (rspUserInfo == null) {
             throw new BaseException(ConstantCode.SIGN_USERID_ERROR);
         }
-        // set encryptType
-        new EncryptType(rspUserInfo.getEncryptType());
-        log.info("deploy encryptType: {}", rspUserInfo.getEncryptType());
         // check parameters
         String contractAbi = JsonUtils.toJSONString(req.getContractAbi());
         List<Object> params = req.getFuncParam();
@@ -87,11 +83,11 @@ public class ContractService {
         String encodedConstructor = "";
         if (funcInputTypes.size() > 0) {
             List<Type> finalInputs = ContractAbiUtil.inputFormat(funcInputTypes, params);
-            encodedConstructor = FunctionEncoder.encodeConstructor(finalInputs);
+            encodedConstructor = EncoderUtil.encodeConstructor(finalInputs);
         }
         // data sign
         String data = req.getBytecodeBin() + encodedConstructor;
-        String signMsg = transService.signMessage(chainId, groupId, req.getSignUserId(), "", data);
+        String signMsg = transService.signMessage(chainId, groupId, req.getSignUserId(), rspUserInfo.getEncryptType(), "", data);
         if (StringUtils.isBlank(signMsg)) {
             throw new BaseException(ConstantCode.DATA_SIGN_ERROR);
         }

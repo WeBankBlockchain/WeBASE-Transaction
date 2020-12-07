@@ -21,8 +21,11 @@ import com.webank.webase.transaction.util.CommonUtils;
 import com.webank.webase.transaction.util.JsonUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import java.time.Duration;
+import java.time.Instant;
 import javax.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import org.fisco.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -53,8 +56,12 @@ public class ContractController extends BaseController {
     @PostMapping("/deploy")
     public ResponseEntity deploy(@Valid @RequestBody ReqDeployInfo deployInfo, BindingResult result)
             throws Exception {
+        Instant startTime = Instant.now();
         log.info("deploy start. deployInfo:{}", JsonUtils.toJSONString(deployInfo));
         checkBindResult(result);
-        return CommonUtils.buildSuccessRsp(contractService.deploy(deployInfo));
+        TransactionReceipt transactionReceipt = contractService.deploy(deployInfo);
+        log.info("deploy end. useTime: {}",
+                Duration.between(startTime, Instant.now()).toMillis());
+        return CommonUtils.buildSuccessRsp(transactionReceipt);
     }
 }

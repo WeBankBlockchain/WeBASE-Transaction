@@ -2,7 +2,13 @@ server:
   port: 5003
   servlet:
     context-path: /WeBASE-Transaction
-
+  connection-timeout: 30000
+  tomcat:
+    max-threads: 800
+    max-connections: 10000
+    accept-count: 1000
+    min-spare-threads: 100
+    
 spring:
   # 数据库连接，需和WeBASE-Chain-Manager服务相同
   datasource:
@@ -15,11 +21,15 @@ constant:
   ## WeBASE-Sign签名服务ip端口
   signServer: 127.0.0.1:5004
 
-  ## front request
-  httpTimeOut: 5000
-  contractDeployTimeOut: 30000
+  ## http request
+  httpReadTimeOut: 30000
+  httpConnectTimeOut: 30000
+  restTemplateMaxTotal: 5000
+  restTemplateMaxPerRoute: 1000
+  KeepAliveTimeout: 30000
+  keepAliveRequests: 10000
   maxRequestFail: 3
-  sleepWhenHttpMaxFail: 60000
+  sleepWhenHttpMaxFail: 2000
   frontGroupCacheClearTaskCron: 0 0 1 * * ? 
   
 mybatis:
