@@ -1459,18 +1459,19 @@ http://localhost:5003/WeBASE-Transaction/front/getSyncStatus/3/3
 
 ### 1. 返回码信息列表
 
-| Code   | message                       |      | 描述                 |
-| ------ | ----------------------------- | ---- | -------------------- |
-| 0      | success                       |      | 正常                 |
-| 103001 | system error                  |      | 系统异常             |
-| 103002 | param valid fail              |      | 参数校验异常         |
-| 203101 | contract funcParam is error   |      | 合约方法参数错误     |
-| 203102 | function is not exists        |      | 方法名不存在         |
-| 203103 | abi parse error               |      | abi解析错误          |
-| 203104 | contract deploy fail          |      | 合约部署失败         |
-| 203201 | signUserId check failed       |      | 签名用户编号校验失败 |
-| 203202 | data request sign error       |      | 数据请求签名异常     |
-| 203203 | request sign server exception |      | 请求签名服务异常     |
-| 203301 | request node exception        |      | 节点请求失败         |
-| 203302 | request front fail            |      | 前置请求失败         |
-| 203303 | not fount any front           |      | 找不到前置           |
+| Code   | message                                          | 描述                             |
+| ------ | ------------------------------------------------ | -------------------------------- |
+| 0      | success                                          | 正常                             |
+| 103001 | system error                                     | 系统异常                         |
+| 103002 | param valid fail                                 | 参数校验异常                     |
+| 203101 | contract funcParam is error                      | 合约方法参数错误                 |
+| 203102 | function is not exists                           | 方法名不存在                     |
+| 203103 | abi parse error                                  | abi解析错误                      |
+| 203104 | contract deploy fail                             | 合约部署失败                     |
+| 203201 | signUserId check failed                          | 签名用户编号校验失败             |
+| 203202 | data request sign error                          | 数据请求签名异常                 |
+| 203203 | request sign server exception                    | 请求签名服务异常                 |
+| 203301 | request node exception                           | 节点请求失败                     |
+| 203302 | request front fail                               | 前置请求失败                     |
+| 203303 | not fount any front                              | 找不到前置                       |
+| 203304 | Available front url is empty, check front status | 没有有效前置，请检查节点前置状态 |
