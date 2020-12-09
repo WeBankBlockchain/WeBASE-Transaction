@@ -23,8 +23,8 @@ public interface ConstantCode {
     RetCode RET_SUCCEED = RetCode.mark(0, "success");
 
     // system error
-    RetCode SYSTEM_ERROR = RetCode.mark(103001, "system error");
-    RetCode PARAM_VAILD_FAIL = RetCode.mark(103002, "param valid fail");
+    RetCode SYSTEM_ERROR = RetCode.mark(103101, "transaction server exception");
+    RetCode PARAM_VAILD_FAIL = RetCode.mark(103102, "transaction server param valid fail");
 
     // contract
     RetCode IN_FUNCPARAM_ERROR = RetCode.mark(203101, "contract funcParam is error");
