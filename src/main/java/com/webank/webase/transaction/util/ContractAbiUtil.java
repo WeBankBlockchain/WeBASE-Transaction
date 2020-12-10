@@ -14,6 +14,7 @@
 
 package com.webank.webase.transaction.util;
 
+import com.webank.webase.transaction.base.ConstantCode;
 import com.webank.webase.transaction.base.exception.BaseException;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -22,6 +23,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import lombok.extern.slf4j.Slf4j;
 import org.fisco.bcos.web3j.abi.EventValues;
 import org.fisco.bcos.web3j.abi.TypeReference;
 import org.fisco.bcos.web3j.abi.datatypes.DynamicArray;
@@ -38,6 +40,7 @@ import org.fisco.bcos.web3j.tx.txdecode.ConstantProperties;
  * ContractAbiUtil.
  * 
  */
+@Slf4j
 public class ContractAbiUtil {
 
     /**
@@ -179,7 +182,13 @@ public class ContractAbiUtil {
             Object input = null;
             if (funcInputTypes.get(i).indexOf("[") != -1
                     && funcInputTypes.get(i).indexOf("]") != -1) {
-                List<Object> arrList = (List<Object>) params.get(i);
+                List<Object> arrList;
+                try {
+                    arrList = (List<Object>) params.get(i);
+                } catch (ClassCastException e) {
+                    log.error("params of index {} parse List error: {}", i, params.get(i));
+                    throw new BaseException(ConstantCode.IN_FUNCPARAM_ERROR);
+                }
                 inputType = ContractTypeUtil.getType(
                         funcInputTypes.get(i).substring(0, funcInputTypes.get(i).indexOf("[")));
                 List<Type> arrParams = new ArrayList<>();
