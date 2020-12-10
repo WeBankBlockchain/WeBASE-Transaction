@@ -29,7 +29,7 @@ constant:
   KeepAliveTimeout: 30000
   keepAliveRequests: 10000
   maxRequestFail: 3
-  sleepWhenHttpMaxFail: 2000
+  sleepWhenHttpMaxFail: 60000
   frontGroupCacheClearTaskCron: 0 0 1 * * ? 
   
 mybatis:
