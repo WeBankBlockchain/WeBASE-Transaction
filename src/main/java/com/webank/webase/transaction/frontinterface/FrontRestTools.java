@@ -142,7 +142,7 @@ public class FrontRestTools {
     @SuppressWarnings("rawtypes")
     private <T> T restTemplateExchange(Integer chainId, Integer groupId, String uri,
             HttpMethod method, Object param, Class<T> clazz) {
-        List<FrontGroup> frontList = frontGroupMapCache.getListByMultiId(chainId, groupId);
+        List<FrontGroup> frontList = frontGroupMapCache.getFrontGroupList(chainId, groupId);
         if (frontList == null || frontList.size() == 0) {
             log.error("fail restTemplateExchange. frontList is empty");
             throw new BaseException(ConstantCode.FRONT_LIST_NOT_FOUNT);

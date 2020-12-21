@@ -41,6 +41,7 @@ public class Constants {
     
     // http request
     private String signServer = "127.0.0.1:5004";
+    private String frontServer = "";
     private int httpReadTimeOut = 30000;
     private int httpConnectTimeOut = 30000;
     private int restTemplateMaxTotal = 2000;
