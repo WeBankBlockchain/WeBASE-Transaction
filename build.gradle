@@ -60,8 +60,7 @@ List jackson = [
 ]
 
 List mysql = [
-    'mysql:mysql-connector-java:8.0.13',
-    'org.mybatis:mybatis:3.2.8',
+    'mysql:mysql-connector-java:8.0.22',
     'org.mybatis.spring.boot:mybatis-spring-boot-starter:2.0.0'
 ]
 
@@ -70,6 +69,7 @@ dependencies {
     
     compile "org.apache.commons:commons-lang3:3.8.1"
     compile "org.fisco-bcos:web3sdk:2.5.1"
+    compile "org.bouncycastle:bcprov-jdk15on:1.67"
     
     compile lombok
     annotationProcessor lombok

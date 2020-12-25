@@ -16,7 +16,9 @@ package com.webank.webase.transaction.contract;
 
 import com.webank.webase.transaction.base.ConstantCode;
 import com.webank.webase.transaction.base.exception.BaseException;
+import com.webank.webase.transaction.contract.entity.ReqContractCompile;
 import com.webank.webase.transaction.contract.entity.ReqDeployInfo;
+import com.webank.webase.transaction.contract.entity.RspContractCompile;
 import com.webank.webase.transaction.frontinterface.FrontInterfaceService;
 import com.webank.webase.transaction.keystore.KeyStoreService;
 import com.webank.webase.transaction.keystore.entity.RspUserInfo;
@@ -24,6 +26,7 @@ import com.webank.webase.transaction.trans.TransService;
 import com.webank.webase.transaction.util.ContractAbiUtil;
 import com.webank.webase.transaction.util.EncoderUtil;
 import com.webank.webase.transaction.util.JsonUtils;
+import java.io.IOException;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -87,7 +90,8 @@ public class ContractService {
         }
         // data sign
         String data = req.getBytecodeBin() + encodedConstructor;
-        String signMsg = transService.signMessage(chainId, groupId, req.getSignUserId(), rspUserInfo.getEncryptType(), "", data);
+        String signMsg = transService.signMessage(chainId, groupId, req.getSignUserId(),
+                rspUserInfo.getEncryptType(), "", data);
         if (StringUtils.isBlank(signMsg)) {
             throw new BaseException(ConstantCode.DATA_SIGN_ERROR);
         }
@@ -101,5 +105,17 @@ public class ContractService {
             throw new BaseException(ConstantCode.CONTRACT_DEPLOY_FAIL);
         }
         return receipt;
+    }
+
+    /**
+     * contract compile.
+     * 
+     * @param req parameter
+     * @return
+     */
+    public RspContractCompile contractCompile(ReqContractCompile req)
+            throws BaseException, IOException {
+        RspContractCompile compileInfo = frontInterfaceService.contractCompile(req);
+        return compileInfo;
     }
 }

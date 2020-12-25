@@ -13,6 +13,13 @@
  */
 package com.webank.webase.transaction.frontinterface;
 
+import com.webank.webase.transaction.base.exception.BaseException;
+import com.webank.webase.transaction.contract.entity.ReqContractCompile;
+import com.webank.webase.transaction.contract.entity.RspContractCompile;
+import com.webank.webase.transaction.frontinterface.entity.PeerInfo;
+import com.webank.webase.transaction.frontinterface.entity.SyncStatus;
+import com.webank.webase.transaction.frontinterface.entity.TransactionCount;
+import com.webank.webase.transaction.util.JsonUtils;
 import java.math.BigInteger;
 import java.time.Duration;
 import java.time.Instant;
@@ -20,7 +27,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
+import lombok.extern.slf4j.Slf4j;
 import org.fisco.bcos.web3j.protocol.core.methods.response.BcosBlock.Block;
 import org.fisco.bcos.web3j.protocol.core.methods.response.NodeVersion.Version;
 import org.fisco.bcos.web3j.protocol.core.methods.response.Transaction;
@@ -28,14 +35,6 @@ import org.fisco.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
-
-import com.webank.webase.transaction.base.exception.BaseException;
-import com.webank.webase.transaction.frontinterface.entity.PeerInfo;
-import com.webank.webase.transaction.frontinterface.entity.SyncStatus;
-import com.webank.webase.transaction.frontinterface.entity.TransactionCount;
-import com.webank.webase.transaction.util.JsonUtils;
-
-import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
@@ -91,7 +90,7 @@ public class FrontInterfaceService {
     }
 
     public List<PeerInfo> getPeers(Integer chainId, Integer groupId) {
-        PeerInfo[] result =  frontRestTools.getForEntity(chainId, groupId, FrontRestTools.URI_PEERS,
+        PeerInfo[] result = frontRestTools.getForEntity(chainId, groupId, FrontRestTools.URI_PEERS,
                 PeerInfo[].class);
         return Arrays.asList(result);
     }
@@ -154,6 +153,15 @@ public class FrontInterfaceService {
     public Object sendQueryTransaction(Integer chainId, Integer groupId, Object params) {
         Object result = frontRestTools.postForEntity(chainId, groupId,
                 FrontRestTools.URI_QUERY_TRANSACTION, params, Object.class);
+        return result;
+    }
+
+    public RspContractCompile contractCompile(ReqContractCompile req) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("contractName", req.getContractName());
+        params.put("solidityBase64", req.getSolidityBase64());
+        RspContractCompile result = frontRestTools.postForEntity(req.getChainId(), req.getGroupId(),
+                FrontRestTools.URI_MULTI_CONTRACT_COMPILE, params, RspContractCompile.class);
         return result;
     }
 }

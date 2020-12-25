@@ -16,7 +16,9 @@ package com.webank.webase.transaction.contract;
 
 import com.webank.webase.transaction.base.BaseController;
 import com.webank.webase.transaction.base.ResponseEntity;
+import com.webank.webase.transaction.contract.entity.ReqContractCompile;
 import com.webank.webase.transaction.contract.entity.ReqDeployInfo;
+import com.webank.webase.transaction.contract.entity.RspContractCompile;
 import com.webank.webase.transaction.util.CommonUtils;
 import com.webank.webase.transaction.util.JsonUtils;
 import io.swagger.annotations.Api;
@@ -60,8 +62,27 @@ public class ContractController extends BaseController {
         log.info("deploy start. deployInfo:{}", JsonUtils.toJSONString(deployInfo));
         checkBindResult(result);
         TransactionReceipt transactionReceipt = contractService.deploy(deployInfo);
-        log.info("deploy end. useTime: {}",
-                Duration.between(startTime, Instant.now()).toMillis());
+        log.info("deploy end. useTime: {}", Duration.between(startTime, Instant.now()).toMillis());
         return CommonUtils.buildSuccessRsp(transactionReceipt);
+    }
+
+    /**
+     * contract compile.
+     * 
+     * @param req parameter
+     * @param result checkResult
+     * @return
+     */
+    @ApiOperation(value = "contract compile", notes = "contract compile")
+    @PostMapping("/compile")
+    public ResponseEntity contractCompile(@Valid @RequestBody ReqContractCompile req,
+            BindingResult result) throws Exception {
+        Instant startTime = Instant.now();
+        log.info("contractCompile start. req:{}", JsonUtils.toJSONString(req));
+        checkBindResult(result);
+        RspContractCompile compileInfo = contractService.contractCompile(req);
+        log.info("contractCompile end. useTime: {}",
+                Duration.between(startTime, Instant.now()).toMillis());
+        return CommonUtils.buildSuccessRsp(compileInfo);
     }
 }

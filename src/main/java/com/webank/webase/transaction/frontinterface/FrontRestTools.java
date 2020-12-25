@@ -73,7 +73,7 @@ public class FrontRestTools {
     public static final String URI_CLIENT_VERSION = "web3/clientVersion";
     public static final String FRONT_PERFORMANCE_RATIO = "performance";
     public static final String FRONT_PERFORMANCE_CONFIG = "performance/config";
-    public static final String URI_MULTI_CONTRACT_COMPILE = "contract/multiContractCompile";
+    public static final String URI_MULTI_CONTRACT_COMPILE = "contract/contractCompile";
     public static final String URI_CONTRACT_DEPLOY = "contract/deployWithSign";
     public static final String URI_SEND_TRANSACTION = "trans/handleWithSign";
     public static final String URI_SIGNED_TRANSACTION = "trans/signed-transaction";
