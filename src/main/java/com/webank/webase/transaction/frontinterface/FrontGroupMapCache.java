@@ -14,10 +14,13 @@
 package com.webank.webase.transaction.frontinterface;
 
 
+import com.webank.webase.transaction.base.Constants;
 import com.webank.webase.transaction.frontinterface.entity.FrontGroup;
 import com.webank.webase.transaction.repository.mapper.TbFrontGroupMapMapper;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
@@ -33,6 +36,8 @@ public class FrontGroupMapCache {
     private CacheManager cacheManager;
     @Autowired
     private TbFrontGroupMapMapper tbFrontGroupMapMapper;
+    @Autowired
+    private Constants constants;
 
     @Scheduled(cron = "${constant.frontGroupCacheClearTaskCron}")
     public void taskStart() {
@@ -47,13 +52,41 @@ public class FrontGroupMapCache {
         }
         log.info("end frontGroupCacheClearTask.");
     }
-
+    
+    /**
+     * getFrontGroupList.
+     */
+    @Cacheable(cacheNames = "frontGroup")
+    public List<FrontGroup> getFrontGroupList(int chainId, int groupId) {
+        List<FrontGroup> list = new ArrayList<>();
+        if (StringUtils.isBlank(constants.getFrontServer())) {
+            list = getListByMultiId(chainId, groupId);
+        } else {
+            list = getLocalConfig(chainId, groupId);
+        }
+        return list;
+    }
+    
     /**
      * getListByMultiId.
      */
-    @Cacheable(cacheNames = "frontGroup")
     public List<FrontGroup> getListByMultiId(int chainId, int groupId) {
         List<FrontGroup> list = tbFrontGroupMapMapper.selectByChainIdAndGroupId(chainId, groupId);
+        return list;
+    }
+    
+    /**
+     * getLocalConfig.
+     */
+    public List<FrontGroup> getLocalConfig(int chainId, int groupId) {
+        List<FrontGroup> list = new ArrayList<>();
+        String frontServer = constants.getFrontServer();
+        FrontGroup frontGroup = new FrontGroup();
+        frontGroup.setChainId(chainId);
+        frontGroup.setGroupId(groupId);
+        frontGroup.setFrontIp(frontServer.split(":")[0]);
+        frontGroup.setFrontPort(Integer.parseInt(frontServer.split(":")[1]));
+        list.add(frontGroup);
         return list;
     }
 }

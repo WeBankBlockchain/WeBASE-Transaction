@@ -73,7 +73,7 @@ public class FrontRestTools {
     public static final String URI_CLIENT_VERSION = "web3/clientVersion";
     public static final String FRONT_PERFORMANCE_RATIO = "performance";
     public static final String FRONT_PERFORMANCE_CONFIG = "performance/config";
-    public static final String URI_MULTI_CONTRACT_COMPILE = "contract/multiContractCompile";
+    public static final String URI_MULTI_CONTRACT_COMPILE = "contract/contractCompile";
     public static final String URI_CONTRACT_DEPLOY = "contract/deployWithSign";
     public static final String URI_SEND_TRANSACTION = "trans/handleWithSign";
     public static final String URI_SIGNED_TRANSACTION = "trans/signed-transaction";
@@ -142,7 +142,7 @@ public class FrontRestTools {
     @SuppressWarnings("rawtypes")
     private <T> T restTemplateExchange(Integer chainId, Integer groupId, String uri,
             HttpMethod method, Object param, Class<T> clazz) {
-        List<FrontGroup> frontList = frontGroupMapCache.getListByMultiId(chainId, groupId);
+        List<FrontGroup> frontList = frontGroupMapCache.getFrontGroupList(chainId, groupId);
         if (frontList == null || frontList.size() == 0) {
             log.error("fail restTemplateExchange. frontList is empty");
             throw new BaseException(ConstantCode.FRONT_LIST_NOT_FOUNT);
