@@ -18,6 +18,7 @@ import com.webank.webase.transaction.base.BaseController;
 import com.webank.webase.transaction.base.ResponseEntity;
 import com.webank.webase.transaction.base.exception.BaseException;
 import com.webank.webase.transaction.trans.entity.ReqQueryTransHandle;
+import com.webank.webase.transaction.trans.entity.ReqSendSignedInfo;
 import com.webank.webase.transaction.trans.entity.ReqSignedTransHandle;
 import com.webank.webase.transaction.trans.entity.ReqTransSendInfo;
 import com.webank.webase.transaction.trans.entity.TransResultDto;
@@ -132,5 +133,21 @@ public class TransController extends BaseController {
         log.info("sendQueryTransaction end. useTime: {}",
                 Duration.between(startTime, Instant.now()).toMillis());
         return CommonUtils.buildSuccessRsp(obj);
+    }
+    
+    @ApiOperation(value = "sendSigned")
+    @PostMapping("/sendSigned")
+    public ResponseEntity sendSigned(
+            @Valid @RequestBody ReqSendSignedInfo reqSendSignedInfo, BindingResult result)
+            throws Exception {
+        Instant startTime = Instant.now();
+        log.info("sendSigned start. startTime:{}", startTime.toEpochMilli());
+
+        checkBindResult(result);
+        TransResultDto transResultDto = transService.sendSigned(reqSendSignedInfo);
+
+        log.info("sendSigned end. useTime: {}",
+                Duration.between(startTime, Instant.now()).toMillis());
+        return CommonUtils.buildSuccessRsp(transResultDto);
     }
 }
