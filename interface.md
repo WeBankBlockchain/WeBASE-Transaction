@@ -235,7 +235,7 @@ HTTP POST
 | 2        | 提示信息     | message         | String   |              | 是       |                                   |
 | 3        | 返回数据     | data            | Object   |              | 是       |                                   |
 | 3.1      | 调用类型     | constant        | Bool     |              | 否       |                                   |
-| 3.2      | 查询信息     | queryInfo       | String   |              | 否       | Constant 为 true 时，该 字段有值  |
+| 3.2      | 查询信息     | queryInfo       | String   |              | 否       | Constant 为 true 时，该字段有值   |
 | 3.3      | 交易哈希     | transactionHash | String   |              | 否       | Constant 为 false 时， 该字段有值 |
 | 3.4      | 块哈希       | blockHash       | String   |              | 否       | Constant 为 false 时， 该字段有值 |
 | 3.5      | 块高         | blockNumber     | Int      |              | 否       | Constant 为 false 时， 该字段有值 |
@@ -632,6 +632,123 @@ HTTP POST
   "data": {
     "Hi,Welcome!"
   }
+}
+```
+
+### 2.6 已签名或编码交易请求接口 
+
+#### 接口描述
+
+调用此接口发送已签名或编码交易请求，数据上链或查询结果（合并2.4和2.5，数据上链默认同步调用）。
+
+#### 接口URL
+
+**http://localhost:5003/WeBASE-Transaction/trans/sendSigned**
+
+#### 调用方法
+
+HTTP POST
+
+#### 请求参数
+
+**1）参数表**
+
+| **序号** | **中文**             | **参数名**         | **类型**       | **最大长度** | **必填** | **说明**                                                     |
+| -------- | -------------------- | ------------------ | -------------- | ------------ | -------- | ------------------------------------------------------------ |
+| 1        | 链编号               | chainId            | int            |              | 是       |                                                              |
+| 2        | 群组编号             | groupId            | int            | 16           | 是       |                                                              |
+| 3        | 合约地址             | contractAddress    | String         |              | 是       |                                                              |
+| 4        | 方法Abi              | functionAbi        | List\<Object\> |              | 是       | JSON数组，所调用方法的Abi（备注：合约有重载方法时，传全部Abi会有问题） |
+| 5        | 调用方法名           | funcName           | String         |              | 是       |                                                              |
+| 6        | 已签名或已编码字符串 | signedOrEncodedStr | String         |              | 是       | 数据上链时传入已签名字符串，查询时传入已编码字符串           |
+
+**2）数据格式**
+
+```
+{
+  "contractAddress": "0x93a17e78d08e1a0d98269b3bf5656eaed2c2416c",
+  "funcName": "set",
+  "functionAbi": [{"constant":false,"inputs":[{"name":"n","type":"string"}],"name":"set","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"}],
+  "chainId": 1,
+  "groupId": 1,
+  "signedOrEncodedStr": "0xf8f0a001ce5bd3a15651f4445cad09639882dc2c1699b160e4d63e3f6466a769e380b58405f5e1008405f5e1008203f5944e67129bfff1495af3c1c29068983ec99978e56080b8644ed3885e0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000373737300000000000000000000000000000000000000000000000000000000000101801ca065e472e32c1db9bdd8cefdb92a937a111fc18ea9c5582b2800892bda9ee9d8aba00a02f060c06ef0506a865f967ffb4f80e240256081bfe7c0d45ecbd7fa0177c7"
+}
+```
+
+#### 响应参数
+
+**1）参数表**
+
+| **序号** | **中文**     | **参数名**      | **类型** | **最大长度** | **必填** | **说明**                          |
+| -------- | ------------ | --------------- | -------- | ------------ | -------- | --------------------------------- |
+| 1        | 返回码       | code            | String   |              | 是       | 返回码信息请附录1                 |
+| 2        | 提示信息     | message         | String   |              | 是       |                                   |
+| 3        | 返回数据     | data            | Object   |              | 是       |                                   |
+| 3.1      | 调用类型     | constant        | Bool     |              | 否       |                                   |
+| 3.2      | 查询信息     | queryInfo       | String   |              | 否       | Constant 为 true 时，该字段有值   |
+| 3.3      | 交易哈希     | transactionHash | String   |              | 否       | Constant 为 false 时， 该字段有值 |
+| 3.4      | 块哈希       | blockHash       | String   |              | 否       | Constant 为 false 时， 该字段有值 |
+| 3.5      | 块高         | blockNumber     | Int      |              | 否       | Constant 为 false 时， 该字段有值 |
+| 3.6      | Gas使用值    | gasUsed         | Int      |              | 否       | Constant 为 false 时， 该字段有值 |
+| 3.7      | 交易状态     | status          | String   |              | 否       | Constant 为 false 时， 该字段有值 |
+| 3.8      | 发送者的地址 | from            | String   |              | 否       | Constant 为 false 时， 该字段有值 |
+| 3.9      | 接收者的地址 | to              | String   |              | 否       | Constant 为 false 时， 该字段有值 |
+| 3.10     | 输入         | input           | String   |              | 否       | Constant 为 false 时， 该字段有值 |
+| 3.11     | 输出         | output          | String   |              | 否       | Constant 为 false 时， 该字段有值 |
+
+**2）数据格式**
+
+a.交易上链正常返回结果
+
+```
+{
+  "code": 0,
+  "message": "success",
+  "data": {
+    "constant": false,
+    "queryInfo": null,
+    "transactionHash": "0xa2045d0fefe6c74f3b664f5376373d3e38f508446d9095149902cac9dfbb7820",
+    "blockHash": "0x0c5861551e63603d2c423a5d536d1ba73a5a72371b82b2c8f96ae089426bf9d8",
+    "blockNumber": 7,
+    "gasUsed": 34991,
+    "status": "0x0",
+    "from": "0x0c77a8ccfdd5907f519f122b41f3dff14f659441",
+    "to": "0xf023e73fa55abe01d43805fffff57c2b004f8879",
+    "input": "0x4ed3885e000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000056365736869000000000000000000000000000000000000000000000000000000",
+    "output": "0x"
+  }
+}
+```
+
+b.交易查询正常返回结果
+
+```
+{
+  "code": 0,
+  "message": "success",
+  "data": {
+    "constant": true,
+    "queryInfo": "[ \"ceshi\" ]",
+    "transactionHash": null,
+    "blockHash": null,
+    "blockNumber": null,
+    "gasUsed": null,
+    "status": null,
+    "from": null,
+    "to": null,
+    "input": null,
+    "output": null
+  }
+}
+```
+
+c.异常返回结果示例（信息详情请参看附录1）
+
+```
+{
+  "code": 103001,
+  "message": "system error",
+  "data": null
 }
 ```
 

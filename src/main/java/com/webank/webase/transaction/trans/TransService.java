@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2020 the original author or authors.
+ * Copyright 2014-2021 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -23,6 +23,7 @@ import com.webank.webase.transaction.keystore.entity.EncodeInfo;
 import com.webank.webase.transaction.keystore.entity.EncryptType;
 import com.webank.webase.transaction.keystore.entity.RspUserInfo;
 import com.webank.webase.transaction.trans.entity.ContractFunction;
+import com.webank.webase.transaction.trans.entity.ReqSendSignedInfo;
 import com.webank.webase.transaction.trans.entity.ReqTransSendInfo;
 import com.webank.webase.transaction.trans.entity.TransResultDto;
 import com.webank.webase.transaction.util.CommonUtils;
@@ -131,6 +132,46 @@ public class TransService {
      */
     public Object getTransactionReceipt(int chainId, int groupId, String transHash) {
         return frontInterfaceService.getTransactionReceipt(chainId, groupId, transHash);
+    }
+
+    /**
+     * send signed transaction.
+     * 
+     * @param req parameter
+     * @return
+     */
+    public TransResultDto sendSigned(ReqSendSignedInfo req) throws Exception {
+        int chainId = req.getChainId();
+        int groupId = req.getGroupId();
+        // check function name
+        AbiDefinition abiDefinition = null;
+        try {
+            abiDefinition = ContractAbiUtil.getAbiDefinition(req.getFuncName(),
+                    JsonUtils.toJSONString(req.getFunctionAbi()));
+        } catch (Exception e) {
+            log.error("abi parse error. abi:{}", JsonUtils.toJSONString(req.getFunctionAbi()));
+            throw new BaseException(ConstantCode.ABI_PARSE_ERROR);
+        }
+        if (Objects.isNull(abiDefinition)) {
+            log.warn("transaction fail. func:{} is not existed", req.getFuncName());
+            throw new BaseException(ConstantCode.FUNCTION_NOT_EXISTS);
+        }
+
+        TransResultDto transResultDto = new TransResultDto();
+        if (abiDefinition.isConstant()) {
+            Object response = sendQueryTransaction(req.getSignedOrEncodedStr(),
+                    req.getContractAddress(), req.getFuncName(),
+                    JsonUtils.toJSONString(req.getFunctionAbi()), chainId, groupId);
+            transResultDto.setQueryInfo(JsonUtils.objToString(response));
+            transResultDto.setConstant(true);
+        } else {
+            // send transaction
+            TransactionReceipt receipt = frontInterfaceService.sendSignedTransaction(chainId,
+                    groupId, req.getSignedOrEncodedStr(), true);
+            BeanUtils.copyProperties(receipt, transResultDto);
+            transResultDto.setConstant(false);
+        }
+        return transResultDto;
     }
 
     public TransactionReceipt sendSignedTransaction(String signedStr, Boolean sync, int chainId,

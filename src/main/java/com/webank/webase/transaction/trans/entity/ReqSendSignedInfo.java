@@ -13,25 +13,28 @@
  */
 package com.webank.webase.transaction.trans.entity;
 
-import lombok.Builder;
-import lombok.Data;
-import lombok.experimental.Accessors;
-import org.fisco.bcos.web3j.abi.TypeReference;
-import org.fisco.bcos.web3j.abi.datatypes.Type;
-
+import java.util.ArrayList;
 import java.util.List;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+import lombok.Data;
 
 /**
- * abi's function information.
+ * transHandler interface parameter. handle transactions of send/call contract
  */
 @Data
-@Builder
-@Accessors(chain = true)
-public class ContractFunction {
-    String funcName;
-    Boolean constant;
-    List<String> inputList;
-    List<String> outputList;
-    List<Type> finalInputs;
-    List<TypeReference<?>> finalOutputs;
+public class ReqSendSignedInfo {
+    @NotNull
+    private Integer chainId;
+    @NotNull
+    private Integer groupId;
+    @NotBlank
+    private String signedOrEncodedStr;
+    @NotBlank
+    private String contractAddress;
+    @NotBlank
+    private String funcName;
+    @NotEmpty
+    private List<Object> functionAbi = new ArrayList<>();
 }
