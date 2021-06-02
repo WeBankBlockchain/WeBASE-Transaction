@@ -8,7 +8,7 @@
             group_id int(11) NOT NULL COMMENT '群组编号',
             uuid_stateless varchar(64) NOT NULL COMMENT '合约无状态交易业务流水号',
             uuid_deploy varchar(64) COMMENT '部署交易业务流水号',
-            contract_abi text NOT NULL COMMENT '合约abi',
+            contract_abi mediumtext NOT NULL COMMENT '合约abi',
             contract_address varchar(64) NOT NULL COMMENT '合约地址',
             func_name varchar(32) NOT NULL COMMENT '调用的合约方法名',
             func_param text COMMENT '合约方法的入参json',
