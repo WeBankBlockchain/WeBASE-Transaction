@@ -78,6 +78,7 @@ dependencies {
     compile "org.bouncycastle:bcprov-jdk15on:1.67"
     // cover old version
     compile 'org.yaml:snakeyaml:1.29'
+    compile 'org.apache.tomcat.embed:tomcat-embed-websocket:9.0.54'
 
     compile lombok
     annotationProcessor lombok
