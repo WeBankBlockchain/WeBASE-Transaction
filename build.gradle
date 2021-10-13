@@ -26,6 +26,12 @@ List springboot = [
     "org.springframework.boot:spring-boot-starter-log4j2:$springboot_version"
 ]
 
+// cover old version
+def spring_version="5.2.17.RELEASE"
+List spring = [
+    "org.springframework:spring-jcl:$spring_version",
+    "org.springframework:spring-tx:$spring_version"
+]
 List swagger = [
     'io.springfox:springfox-swagger2:2.8.0',
     'io.springfox:springfox-swagger-ui:2.8.0'
@@ -65,12 +71,14 @@ List mysql = [
 ]
 
 dependencies {
-    compile springboot,swagger,logger,jaxb,jackson,mysql
+    compile springboot,swagger,logger,jaxb,jackson,mysql,spring
     
     compile "org.apache.commons:commons-lang3:3.8.1"
     compile "org.fisco-bcos:web3sdk:2.5.1"
     compile "org.bouncycastle:bcprov-jdk15on:1.67"
-    
+    // cover old version
+    compile 'org.yaml:snakeyaml:1.29'
+
     compile lombok
     annotationProcessor lombok
 }
