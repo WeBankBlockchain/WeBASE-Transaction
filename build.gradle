@@ -66,7 +66,7 @@ List jackson = [
 ]
 
 List mysql = [
-    'mysql:mysql-connector-java:8.0.22',
+    'mysql:mysql-connector-java:8.0.26',
     'org.mybatis.spring.boot:mybatis-spring-boot-starter:2.0.0'
 ]
 
