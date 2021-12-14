@@ -13,9 +13,9 @@ targetCompatibility = 1.8
 // In this section you declare where to find the dependencies of your project
 repositories {
     maven { url "http://maven.aliyun.com/nexus/content/groups/public/"}
+    mavenCentral()
     maven { url 'https://dl.bintray.com/ethereum/maven/'}
     mavenLocal()
-    mavenCentral()
 }
 
 def springboot_version="2.1.16.RELEASE"
@@ -23,7 +23,7 @@ List springboot = [
     "org.springframework.boot:spring-boot-starter-web:$springboot_version",
     "org.springframework.boot:spring-boot-autoconfigure:$springboot_version",
     "org.springframework.boot:spring-boot-configuration-processor:$springboot_version",
-    "org.springframework.boot:spring-boot-starter-log4j2:$springboot_version"
+//    "org.springframework.boot:spring-boot-starter-log4j2:$springboot_version"
 ]
 
 // cover old version
@@ -37,7 +37,7 @@ List swagger = [
     'io.springfox:springfox-swagger-ui:2.8.0'
 ]
 
-def log4j_version="2.9.0"
+def log4j_version="2.15.0"
 List logger = [
     "org.apache.logging.log4j:log4j-api:$log4j_version",
     "org.apache.logging.log4j:log4j-core:$log4j_version",
