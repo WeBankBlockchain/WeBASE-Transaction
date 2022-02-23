@@ -26,13 +26,13 @@ import org.springframework.http.MediaType;
 
 /**
  * CommonUtils.
- * 
+ *
  */
 @Slf4j
 public class CommonUtils {
 
     public static final int publicKeyLength_64 = 64;
-    
+
     /**
      * base response
      */
@@ -52,7 +52,7 @@ public class CommonUtils {
     }
     /**
      * buildHeaders.
-     * 
+     *
      * @return
      */
     public static HttpHeaders buildHeaders() {
@@ -65,12 +65,19 @@ public class CommonUtils {
 
     /**
      * stringToSignatureData.
+     * byte array: [v + r + s + pub]
      * 19/12/24 support guomi： add byte[] pub in signatureData
+     * 2021/08/05 webase-sign <=1.4.3, v=27 >=1.5.0, v=0 or 1 or 2
+     * if using web3sdk, v default 27, if using java-sdk, v default 0, and add 27 in RLP encode
+     *
      * @param signatureData signatureData
      * @return
      */
     public static SignatureData stringToSignatureData(String signatureData, int encryptType) {
         byte[] byteArr = Numeric.hexStringToByteArray(signatureData);
+        // java-sdk的v值与web3sdk不一样，front>1.5.3
+        byte signVOfJavaSdk = byteArr[0];
+        byte signVOfWeb3Sdk = (byte) ((int) signVOfJavaSdk + 27);
         byte[] signR = new byte[32];
         System.arraycopy(byteArr, 1, signR, 0, signR.length);
         byte[] signS = new byte[32];
@@ -78,9 +85,9 @@ public class CommonUtils {
         if (encryptType == 1) {
             byte[] pub = new byte[64];
             System.arraycopy(byteArr, 1 + signR.length + signS.length, pub, 0, pub.length);
-            return new SignatureData(byteArr[0], signR, signS, pub);
+            return new SignatureData(signVOfWeb3Sdk, signR, signS, pub);
         } else {
-            return new SignatureData(byteArr[0], signR, signS);
+            return new SignatureData(signVOfWeb3Sdk, signR, signS);
         }
     }
 
@@ -112,7 +119,7 @@ public class CommonUtils {
 
     /**
      * Object to JavaBean.
-     * 
+     *
      * @param obj obj
      * @param clazz clazz
      * @return
@@ -128,7 +135,7 @@ public class CommonUtils {
 
     /**
      * delete single File.
-     * 
+     *
      * @param filePath filePath
      * @return
      */
@@ -144,7 +151,7 @@ public class CommonUtils {
 
     /**
      * delete Files.
-     * 
+     *
      * @param path path
      * @return
      */

@@ -33,7 +33,7 @@ checkProcess(){
     fi
 }
 
-JAVA_OPTS=" -Dfile.encoding=UTF-8"
+JAVA_OPTS=" -Dfile.encoding=UTF-8 -noverify"
 JAVA_OPTS+=" -Xmx1g -Xms1g -Xmn512m -Xss512k -XX:MetaspaceSize=128m -XX:MaxMetaspaceSize=256m"
 JAVA_OPTS+=" -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=${LOG_DIR}/heap_error.log"
 
