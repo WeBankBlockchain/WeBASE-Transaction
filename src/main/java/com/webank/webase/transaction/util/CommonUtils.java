@@ -14,30 +14,25 @@
 
 package com.webank.webase.transaction.util;
 
-import java.io.Closeable;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import com.webank.webase.transaction.base.ConstantCode;
+import com.webank.webase.transaction.base.exception.BaseException;
+import lombok.extern.slf4j.Slf4j;
+import org.fisco.bcos.sdk.crypto.signature.ECDSASignatureResult;
+import org.fisco.bcos.sdk.crypto.signature.SM2SignatureResult;
+import org.fisco.bcos.sdk.crypto.signature.SignatureResult;
+import org.fisco.bcos.sdk.model.CryptoType;
+import org.fisco.bcos.sdk.utils.Numeric;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.*;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Enumeration;
 import java.util.Random;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
-
-import org.fisco.bcos.web3j.crypto.EncryptType;
-import org.fisco.bcos.web3j.crypto.Sign.SignatureData;
-import org.fisco.bcos.web3j.utils.Numeric;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.web.multipart.MultipartFile;
-
-import com.webank.webase.transaction.base.ConstantCode;
-import com.webank.webase.transaction.base.exception.BaseException;
-
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * CommonUtils.
@@ -46,8 +41,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class CommonUtils {
 
-	public static final int publicKeyLength_64 = 64;
-
+	public static final int PUBLIC_KEY_LENGTH_64 = 64;
+	public static final int HASH_LENGTH_64 = 64;
 	/**
 	 * unZipFiles.
 	 * 
@@ -192,53 +187,61 @@ public class CommonUtils {
 		return headers;
 	}
 
+
 	/**
-	 * stringToSignatureData. 19/12/24 support guomi： add byte[] pub in
-	 * signatureData
-	 * 
-	 * @param signatureData
-	 *            signatureData
+	 * stringToSignatureData. 19/12/24 support guomi： add byte[] pub in signatureData
+	 * byte array: [v + r + s + pub]
+	 * 2021/08/05 webase-sign <=1.4.3, v=27 >=1.5.0, v=0
+	 * if using web3sdk, Signature's v default 27, if using java-sdk, SignatureResult's v default 0, and add 27 in RLP encode
+	 * @param signatureData signatureData
 	 * @return
 	 */
-	public static SignatureData stringToSignatureData(String signatureData) {
+	public static SignatureResult stringToSignatureData(String signatureData, int encryptType) {
 		byte[] byteArr = Numeric.hexStringToByteArray(signatureData);
+		// 从1开始，因为此处webase-sign返回的byteArr第0位是v
+		byte signV = byteArr[0];
 		byte[] signR = new byte[32];
 		System.arraycopy(byteArr, 1, signR, 0, signR.length);
 		byte[] signS = new byte[32];
 		System.arraycopy(byteArr, 1 + signR.length, signS, 0, signS.length);
-		if (EncryptType.encryptType == 1) {
+		if (encryptType == CryptoType.SM_TYPE) {
 			byte[] pub = new byte[64];
 			System.arraycopy(byteArr, 1 + signR.length + signS.length, pub, 0, pub.length);
-			return new SignatureData(byteArr[0], signR, signS, pub);
+			return new SM2SignatureResult(pub, signR, signS);
 		} else {
-			return new SignatureData(byteArr[0], signR, signS);
+			return new ECDSASignatureResult(signV, signR, signS);
 		}
 	}
 
 	/**
-	 * signatureDataToString. 19/12/24 support guomi： add byte[] pub in
-	 * signatureData
-	 * 
-	 * @param signatureData
-	 *            signatureData
+	 * signatureDataToString. 19/12/24 support guomi： add byte[] pub in signatureData
+	 * @param signatureData signatureData
 	 */
-	public static String signatureDataToString(SignatureData signatureData) {
+
+	public static String signatureDataToString(SM2SignatureResult signatureData) {
 		byte[] byteArr;
-		if (EncryptType.encryptType == 1) {
-			byteArr = new byte[1 + signatureData.getR().length + signatureData.getS().length + publicKeyLength_64];
-			byteArr[0] = signatureData.getV();
-			System.arraycopy(signatureData.getR(), 0, byteArr, 1, signatureData.getR().length);
-			System.arraycopy(signatureData.getS(), 0, byteArr, signatureData.getR().length + 1,
-					signatureData.getS().length);
-			System.arraycopy(signatureData.getPub(), 0, byteArr,
-					signatureData.getS().length + signatureData.getR().length + 1, signatureData.getPub().length);
-		} else {
-			byteArr = new byte[1 + signatureData.getR().length + signatureData.getS().length];
-			byteArr[0] = signatureData.getV();
-			System.arraycopy(signatureData.getR(), 0, byteArr, 1, signatureData.getR().length);
-			System.arraycopy(signatureData.getS(), 0, byteArr, signatureData.getR().length + 1,
-					signatureData.getS().length);
-		}
+		byteArr = new byte[1 + signatureData.getR().length + signatureData.getS().length
+				+ PUBLIC_KEY_LENGTH_64];
+		// v
+		byteArr[0] = 0;
+		// r s
+		System.arraycopy(signatureData.getR(), 0, byteArr, 1, signatureData.getR().length);
+		System.arraycopy(signatureData.getS(), 0, byteArr, signatureData.getR().length + 1,
+				signatureData.getS().length);
+		System.arraycopy(signatureData.getPub(), 0, byteArr,
+				signatureData.getS().length + signatureData.getR().length + 1,
+				signatureData.getPub().length);
+
+		return Numeric.toHexString(byteArr, 0, byteArr.length, false);
+	}
+
+	public static String signatureDataToString(ECDSASignatureResult signatureData) {
+		byte[] byteArr;
+		byteArr = new byte[1 + signatureData.getR().length + signatureData.getS().length];
+		byteArr[0] = signatureData.getV();
+		System.arraycopy(signatureData.getR(), 0, byteArr, 1, signatureData.getR().length);
+		System.arraycopy(signatureData.getS(), 0, byteArr, signatureData.getR().length + 1,
+				signatureData.getS().length);
 		return Numeric.toHexString(byteArr, 0, byteArr.length, false);
 	}
 

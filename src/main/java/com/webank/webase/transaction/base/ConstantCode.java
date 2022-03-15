@@ -60,6 +60,10 @@ public interface ConstantCode {
     RetCode FUNCTION_NOT_EXISTS = RetCode.mark(303022, "function is not exists");
     RetCode DATA_NOT_EXISTS = RetCode.mark(303023, "data is not exists");
 
+    RetCode DECODE_RECEIPT_FAILED = RetCode.mark(303101, "decode transaction receipt failed, please check log file for details");
+    RetCode DECODE_TRANS_OUTPUT_FAILED = RetCode.mark(303102, "decode transaction output failed, please check log file for details");
+    RetCode CONTRACT_TYPE_ENCODED_ERROR = RetCode.mark(303103, "contract method encode failed, please check your function params");
+
     // system error
     RetCode SYSTEM_ERROR = RetCode.mark(103001, "system error");
     RetCode PARAM_VAILD_FAIL = RetCode.mark(103002, "param valid fail");
