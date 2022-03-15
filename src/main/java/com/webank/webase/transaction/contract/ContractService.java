@@ -39,12 +39,19 @@ import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.fisco.bcos.web3j.abi.FunctionEncoder;
-import org.fisco.bcos.web3j.abi.datatypes.Type;
-import org.fisco.bcos.web3j.crypto.EncryptType;
-import org.fisco.bcos.web3j.protocol.Web3j;
-import org.fisco.bcos.web3j.protocol.core.methods.response.AbiDefinition;
-import org.fisco.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
+import org.fisco.bcos.sdk.BcosSDK;
+import org.fisco.bcos.sdk.client.Client;
+import org.fisco.bcos.sdk.codec.ABICodec;
+import org.fisco.bcos.sdk.codec.ABICodecException;
+import org.fisco.bcos.sdk.codec.abi.FunctionEncoder;
+import org.fisco.bcos.sdk.codec.datatypes.Type;
+import org.fisco.bcos.sdk.codec.wrapper.ABIDefinition;
+import org.fisco.bcos.sdk.model.CryptoType;
+import org.fisco.bcos.sdk.model.TransactionReceipt;
+import org.fisco.bcos.sdk.transaction.codec.decode.TransactionDecoderService;
+import org.fisco.bcos.sdk.transaction.model.dto.TransactionResponse;
+import org.fisco.bcos.sdk.transaction.model.exception.TransactionException;
+import org.fisco.bcos.sdk.utils.Numeric;
 import org.fisco.solc.compiler.CompilationResult;
 import org.fisco.solc.compiler.SolidityCompiler;
 import org.fisco.solc.compiler.CompilationResult.ContractMetadata;
@@ -63,7 +70,7 @@ import static org.fisco.solc.compiler.SolidityCompiler.Options.BIN;
 @Service
 public class ContractService {
     @Autowired
-    Map<Integer, Web3j> web3jMap;
+    private BcosSDK bcosSDK;
     @Autowired
     TransService transService;
     @Autowired
@@ -81,7 +88,7 @@ public class ContractService {
      * @param zipFile file
      * @return
      */
-    public ResponseEntity compile(MultipartFile zipFile) throws BaseException, IOException {
+    public ResponseEntity compile(String groupId, MultipartFile zipFile) throws BaseException, IOException {
         ResponseEntity response = new ResponseEntity(ConstantCode.RET_SUCCEED);
         String path = new File("temp").getAbsolutePath();
         // clear temp folder
@@ -96,7 +103,7 @@ public class ContractService {
         }
 
         // whether use guomi to compile, 1-guomi, 0-ecdsa
-        boolean useSM2 = EncryptType.encryptType == 1;
+        boolean useSM2 = bcosSDK.getClient(groupId).getCryptoType() == CryptoType.SM_TYPE;
         List<CompileInfo> compileInfos = new ArrayList<>();
         for (File solFile : solFiles) {
             if (!solFile.getName().endsWith(".sol")) {
@@ -137,7 +144,7 @@ public class ContractService {
     public ResponseEntity deploy(ReqDeployInfo req) throws BaseException {
         long startTime = System.currentTimeMillis();
         // check groupId
-        int groupId = req.getGroupId();
+        String groupId = req.getGroupId();
         if (!transService.checkGroupId(groupId)) {
             log.warn("deploy fail. groupId:{} has not been configured", groupId);
             throw new BaseException(ConstantCode.GROUPID_NOT_CONFIGURED);
@@ -173,7 +180,7 @@ public class ContractService {
         // check parameters
         String contractAbi = JsonUtils.toJSONString(req.getContractAbi());
         List<Object> params = req.getFuncParam();
-        AbiDefinition abiDefinition = ContractAbiUtil.getAbiDefinition(contractAbi);
+        ABIDefinition abiDefinition = ContractAbiUtil.getAbiDefinition(contractAbi);
         List<String> funcInputTypes = ContractAbiUtil.getFuncInputType(abiDefinition);
         if (funcInputTypes.size() != params.size()) {
             log.warn("deploy fail. funcInputTypes:{}, params:{}", funcInputTypes, params);
@@ -208,7 +215,7 @@ public class ContractService {
      * @param uuidDeploy uuid
      * @return
      */
-    public ResponseEntity getAddress(int groupId, String uuidDeploy) throws BaseException {
+    public ResponseEntity getAddress(String groupId, String uuidDeploy) throws BaseException {
         ResponseEntity response = new ResponseEntity(ConstantCode.RET_SUCCEED);
         // check if contract has been deployed
         String contractAddress = contractMapper.selectContractAddress(groupId, uuidDeploy);
@@ -227,7 +234,7 @@ public class ContractService {
      * @param uuidDeploy uuid
      * @return
      */
-    public ResponseEntity getDeployInfo(int groupId, String uuidDeploy) throws BaseException {
+    public ResponseEntity getDeployInfo(String groupId, String uuidDeploy) throws BaseException {
         ResponseEntity response = new ResponseEntity(ConstantCode.RET_SUCCEED);
         // check if contract has been deployed
         DeployInfoDto deployInfo = contractMapper.selectDeployInfo(groupId, uuidDeploy);
@@ -246,7 +253,7 @@ public class ContractService {
      * @param uuidDeploy uuid
      * @return
      */
-    public ResponseEntity getEvent(int groupId, String uuidDeploy) throws BaseException {
+    public ResponseEntity getEvent(String groupId, String uuidDeploy) throws BaseException {
         ResponseEntity response = new ResponseEntity(ConstantCode.RET_SUCCEED);
         // check if contract has been deployed
         String transHash = contractMapper.selectTxHash(groupId, uuidDeploy);
@@ -259,20 +266,22 @@ public class ContractService {
             log.warn("getEvent fail. uuidDeploy:{} abi is not exists", uuidDeploy);
             throw new BaseException(ConstantCode.CONTRACT_ABI_EMPTY);
         }
-        List<AbiDefinition> abiList = ContractAbiUtil.getEventAbiDefinitions(contractAbi);
+        List<ABIDefinition> abiList = ContractAbiUtil.getEventAbiDefinitions(contractAbi);
         if (abiList.isEmpty()) {
             log.warn("getEvent fail. uuidDeploy:{} event is not exists", uuidDeploy);
             throw new BaseException(ConstantCode.EVENT_NOT_EXISTS);
         }
+        // get TransactionReceipt
+        Client client = bcosSDK.getClient(groupId);
+        TransactionReceipt receipt = client.getTransactionReceipt(transHash, false).getTransactionReceipt();
         try {
-            // get TransactionReceipt
-            TransactionReceipt receipt = web3jMap.get(groupId).getTransactionReceipt(transHash)
-                    .send().getTransactionReceipt().get();
-            Object result = ContractAbiUtil.receiptParse(receipt, abiList);
-            response.setData(result);
-        } catch (IOException e) {
-            log.error("getEvent getTransactionReceipt fail. transHash:{} ", transHash);
-            throw new BaseException(ConstantCode.NODE_REQUEST_FAILED);
+            TransactionDecoderService transactionDecoderService = new TransactionDecoderService(client.getCryptoSuite(), false);
+            // decode receipt's event
+            TransactionResponse transactionResponse = transactionDecoderService.decodeReceiptWithoutValues(contractAbi, receipt);
+            response.setData(transactionResponse);
+        } catch (IOException | ABICodecException | TransactionException e) {
+            log.error("decode receipt error ", e);
+            throw new BaseException(ConstantCode.DECODE_RECEIPT_FAILED);
         }
         return response;
     }
@@ -310,7 +319,7 @@ public class ContractService {
         log.debug("deploySend deployInfoDto:{}", JsonUtils.toJSONString(deployInfoDto));
         Long id = deployInfoDto.getId();
         log.info("deploySend id:{}", id);
-        int groupId = deployInfoDto.getGroupId();
+        String groupId = deployInfoDto.getGroupId();
         int requestCount = deployInfoDto.getRequestCount();
         int signType = deployInfoDto.getSignType();
         try {
@@ -336,26 +345,25 @@ public class ContractService {
             List<Object> params = JsonUtils.toJavaObjectList(deployInfoDto.getFuncParam(), Object.class);
 
             // get function abi
-            AbiDefinition abiDefinition = ContractAbiUtil.getAbiDefinition(contractAbi);
+            ABIDefinition abiDefinition = ContractAbiUtil.getAbiDefinition(contractAbi);
             List<String> funcInputTypes = ContractAbiUtil.getFuncInputType(abiDefinition);
             // Constructor encode
             String encodedConstructor = "";
             if (funcInputTypes.size() > 0) {
                 List<Type> finalInputs = ContractAbiUtil.inputFormat(funcInputTypes, params);
-                encodedConstructor = FunctionEncoder.encodeConstructor(finalInputs);
+                encodedConstructor = Numeric.toHexStringNoPrefix(FunctionEncoder.encodeConstructor(finalInputs)); //todo check
             }
             // data sign
             String data = contractBin + encodedConstructor;
             String signMsg = transService.signMessage(groupId, signType,
-                    deployInfoDto.getSignUserId(), "", data);
+                    deployInfoDto.getSignUserId(), "", Numeric.hexStringToByteArray(data));
             if (StringUtils.isBlank(signMsg)) {
                 return;
             }
             // send transaction
-            final CompletableFuture<TransactionReceipt> transFuture = new CompletableFuture<>();
-            transService.sendMessage(groupId, signMsg, transFuture);
-            TransactionReceipt receipt =
-                    transFuture.get(properties.getTransMaxWait(), TimeUnit.SECONDS);
+            TransactionReceipt receipt = transService.sendMessage(groupId, signMsg);
+//            TransactionReceipt receipt = transFuture.get(properties.getTransMaxWait(), TimeUnit.SECONDS);
+
             deployInfoDto.setContractAddress(receipt.getContractAddress());
             deployInfoDto.setTransHash(receipt.getTransactionHash());
             deployInfoDto.setReceiptStatus(receipt.isStatusOK());
