@@ -5,7 +5,7 @@
     <update id="createTbStatelessTrans">
         CREATE TABLE IF NOT EXISTS tb_stateless_transaction (
             id bigint UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '自增编号',
-            group_id int(11) NOT NULL COMMENT '群组编号',
+            group_id varchar(64) NOT NULL COMMENT '群组编号',
             uuid_stateless varchar(64) NOT NULL COMMENT '合约无状态交易业务流水号',
             uuid_deploy varchar(64) COMMENT '部署交易业务流水号',
             contract_abi mediumtext NOT NULL COMMENT '合约abi',

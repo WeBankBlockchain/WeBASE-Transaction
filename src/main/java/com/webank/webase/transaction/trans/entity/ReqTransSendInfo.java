@@ -28,7 +28,7 @@ import org.hibernate.validator.constraints.NotBlank;
 @Data
 public class ReqTransSendInfo {
     @NotNull(message = ConstantCode.GROUP_ID_IS_EMPTY)
-    private Integer groupId;
+    private String groupId;
     @NotBlank(message = ConstantCode.UUID_IS_EMPTY)
     private String uuidStateless;
     private String uuidDeploy;

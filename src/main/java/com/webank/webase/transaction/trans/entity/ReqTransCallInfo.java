@@ -28,7 +28,7 @@ import org.hibernate.validator.constraints.NotBlank;
 @Data
 public class ReqTransCallInfo {
     @NotNull(message = ConstantCode.GROUP_ID_IS_EMPTY)
-    private int groupId;
+    private String groupId;
     private String uuidDeploy;
     private List<Object> contractAbi = new ArrayList<>();
     private String contractAddress;
