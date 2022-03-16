@@ -351,7 +351,7 @@ public class ContractService {
             String encodedConstructor = "";
             if (funcInputTypes.size() > 0) {
                 List<Type> finalInputs = ContractAbiUtil.inputFormat(funcInputTypes, params);
-                encodedConstructor = Numeric.toHexStringNoPrefix(FunctionEncoder.encodeConstructor(finalInputs)); //todo check
+                encodedConstructor = Numeric.toHexString(FunctionEncoder.encodeConstructor(finalInputs));
             }
             // data sign
             String data = contractBin + encodedConstructor;

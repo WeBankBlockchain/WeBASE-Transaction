@@ -303,8 +303,7 @@ public class TransService {
         Client client = bcosSDK.getClient(groupId);
         Pair<String, String> chainIdAndGroupId = TransactionProcessorFactory.getChainIdAndGroupId(client);
         TransactionProcessor transactionProcessor = new TransactionProcessor(client,
-            keyStoreService.getRandomKeypair(groupId),
-            String.valueOf(groupId), chainIdAndGroupId.getLeft());
+            keyStoreService.getRandomKeypair(groupId), groupId, chainIdAndGroupId.getLeft());
         Call.CallOutput callOutput = transactionProcessor
             .executeCall(userAddress, contractAddress, encodedFunction)
             .getCallResult();
