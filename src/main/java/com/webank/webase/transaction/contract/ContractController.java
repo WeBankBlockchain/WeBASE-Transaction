@@ -57,10 +57,10 @@ public class ContractController extends BaseController {
     @ApiOperation(value = "contract compile", notes = "contract compile")
     @PostMapping("/compile")
     public ResponseEntity compile(
-            @ApiParam(value = "contract zip file",
-                    required = true) @RequestParam("file") MultipartFile file)
+            @ApiParam(value = "group id", required = true) @RequestParam("groupId") String groupId,
+            @ApiParam(value = "contract zip file", required = true) @RequestParam("file") MultipartFile file)
             throws BaseException, IOException {
-        return contractService.compile(file);
+        return contractService.compile(groupId, file);
     }
 
     /**
@@ -88,7 +88,7 @@ public class ContractController extends BaseController {
      */
     @ApiOperation(value = "getAddress", notes = "get contract address")
     @GetMapping("/address/{groupId}/{uuidDeploy}")
-    public ResponseEntity getAddress(@PathVariable("groupId") int groupId,
+    public ResponseEntity getAddress(@PathVariable("groupId") String groupId,
             @PathVariable("uuidDeploy") String uuidDeploy) throws BaseException {
         return contractService.getAddress(groupId, uuidDeploy);
     }
@@ -102,7 +102,7 @@ public class ContractController extends BaseController {
      */
     @ApiOperation(value = "getEvent", notes = "get deploy event")
     @GetMapping("/event/{groupId}/{uuidDeploy}")
-    public ResponseEntity getEvent(@PathVariable("groupId") int groupId,
+    public ResponseEntity getEvent(@PathVariable("groupId") String groupId,
             @PathVariable("uuidDeploy") String uuidDeploy) throws BaseException {
         return contractService.getEvent(groupId, uuidDeploy);
     }
@@ -116,7 +116,7 @@ public class ContractController extends BaseController {
      */
     @ApiOperation(value = "getDeployInfo", notes = "get deploy info")
     @GetMapping("/deployInfo/{groupId}/{uuidDeploy}")
-    public ResponseEntity getDeployInfo(@PathVariable("groupId") int groupId,
+    public ResponseEntity getDeployInfo(@PathVariable("groupId") String groupId,
             @PathVariable("uuidDeploy") String uuidDeploy) throws BaseException {
         return contractService.getDeployInfo(groupId, uuidDeploy);
     }

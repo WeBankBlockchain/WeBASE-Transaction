@@ -5,7 +5,7 @@
     <update id="createTbDeployTrans">
         CREATE TABLE IF NOT EXISTS tb_deploy_transaction (
             id bigint UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '自增编号',
-            group_id int(11) NOT NULL COMMENT '群组编号',
+            group_id varchar(64) NOT NULL COMMENT '群组编号',
             uuid_deploy varchar(64) NOT NULL COMMENT '部署交易业务流水号',
             contract_bin mediumtext NOT NULL COMMENT '合约bin',
             contract_abi mediumtext NOT NULL COMMENT '合约abi',

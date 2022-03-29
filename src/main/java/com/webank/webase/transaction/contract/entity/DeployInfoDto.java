@@ -24,7 +24,7 @@ import lombok.Data;
 @Data
 public class DeployInfoDto {
     private Long id;
-    private int groupId;
+    private String groupId;
     private String uuidDeploy;
     private String contractBin;
     private String contractAbi;

@@ -14,24 +14,22 @@
 
 package com.webank.webase.transaction.config;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.concurrent.ThreadPoolExecutor.AbortPolicy;
-
-import org.fisco.bcos.channel.client.Service;
-import org.fisco.bcos.channel.handler.ChannelConnections;
-import org.fisco.bcos.channel.handler.GroupChannelConnectionsConfig;
-import org.fisco.bcos.web3j.crypto.EncryptType;
-import org.fisco.bcos.web3j.protocol.Web3j;
-import org.fisco.bcos.web3j.protocol.channel.ChannelEthereumService;
+import com.webank.webase.transaction.util.JsonUtils;
+import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
+import org.fisco.bcos.sdk.BcosSDK;
+import org.fisco.bcos.sdk.client.Client;
+import org.fisco.bcos.sdk.config.ConfigOption;
+import org.fisco.bcos.sdk.config.exceptions.ConfigException;
+import org.fisco.bcos.sdk.config.model.ConfigProperty;
+import org.fisco.bcos.sdk.jni.common.JniException;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.DependsOn;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
-import lombok.Data;
-import lombok.extern.slf4j.Slf4j;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * init web3sdk.
@@ -42,71 +40,60 @@ import lombok.extern.slf4j.Slf4j;
 @Configuration
 @ConfigurationProperties(prefix = "sdk")
 public class Web3Config {
-    private String orgName;
-    private int timeout = 10000;
-    private int corePoolSize = 100;
-    private int maxPoolSize = 500;
-    private int queueCapacity = 500;
-    private int keepAlive = 60;
-    private GroupChannelConnectionsConfig groupConfig;
-    // 0: standard, 1: guomi
-    private int encryptType;
 
-    /**
-     * init web3j.
-     * 
-     * @return
-     */
+    private String threadPoolSize;
+    private String certPath;
+    private String useSmSsl;
+    private List<String> peers;
+
+
     @Bean
-    @DependsOn("encryptType")
-    public HashMap<Integer, Web3j> web3j() throws Exception {
-        HashMap<Integer, Web3j> web3jMap = new HashMap<Integer, Web3j>();
+    public ConfigOption getConfigOptionFromFile() throws ConfigException {
+        log.info("start init ConfigProperty");
+        // cert config, encrypt type
+        Map<String, Object> cryptoMaterial = new HashMap<>();
+        cryptoMaterial.put("certPath", certPath);
+        cryptoMaterial.put("useSMCrypto", useSmSsl);
+        log.info("init cert cryptoMaterial:{}, (using conf as cert path)", JsonUtils.objToString(cryptoMaterial));
 
-        List<ChannelConnections> channelConnectList = groupConfig.getAllChannelConnections();
-        for (ChannelConnections connect : channelConnectList) {
-            int groupId = connect.getGroupId();
-            log.info("init groupId:{}", groupId);
-            // set groupId
-            Service service = new Service();
-            service.setOrgID(orgName);
-            service.setThreadPool(sdkThreadPool());
-            service.setAllChannelConnections(groupConfig);
-            service.setGroupId(groupId);
-            service.run();
-            ChannelEthereumService channelEthereumService = new ChannelEthereumService();
-            channelEthereumService.setTimeout(timeout);
-            channelEthereumService.setChannelService(service);
-            Web3j web3j = Web3j.build(channelEthereumService, groupId);
-            web3j.getGroupList().send().getGroupList();
-            web3jMap.put(groupId, web3j);
-        }
-        return web3jMap;
+        // peers, default one node in front
+        Map<String, Object> network = new HashMap<>();
+        network.put("peers", peers);
+        log.info("init node network property :{}", JsonUtils.objToString(peers));
+
+        // thread pool config
+        log.info("init thread pool property");
+        Map<String, Object> threadPool = new HashMap<>();
+        threadPool.put("threadPoolSize", threadPoolSize);
+        log.info("init thread pool property:{}", JsonUtils.objToString(threadPool));
+
+        // init property
+        ConfigProperty configProperty = new ConfigProperty();
+        configProperty.setCryptoMaterial(cryptoMaterial);
+        configProperty.setNetwork(network);
+        configProperty.setThreadPool(threadPool);
+        // init config option
+        ConfigOption configOption = new ConfigOption(configProperty);
+        log.info("initConfigOptionFromFile init configOption :{}", configOption);
+        return configOption;
+    }
+
+    @Bean
+    public BcosSDK getBcosSDK(ConfigOption configOption) {
+        return new BcosSDK(configOption);
     }
 
     /**
-     * set sdk threadPool.
-     * 
-     * @return
+     * only used to get groupList
+     * @throws JniException
      */
-    @Bean
-    public ThreadPoolTaskExecutor sdkThreadPool() {
-        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(corePoolSize);
-        executor.setMaxPoolSize(maxPoolSize);
-        executor.setQueueCapacity(queueCapacity);
-        executor.setKeepAliveSeconds(keepAlive);
-        executor.setRejectedExecutionHandler(new AbortPolicy());
-        executor.setThreadNamePrefix("sdkThreadPool-");
-        executor.initialize();
-        return executor;
-    }
+    @Bean(name = "rpcClient")
+    public Client getRpcWeb3j(ConfigOption configOption) throws JniException {
 
-    /**
-     * set sdk's encrypt type: 0: standard, 1: guomi sdk switch ecdsa to sm2, sha to sm3.
-     */
-    @Bean(name = "encryptType")
-    public EncryptType EncryptType() {
-        return new EncryptType(encryptType);
+        Client rpcWeb3j = Client.build(configOption);
+        // Client rpcWeb3j = bcosSDK.getClient();
+        log.info("get rpcWeb3j(only support groupList) client:{}", rpcWeb3j);
+        return rpcWeb3j;
     }
 
 }

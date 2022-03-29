@@ -86,7 +86,7 @@ public class TransController extends BaseController {
      */
     @ApiOperation(value = "getEvent", notes = "get transaction event")
     @GetMapping("/event/{groupId}/{uuidStateless}")
-    public ResponseEntity getEvent(@PathVariable("groupId") int groupId,
+    public ResponseEntity getEvent(@PathVariable("groupId") String groupId,
             @PathVariable("uuidStateless") String uuidStateless) throws BaseException {
         return transService.getEvent(groupId, uuidStateless);
     }
@@ -100,7 +100,7 @@ public class TransController extends BaseController {
      */
     @ApiOperation(value = "getOutput", notes = "get transaction output")
     @GetMapping("/output/{groupId}/{uuidStateless}")
-    public ResponseEntity getOutput(@PathVariable("groupId") int groupId,
+    public ResponseEntity getOutput(@PathVariable("groupId") String groupId,
             @PathVariable("uuidStateless") String uuidStateless) throws BaseException {
         return transService.getOutput(groupId, uuidStateless);
     }
@@ -114,7 +114,7 @@ public class TransController extends BaseController {
      */
     @ApiOperation(value = "getTransInfo", notes = "get transaction info")
     @GetMapping("/transInfo/{groupId}/{uuidStateless}")
-    public ResponseEntity getTransInfo(@PathVariable("groupId") int groupId,
+    public ResponseEntity getTransInfo(@PathVariable("groupId") String groupId,
             @PathVariable("uuidStateless") String uuidStateless) throws BaseException {
         return transService.getTransInfo(groupId, uuidStateless);
     }

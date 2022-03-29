@@ -14,7 +14,6 @@
 
 package com.webank.webase.transaction.keystore;
 
-import com.webank.webase.transaction.util.JsonUtils;
 import com.webank.webase.transaction.base.ConstantCode;
 import com.webank.webase.transaction.base.ConstantProperties;
 import com.webank.webase.transaction.base.ResponseEntity;
@@ -23,13 +22,11 @@ import com.webank.webase.transaction.keystore.entity.EncodeInfo;
 import com.webank.webase.transaction.keystore.entity.KeyStoreInfo;
 import com.webank.webase.transaction.keystore.entity.SignInfo;
 import com.webank.webase.transaction.util.CommonUtils;
+import com.webank.webase.transaction.util.JsonUtils;
 import com.webank.webase.transaction.util.LogUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.fisco.bcos.web3j.crypto.Credentials;
-import org.fisco.bcos.web3j.crypto.ECKeyPair;
-import org.fisco.bcos.web3j.crypto.Keys;
-import org.fisco.bcos.web3j.crypto.gm.GenCredential;
-import org.fisco.bcos.web3j.utils.Numeric;
+import org.fisco.bcos.sdk.BcosSDK;
+import org.fisco.bcos.sdk.crypto.keypair.CryptoKeyPair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -47,50 +44,22 @@ public class KeyStoreService {
     RestTemplate restTemplate;
     @Autowired
     private ConstantProperties properties;
+    @Autowired
+    private BcosSDK bcosSDK;
 
     private static final int PUBLIC_KEY_LENGTH_IN_HEX = 128;
     private static final String SIGN_ADDSIGN_URL = "http://%s/WeBASE-Sign/sign";
     private static final String SIGN_USERINFO_URL = "http://%s/WeBASE-Sign/user/%s/userInfo";
 
     /**
-     * get KeyStoreInfo.
-     * 
-     * @return
-     */
-    public KeyStoreInfo getKey() throws BaseException {
-        try {
-            ECKeyPair keyPair = Keys.createEcKeyPair();
-            String publicKey = Numeric.toHexStringWithPrefixZeroPadded(keyPair.getPublicKey(),
-                    PUBLIC_KEY_LENGTH_IN_HEX);
-            String privateKey = Numeric.toHexStringNoPrefix(keyPair.getPrivateKey());
-            String address = "0x" + Keys.getAddress(publicKey);
-
-            KeyStoreInfo keyStoreInfo = new KeyStoreInfo();
-            keyStoreInfo.setPublicKey(publicKey);
-            keyStoreInfo.setPrivateKey(privateKey);
-            keyStoreInfo.setAddress(address);
-
-            return keyStoreInfo;
-        } catch (Exception e) {
-            log.error("createEcKeyPair fail.");
-            throw new BaseException(ConstantCode.SYSTEM_ERROR);
-        }
-    }
-
-    /**
      * get user Address.
      * 
      * @return
      */
-    public String getAddress() throws BaseException {
-        try {
-            String privateKey = properties.getPrivateKey();
-            Credentials credentials = GenCredential.create(privateKey);
-            return credentials.getAddress();
-        } catch (Exception e) {
-            log.error("getAddress fail.");
-            throw new BaseException(ConstantCode.SYSTEM_ERROR);
-        }
+    public CryptoKeyPair getKeyPairFromFile(String groupId) {
+        String privateKey = properties.getPrivateKey();
+        CryptoKeyPair cryptoKeyPair = bcosSDK.getClient(groupId).getCryptoSuite().loadKeyPair(privateKey);
+        return cryptoKeyPair;
     }
     
     /**
@@ -98,14 +67,19 @@ public class KeyStoreService {
      * 
      * @return
      */
-    public String getRandomAddress() throws BaseException {
-        try {
-            Credentials credentials = GenCredential.create();
-            return credentials.getAddress();
-        } catch (Exception e) {
-            log.error("getRandomAddress fail.");
-            throw new BaseException(ConstantCode.SYSTEM_ERROR);
-        }
+    public CryptoKeyPair getRandomKeypair(String groupId) {
+        CryptoKeyPair cryptoKeyPair = this.getKeypairFromSdk(groupId);
+        return cryptoKeyPair;
+    }
+
+    /**
+     * get random address
+     * @param groupId
+     * @return
+     */
+    public String getRandomAddress(String groupId) {
+        CryptoKeyPair cryptoKeyPair = this.getRandomKeypair(groupId);
+        return cryptoKeyPair.getAddress();
     }
 
     /**
@@ -156,5 +130,9 @@ public class KeyStoreService {
             log.error("checkSignUserId exception", e);
         }
         return false;
+    }
+
+    private CryptoKeyPair getKeypairFromSdk(String groupId) {
+        return bcosSDK.getClient(groupId).getCryptoSuite().getKeyPairFactory().generateKeyPair();
     }
 }

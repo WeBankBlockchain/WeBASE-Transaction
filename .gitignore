@@ -34,6 +34,6 @@ gradle.properties
 /dist
 *.crt
 *.key
-
+src/main/resources/conf/
 application-test.properties
 

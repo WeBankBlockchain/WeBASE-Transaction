@@ -24,7 +24,7 @@ import lombok.Data;
 @Data
 public class TransInfoDto {
     private Long id;
-    private int groupId;
+    private String groupId;
     private String uuidStateless;
     private String uuidDeploy;
     private String contractAbi;

@@ -18,8 +18,10 @@ import com.webank.webase.transaction.base.ConstantCode;
 import com.webank.webase.transaction.base.ResponseEntity;
 import io.swagger.annotations.Api;
 import lombok.extern.slf4j.Slf4j;
-import org.fisco.bcos.web3j.crypto.EncryptType;
+import org.fisco.bcos.sdk.BcosSDK;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -31,10 +33,14 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping(value = "encrypt")
 public class EncryptTypeController {
-    @GetMapping("")
-    public ResponseEntity getEncryptType() {
+    @Autowired
+    private BcosSDK bcosSDK;
+
+    @GetMapping("/{groupId}")
+    public ResponseEntity getEncryptType(@PathVariable("groupId") String groupId) {
+        log.info("getEncryptType groupId:{}", groupId);
         ResponseEntity response = new ResponseEntity(ConstantCode.RET_SUCCEED);
-        int encrypt = EncryptType.encryptType;
+        int encrypt = bcosSDK.getClient(groupId).getCryptoType();
         log.info("getEncryptType:{}", encrypt);
         response.setData(encrypt);
         return response;

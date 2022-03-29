@@ -29,7 +29,7 @@ List spring_boot =[
 ]
 
 // cover old version
-def spring_version="4.3.28.RELEASE"
+def spring_version="4.3.29.RELEASE"
 List spring =[
     "org.springframework:spring-web:$spring_version",
     "org.springframework:spring-webmvc:$spring_version",
@@ -47,7 +47,7 @@ List swagger = [
     'io.springfox:springfox-swagger-ui:2.8.0'
 ]
 
-def log4j_version="2.15.0"
+def log4j_version="2.17.1"
 List log4j = [
     "org.apache.logging.log4j:log4j-api:$log4j_version",
     "org.apache.logging.log4j:log4j-core:$log4j_version",
@@ -73,7 +73,7 @@ List jaxb = [
      "javax.activation:activation:1.1.1"
 ]
 
-def jackson_version = "2.11.0"
+def jackson_version = "2.11.4"
 List jackson = [
     "com.fasterxml.jackson.core:jackson-databind:$jackson_version",
     "com.fasterxml.jackson.core:jackson-annotations:$jackson_version",
@@ -97,17 +97,16 @@ List tomcat = [
 dependencies {
 
     compile spring_boot,spring,mysql,swagger,log4j,elasticjob,zookeeper,jaxb,jackson,tomcat
-    compile ('org.fisco-bcos:web3sdk:2.6.2') {
-        exclude group: 'org.ethereum', module: 'solcJ-all'
-    }
-
+    compile ('org.fisco-bcos.java-sdk:fisco-bcos-java-sdk:3.0.0-rc2')
     // support guomi/ecdsa same time, support solcJ-0.5.2
     compile "org.fisco-bcos:solcJ:0.4.25-rc1"
     compile "org.slf4j:jcl-over-slf4j:1.7.30"
-    compile "org.apache.commons:commons-lang3:3.6"
+    compile "org.apache.commons:commons-lang3:3.8.1"
     compile "commons-io:commons-io:2.4"
     compile 'com.alibaba:druid:1.1.23'
-    compile 'org.projectlombok:lombok:1.18.2'
+    compile 'org.projectlombok:lombok:1.18.6'
+    // cover low version guava
+    compile 'com.google.guava:guava:29.0-jre'
     annotationProcessor 'org.projectlombok:lombok:1.18.2'
 }
 

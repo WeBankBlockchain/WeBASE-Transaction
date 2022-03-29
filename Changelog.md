@@ -1,3 +1,14 @@
+### lab-rc2
+(2022-03-14)
+
+**Add**
+- 支持FISCO BCOS v3.0.0-rc2版本
+
+**兼容性**
+
+- 支持FISCO-BCOS v3.0.0-rc2 版本
+- WeBASE-Sign lab-rc1
+
 ### v1.4.1
 
  (2020-09-25)

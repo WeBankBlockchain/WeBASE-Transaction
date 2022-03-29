@@ -31,15 +31,15 @@ public interface ContractMapper {
 
     void insertDeployInfo(DeployInfoDto deployInfoDto);
 
-    DeployInfoDto selectDeployInfo(@Param("groupId") int groupId,
+    DeployInfoDto selectDeployInfo(@Param("groupId") String groupId,
             @Param("uuidDeploy") String uuidDeploy);
 
-    String selectContractAddress(@Param("groupId") int groupId,
+    String selectContractAddress(@Param("groupId") String groupId,
             @Param("uuidDeploy") String uuidDeploy);
 
-    String selectTxHash(@Param("groupId") int groupId, @Param("uuidDeploy") String uuidDeploy);
+    String selectTxHash(@Param("groupId") String groupId, @Param("uuidDeploy") String uuidDeploy);
 
-    String selectContractAbi(@Param("groupId") int groupId, @Param("uuidDeploy") String uuidDeploy);
+    String selectContractAbi(@Param("groupId") String groupId, @Param("uuidDeploy") String uuidDeploy);
 
     int selectStatus(@Param("id") Long id, @Param("gmtCreate") Date gmtCreate);
 

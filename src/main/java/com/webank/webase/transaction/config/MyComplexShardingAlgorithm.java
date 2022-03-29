@@ -32,6 +32,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public class MyComplexShardingAlgorithm implements ComplexKeysShardingAlgorithm {
+
     @Override
     public Collection<String> doSharding(Collection<String> collection,
             Collection<ShardingValue> shardingValues) {

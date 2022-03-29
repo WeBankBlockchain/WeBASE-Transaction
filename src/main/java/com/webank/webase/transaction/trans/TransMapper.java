@@ -31,7 +31,7 @@ public interface TransMapper {
 
     void insertTransInfo(TransInfoDto transInfoDto);
 
-    TransInfoDto selectTransInfo(@Param("groupId") int groupId,
+    TransInfoDto selectTransInfo(@Param("groupId") String groupId,
             @Param("uuidStateless") String uuidStateless);
 
     int selectStatus(@Param("id") Long id, @Param("gmtCreate") Date gmtCreate);

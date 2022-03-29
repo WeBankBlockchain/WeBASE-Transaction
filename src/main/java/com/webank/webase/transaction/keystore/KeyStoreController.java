@@ -22,6 +22,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -42,10 +43,10 @@ public class KeyStoreController extends BaseController {
      * @return
      */
     @ApiOperation(value = "get address", notes = "get user address")
-    @GetMapping("/address")
-    public ResponseEntity getAddress() throws BaseException {
+    @GetMapping("/address/{groupId}")
+    public ResponseEntity getAddress(@PathVariable("groupId") String groupId) throws BaseException {
         ResponseEntity response = new ResponseEntity(ConstantCode.RET_SUCCEED);
-        response.setData(keyStoreService.getAddress());
+        response.setData(keyStoreService.getRandomAddress(groupId));
         return response;
     }
 }
