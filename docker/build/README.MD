@@ -63,7 +63,7 @@ webase-trans                                                v1.4.1    f7224f7738
 docker run -d --name WeBASE-Trans -v /docker_file/trans/WeBASE-Transaction/dist/log:/dist/log -p 5003:5003 webase-trans:v1.4.1
 
 ```
-其中参数“-v /docker_file/trans/WeBASE-Transaction/dist/log:/dist/log”把日志挂载出来，方便查看输出日志：
+其中参数“-v /docker_file/trans/WeBASE-Transaction/dist/log:/dist/log”把日志挂载出来，（冒号前面的参数是宿主机的绝对路径），方便查看输出日志：
 
 ```
 tail -f log/transaction.log
