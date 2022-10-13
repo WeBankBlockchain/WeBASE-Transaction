@@ -1,4 +1,4 @@
-### 1、编译代码修改配置
+### 1、编译代码修改配置 
   按照 [交易部署说明](https://webasedoc.readthedocs.io/zh_CN/latest/docs/WeBASE-Transaction/install.html)（链接[https://webasedoc.readthedocs.io/zh_CN/latest/docs/WeBASE-Transaction/install.html](https://webasedoc.readthedocs.io/zh_CN/latest/docs/WeBASE-Transaction/install.html)）完成到第4步，主要需要修改的是“#连接节点的ip和channelPort” 和 “配置数据库连接信息” 这两个配置。
 ### 2、创建镜像
 复制Dockerfile文件到编译后生成的dist目录中，执行：（注意最后有个点）
