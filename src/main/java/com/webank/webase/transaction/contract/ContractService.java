@@ -39,19 +39,16 @@ import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.fisco.bcos.sdk.BcosSDK;
-import org.fisco.bcos.sdk.client.Client;
-import org.fisco.bcos.sdk.codec.ABICodec;
-import org.fisco.bcos.sdk.codec.ABICodecException;
-import org.fisco.bcos.sdk.codec.abi.FunctionEncoder;
-import org.fisco.bcos.sdk.codec.datatypes.Type;
-import org.fisco.bcos.sdk.codec.wrapper.ABIDefinition;
-import org.fisco.bcos.sdk.model.CryptoType;
-import org.fisco.bcos.sdk.model.TransactionReceipt;
-import org.fisco.bcos.sdk.transaction.codec.decode.TransactionDecoderService;
-import org.fisco.bcos.sdk.transaction.model.dto.TransactionResponse;
-import org.fisco.bcos.sdk.transaction.model.exception.TransactionException;
-import org.fisco.bcos.sdk.utils.Numeric;
+import org.fisco.bcos.sdk.v3.BcosSDK;
+import org.fisco.bcos.sdk.v3.client.Client;
+import org.fisco.bcos.sdk.v3.codec.abi.FunctionEncoder;
+import org.fisco.bcos.sdk.v3.codec.datatypes.Type;
+import org.fisco.bcos.sdk.v3.codec.wrapper.ABIDefinition;
+import org.fisco.bcos.sdk.v3.model.CryptoType;
+import org.fisco.bcos.sdk.v3.model.TransactionReceipt;
+import org.fisco.bcos.sdk.v3.transaction.codec.decode.TransactionDecoderService;
+import org.fisco.bcos.sdk.v3.transaction.model.dto.TransactionResponse;
+import org.fisco.bcos.sdk.v3.utils.Numeric;
 import org.fisco.solc.compiler.CompilationResult;
 import org.fisco.solc.compiler.SolidityCompiler;
 import org.fisco.solc.compiler.CompilationResult.ContractMetadata;
@@ -115,6 +112,10 @@ public class ContractService {
             SolidityCompiler.Result res =
                     SolidityCompiler.compile(solFile, useSM2, true, ABI, BIN);
             // check result
+            if ("".equals(res.getOutput())) {
+                log.error("contractCompile error", res.getErrors());
+                throw new BaseException(ConstantCode.CONTRACT_COMPILE_ERROR.getCode(), res.getErrors());
+            }
             if (res.isFailed()) {
                 log.warn("compile fail. contract:{} compile error. {}", contractName, res.getErrors());
                 throw new BaseException(ConstantCode.CONTRACT_COMPILE_ERROR.getCode(), res.getErrors());
@@ -182,6 +183,8 @@ public class ContractService {
         List<Object> params = req.getFuncParam();
         ABIDefinition abiDefinition = ContractAbiUtil.getAbiDefinition(contractAbi);
         List<String> funcInputTypes = ContractAbiUtil.getFuncInputType(abiDefinition);
+        log.info("funcInputTypes.size():{}", funcInputTypes.size());
+        log.info("params.size():{}", params.size());
         if (funcInputTypes.size() != params.size()) {
             log.warn("deploy fail. funcInputTypes:{}, params:{}", funcInputTypes, params);
             throw new BaseException(ConstantCode.IN_FUNCPARAM_ERROR);
@@ -274,15 +277,10 @@ public class ContractService {
         // get TransactionReceipt
         Client client = bcosSDK.getClient(groupId);
         TransactionReceipt receipt = client.getTransactionReceipt(transHash, false).getTransactionReceipt();
-        try {
-            TransactionDecoderService transactionDecoderService = new TransactionDecoderService(client.getCryptoSuite(), false);
-            // decode receipt's event
-            TransactionResponse transactionResponse = transactionDecoderService.decodeReceiptWithoutValues(contractAbi, receipt);
-            response.setData(transactionResponse);
-        } catch (IOException | ABICodecException | TransactionException e) {
-            log.error("decode receipt error ", e);
-            throw new BaseException(ConstantCode.DECODE_RECEIPT_FAILED);
-        }
+        TransactionDecoderService transactionDecoderService = new TransactionDecoderService(client.getCryptoSuite(), false);
+        // decode receipt's event
+        TransactionResponse transactionResponse = transactionDecoderService.decodeReceiptWithoutValues(contractAbi, receipt);
+        response.setData(transactionResponse);
         return response;
     }
 
@@ -356,7 +354,7 @@ public class ContractService {
             // data sign
             String data = contractBin + encodedConstructor;
             String signMsg = transService.signMessage(groupId, signType,
-                    deployInfoDto.getSignUserId(), "", Numeric.hexStringToByteArray(data));
+                    deployInfoDto.getSignUserId(), "", Numeric.hexStringToByteArray(data), true);
             if (StringUtils.isBlank(signMsg)) {
                 return;
             }

@@ -67,4 +67,15 @@ public interface ConstantCode {
     // system error
     RetCode SYSTEM_ERROR = RetCode.mark(103001, "system error");
     RetCode PARAM_VAILD_FAIL = RetCode.mark(103002, "param valid fail");
+
+    // contract type param error
+    RetCode CONTRACT_TYPE_DECODED_ERROR = RetCode.mark(201152, "Unsupported contract param type to decoded");
+
+    RetCode CLIENT_NOT_CONNECTED_WITH_THIS_GROUP = RetCode.mark(201607, "This group not connected with front's rpc peers");
+    RetCode BLOCK_NUMBER_ERROR = RetCode.mark(201012, "request blockNumber is greater than latest");
+    RetCode BLOCK_NOT_EXIST_ERROR = RetCode.mark(201511, "block of this hash not exist");
+    RetCode TX_RECEIPT_NOT_EXIST_ERROR = RetCode.mark(201510, "transaction receipt of this hash not exist");
+    RetCode PARAM_ERROR = RetCode.mark(201200,"params not fit");
+    RetCode DATA_SIGN_ERROR = RetCode.mark(201033, "data request sign error");
+
 }

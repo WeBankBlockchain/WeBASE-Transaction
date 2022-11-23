@@ -17,10 +17,10 @@ package com.webank.webase.transaction.util;
 import com.webank.webase.transaction.base.ConstantCode;
 import com.webank.webase.transaction.base.exception.BaseException;
 import lombok.extern.slf4j.Slf4j;
-import org.fisco.bcos.sdk.codec.datatypes.*;
-import org.fisco.bcos.sdk.codec.datatypes.generated.*;
-import org.fisco.bcos.sdk.utils.Hex;
-import org.fisco.bcos.sdk.utils.Numeric;
+import org.fisco.bcos.sdk.v3.codec.datatypes.*;
+import org.fisco.bcos.sdk.v3.codec.datatypes.generated.*;
+import org.fisco.bcos.sdk.v3.utils.Hex;
+import org.fisco.bcos.sdk.v3.utils.Numeric;
 
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
@@ -44,8 +44,8 @@ public class ContractTypeUtil {
     public static <T extends Type> T encodeString(String input, Class<T> type)
             throws BaseException {
         try {
-            if (org.fisco.bcos.sdk.codec.datatypes.Address.class.isAssignableFrom(type)) {
-                return (T) new org.fisco.bcos.sdk.codec.datatypes.Address(input);
+            if (org.fisco.bcos.sdk.v3.codec.datatypes.Address.class.isAssignableFrom(type)) {
+                return (T) new org.fisco.bcos.sdk.v3.codec.datatypes.Address(input);
             } else if (NumericType.class.isAssignableFrom(type)) {
                 return (T) encodeNumeric(input, (Class<NumericType>) type);
             } else if (Bool.class.isAssignableFrom(type)) {
@@ -77,7 +77,7 @@ public class ContractTypeUtil {
      */
     public static <T> Object decodeResult(Type result, Class<T> type) throws BaseException {
         try {
-            if (org.fisco.bcos.sdk.codec.datatypes.Address.class.isAssignableFrom(type)) {
+            if (org.fisco.bcos.sdk.v3.codec.datatypes.Address.class.isAssignableFrom(type)) {
                 return result.toString();
             } else if (NumericType.class.isAssignableFrom(type)) {
                 return result.getValue();
@@ -178,7 +178,7 @@ public class ContractTypeUtil {
     public static TypeReference<?> getArrayType(String type) throws BaseException {
         switch (type) {
             case "address":
-                return new TypeReference<DynamicArray<org.fisco.bcos.sdk.codec.datatypes.Address>>() {};
+                return new TypeReference<DynamicArray<org.fisco.bcos.sdk.v3.codec.datatypes.Address>>() {};
             case "bool":
                 return new TypeReference<DynamicArray<Bool>>() {};
             case "string":

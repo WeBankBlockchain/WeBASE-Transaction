@@ -14,70 +14,62 @@
 
 package com.webank.webase.transaction.trans;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.webank.webase.transaction.base.ConstantCode;
 import com.webank.webase.transaction.base.ConstantProperties;
 import com.webank.webase.transaction.base.ResponseEntity;
 import com.webank.webase.transaction.base.exception.BaseException;
-import com.webank.webase.transaction.config.Web3Config;
 import com.webank.webase.transaction.contract.ContractMapper;
 import com.webank.webase.transaction.keystore.KeyStoreService;
 import com.webank.webase.transaction.keystore.entity.EncodeInfo;
-import com.webank.webase.transaction.keystore.entity.KeyStoreInfo;
 import com.webank.webase.transaction.keystore.entity.SignType;
 import com.webank.webase.transaction.trans.entity.ReqTransCallInfo;
 import com.webank.webase.transaction.trans.entity.ReqTransSendInfo;
 import com.webank.webase.transaction.trans.entity.TransInfoDto;
 import com.webank.webase.transaction.util.CommonUtils;
 import com.webank.webase.transaction.util.ContractAbiUtil;
-import com.webank.webase.transaction.util.LogUtils;
 import com.webank.webase.transaction.util.JsonUtils;
-import java.io.IOException;
-import java.math.BigInteger;
-import java.time.Duration;
-import java.time.Instant;
-import java.util.*;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.TimeUnit;
+import com.webank.webase.transaction.util.LogUtils;
+import com.webank.webase.transaction.web3api.Web3ApiService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.fisco.bcos.sdk.BcosSDK;
-import org.fisco.bcos.sdk.client.Client;
-import org.fisco.bcos.sdk.client.protocol.model.tars.TransactionData;
-import org.fisco.bcos.sdk.client.protocol.response.Call;
-import org.fisco.bcos.sdk.codec.ABICodec;
-import org.fisco.bcos.sdk.codec.ABICodecException;
-import org.fisco.bcos.sdk.codec.abi.FunctionEncoder;
-import org.fisco.bcos.sdk.codec.datatypes.Function;
-import org.fisco.bcos.sdk.codec.datatypes.Type;
-import org.fisco.bcos.sdk.codec.datatypes.TypeReference;
-import org.fisco.bcos.sdk.codec.datatypes.generated.tuples.generated.Tuple2;
-import org.fisco.bcos.sdk.codec.wrapper.ABIDefinition;
-import org.fisco.bcos.sdk.codec.wrapper.ABIDefinitionFactory;
-import org.fisco.bcos.sdk.codec.wrapper.ContractABIDefinition;
-import org.fisco.bcos.sdk.crypto.keypair.CryptoKeyPair;
-import org.fisco.bcos.sdk.crypto.signature.SignatureResult;
-import org.fisco.bcos.sdk.model.TransactionReceipt;
-import org.fisco.bcos.sdk.transaction.builder.TransactionBuilderService;
-import org.fisco.bcos.sdk.transaction.codec.decode.RevertMessageParser;
-import org.fisco.bcos.sdk.transaction.codec.decode.TransactionDecoderService;
-import org.fisco.bcos.sdk.transaction.codec.encode.TransactionEncoderService;
-import org.fisco.bcos.sdk.transaction.manager.TransactionProcessor;
-import org.fisco.bcos.sdk.transaction.manager.TransactionProcessorFactory;
-import org.fisco.bcos.sdk.transaction.model.dto.TransactionResponse;
-import org.fisco.bcos.sdk.transaction.model.exception.TransactionException;
-import org.fisco.bcos.sdk.transaction.pusher.TransactionPusherService;
-import org.fisco.bcos.sdk.utils.Hex;
-import org.fisco.bcos.sdk.utils.Numeric;
+import org.fisco.bcos.sdk.jni.common.JniException;
+import org.fisco.bcos.sdk.jni.utilities.tx.TransactionBuilderJniObj;
+import org.fisco.bcos.sdk.v3.BcosSDK;
+import org.fisco.bcos.sdk.v3.client.Client;
+import org.fisco.bcos.sdk.v3.client.protocol.response.Call;
+import org.fisco.bcos.sdk.v3.codec.ContractCodec;
+import org.fisco.bcos.sdk.v3.codec.ContractCodecException;
+import org.fisco.bcos.sdk.v3.codec.datatypes.Type;
+import org.fisco.bcos.sdk.v3.codec.datatypes.generated.tuples.generated.Tuple2;
+import org.fisco.bcos.sdk.v3.codec.wrapper.ABIDefinition;
+import org.fisco.bcos.sdk.v3.codec.wrapper.ABIDefinitionFactory;
+import org.fisco.bcos.sdk.v3.codec.wrapper.ContractABIDefinition;
+import org.fisco.bcos.sdk.v3.crypto.keypair.CryptoKeyPair;
+import org.fisco.bcos.sdk.v3.crypto.signature.SignatureResult;
+import org.fisco.bcos.sdk.v3.model.TransactionReceipt;
+import org.fisco.bcos.sdk.v3.transaction.codec.decode.RevertMessageParser;
+import org.fisco.bcos.sdk.v3.transaction.codec.decode.TransactionDecoderService;
+import org.fisco.bcos.sdk.v3.transaction.codec.encode.TransactionEncoderService;
+import org.fisco.bcos.sdk.v3.transaction.manager.TransactionProcessor;
+import org.fisco.bcos.sdk.v3.transaction.manager.TransactionProcessorFactory;
+import org.fisco.bcos.sdk.v3.transaction.model.dto.TransactionResponse;
+import org.fisco.bcos.sdk.v3.transaction.pusher.TransactionPusherService;
+import org.fisco.bcos.sdk.v3.utils.Hex;
+import org.fisco.bcos.sdk.v3.utils.Numeric;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.concurrent.RejectedExecutionException;
+
 /**
  * TransService.
- * 
  */
 @Slf4j
 @Service
@@ -96,13 +88,16 @@ public class TransService {
     private ConstantProperties properties;
     @Autowired
     private KeyStoreService keyStoreService;
+    @Autowired
+    private Web3ApiService web3ApiService;
 
     private static final int USE_SOLIDITY = 1;
     private static final int USE_WASM = 2;
     private static final int USE_WASM_DEPLOY = 10;
+
     /**
      * save transaction request data.
-     * 
+     *
      * @param req parameter
      * @return
      */
@@ -216,7 +211,7 @@ public class TransService {
 
     /**
      * transaction query.
-     * 
+     *
      * @param req parameter
      * @return
      */
@@ -275,13 +270,14 @@ public class TransService {
 
         byte[] encodeFunction = this.encodeFunction2ByteArr(contractAbi, funcName, params, groupId);
         List<Type> typeList = this.handleCall(groupId, keyStoreService.getKeyPairFromFile(groupId).getAddress(),
-            contractAddress, encodeFunction, contractAbi, funcName);
+                contractAddress, encodeFunction, contractAbi, funcName);
         ResponseEntity response = new ResponseEntity(ConstantCode.RET_SUCCEED, typeList);
         return response;
     }
 
     /**
      * migrate from webase-front
+     *
      * @param groupId
      * @param userAddress
      * @param contractAddress
@@ -289,13 +285,12 @@ public class TransService {
      * @param abiStr
      * @param funcName
      * @return decoded type list
-     *                 //  [
-     *                 //    {
-     *                 //      "value": "Hello, World!",
-     *                 //      "typeAsString": "string"
-     *                 //    }
-     *                 //  ]
-     *
+     * //  [
+     * //    {
+     * //      "value": "Hello, World!",
+     * //      "typeAsString": "string"
+     * //    }
+     * //  ]
      */
     public List<Type> handleCall(String groupId, String userAddress, String contractAddress,
                                  byte[] encodedFunction, String abiStr, String funcName) throws BaseException {
@@ -303,37 +298,37 @@ public class TransService {
         Client client = bcosSDK.getClient(groupId);
         Pair<String, String> chainIdAndGroupId = TransactionProcessorFactory.getChainIdAndGroupId(client);
         TransactionProcessor transactionProcessor = new TransactionProcessor(client,
-            keyStoreService.getRandomKeypair(groupId), groupId, chainIdAndGroupId.getLeft());
+                keyStoreService.getRandomKeypair(groupId), groupId, chainIdAndGroupId.getLeft());
         Call.CallOutput callOutput = transactionProcessor
-            .executeCall(userAddress, contractAddress, encodedFunction)
-            .getCallResult();
+                .executeCall(userAddress, contractAddress, encodedFunction)
+                .getCallResult();
         // if error
         if (callOutput.getStatus() != 0) {
             Tuple2<Boolean, String> parseResult =
-                RevertMessageParser.tryResolveRevertMessage(callOutput.getStatus(), callOutput.getOutput());
+                    RevertMessageParser.tryResolveRevertMessage(callOutput.getStatus(), callOutput.getOutput());
             log.error("call contract error:{}", parseResult);
             String parseResultStr = parseResult.getValue1() ? parseResult.getValue2() : "call contract error of status" + callOutput.getStatus();
             throw new BaseException(ConstantCode.TRANSACTION_QUERY_FAILED.getCode(), parseResultStr);
         } else {
-            ABICodec abiCodec = new ABICodec(bcosSDK.getClient(groupId).getCryptoSuite(), false);
+            ContractCodec abiCodec = new ContractCodec(bcosSDK.getClient(groupId).getCryptoSuite(), client.isWASM());
             try {
                 log.debug("========= callOutput.getOutput():{}", callOutput.getOutput());
                 List<Type> typeList = abiCodec.decodeMethodAndGetOutputObject(abiStr, funcName, callOutput.getOutput());
                 // bytes类型转十六进制
-                // todo output is byte[] or string  Numeric.hexStringToByteArray
+                // todo output is byte[] or string  Hex.decode
                 log.info("call contract res:{}", JsonUtils.objToString(typeList));
                 return typeList;
-            } catch (ABICodecException e) {
+            } catch (ContractCodecException e) {
                 log.error("handleCall decode call output fail:[]", e);
-                throw new BaseException(ConstantCode.DECODE_TRANS_OUTPUT_FAILED);
+                throw new BaseException(ConstantCode.CONTRACT_TYPE_DECODED_ERROR);
             }
         }
     }
 
     /**
      * get transaction event.
-     * 
-     * @param groupId groupId
+     *
+     * @param groupId       groupId
      * @param uuidStateless uuid
      * @return
      */
@@ -363,22 +358,17 @@ public class TransService {
         // get TransactionReceipt
         Client client = bcosSDK.getClient(groupId);
         TransactionReceipt receipt = client.getTransactionReceipt(transHash, false).getTransactionReceipt();
-        try {
-            TransactionDecoderService transactionDecoderService = new TransactionDecoderService(client.getCryptoSuite(), false);
-            // decode receipt's event
-            TransactionResponse transactionResponse = transactionDecoderService.decodeReceiptWithoutValues(contractAbi, receipt);
-            response.setData(transactionResponse);
-        } catch (IOException | ABICodecException | TransactionException e) {
-            log.error("decode receipt error ", e);
-            throw new BaseException(ConstantCode.DECODE_RECEIPT_FAILED);
-        }
+        TransactionDecoderService transactionDecoderService = new TransactionDecoderService(client.getCryptoSuite(), false);
+        // decode receipt's event
+        TransactionResponse transactionResponse = transactionDecoderService.decodeReceiptWithoutValues(contractAbi, receipt);
+        response.setData(transactionResponse);
         return response;
     }
 
     /**
      * get transaction output.
-     * 
-     * @param groupId groupId
+     *
+     * @param groupId       groupId
      * @param uuidStateless uuid
      * @return
      */
@@ -403,22 +393,24 @@ public class TransService {
         }
 
         Client client = bcosSDK.getClient(groupId);
-        ABICodec abiCodec = new ABICodec(client.getCryptoSuite(), false);
+        ContractCodec abiCodec = new ContractCodec(client.getCryptoSuite(), false);
         try {
             List<Type> typeList = abiCodec.decodeMethodAndGetOutputObject(contractAbi, funcName, transOutput);
+            // bytes类型转十六进制
+            // todo output is byte[] or string  Hex.decode
+            log.info("call contract res:{}", JsonUtils.objToString(typeList));
             response.setData(typeList);
-        } catch (ABICodecException e) {
-            log.error("decode output error ", e);
-            throw new BaseException(ConstantCode.DECODE_TRANS_OUTPUT_FAILED);
+        } catch (ContractCodecException e) {
+            log.error("handleCall decode call output fail:[]", e);
+            throw new BaseException(ConstantCode.CONTRACT_TYPE_DECODED_ERROR);
         }
-
         return response;
     }
 
     /**
      * get transaction info.
-     * 
-     * @param groupId groupId
+     *
+     * @param groupId       groupId
      * @param uuidStateless uuid
      * @return
      */
@@ -437,7 +429,7 @@ public class TransService {
 
     /**
      * handleTransInfo.
-     * 
+     *
      * @param transInfoList transInfoList
      */
     public void handleTransInfo(List<TransInfoDto> transInfoList) {
@@ -461,7 +453,7 @@ public class TransService {
 
     /**
      * transaction send.
-     * 
+     *
      * @param transInfoDto transaction info
      */
     public void transSend(TransInfoDto transInfoDto) {
@@ -498,7 +490,7 @@ public class TransService {
 
             // data sign
             String signMsg = signMessage(groupId, signType, transInfoDto.getSignUserId(),
-                    contractAddress, encodedFunction);
+                    contractAddress, encodedFunction, false);
             if (StringUtils.isBlank(signMsg)) {
                 return;
             }
@@ -523,46 +515,76 @@ public class TransService {
     /**
      * signMessage to create raw transaction and encode data
      *
-     * @param groupId id
+     * @param groupId         id
      * @param contractAddress info
-     * @param data info
+     * @param data            info
      * @return
      */
     public String signMessage(String groupId, int signType, String signUserId, String contractAddress,
-                              byte[] data) {
+                              byte[] data, boolean isDeploy) {
         log.info("signMessage data:{}", Hex.toHexString(data));
         Client client = bcosSDK.getClient(groupId);
         // to encode raw tx
         Pair<String, String> chainIdAndGroupId = TransactionProcessorFactory.getChainIdAndGroupId(client);
-        TransactionBuilderService txBuilderService = new TransactionBuilderService(client);
-        TransactionData rawTransaction = txBuilderService
-            .createTransaction(contractAddress, data, chainIdAndGroupId.getLeft(), String.valueOf(groupId));
-        log.debug("signMessage rawTransaction:{}", JsonUtils.objToString(rawTransaction));
-        TransactionEncoderService encoderService = new TransactionEncoderService(client.getCryptoSuite());
-
-        String signMsg = "";
-        if (signType == SignType.LOCALCONFIG.getValue()) {
-            CryptoKeyPair cryptoKeyPair = keyStoreService.getKeyPairFromFile(groupId);
-            signMsg = encoderService.encodeAndSign(rawTransaction, cryptoKeyPair, USE_SOLIDITY);
-        } else if (signType == SignType.LOCALRANDOM.getValue()) {
-            CryptoKeyPair cryptoKeyPair = keyStoreService.getRandomKeypair(groupId);
-            signMsg = encoderService.encodeAndSign(rawTransaction, cryptoKeyPair, USE_SOLIDITY);
-        } else if (signType == SignType.CLOUDCALL.getValue()) {
-            byte[] encodedTransaction = encoderService.encode(rawTransaction);
-
-            EncodeInfo encodeInfo = new EncodeInfo();
-            encodeInfo.setEncodedDataStr(Numeric.toHexString(encodedTransaction));
-            encodeInfo.setSignUserId(signUserId);
-            String signDataStr = keyStoreService.getSignData(encodeInfo);
-            if (StringUtils.isBlank(signDataStr)) {
-                log.warn("deploySend get sign data error.");
-                return null;
-            }
-            SignatureResult signatureResult = CommonUtils.stringToSignatureData(signDataStr, client.getCryptoType());
-            byte[] signedMessage = encoderService.encodeToTransactionBytes(rawTransaction, signatureResult, USE_SOLIDITY);
-            signMsg = Numeric.toHexString(signedMessage);
+        long rawTransaction = 0L;
+        String encodedTransaction = "";
+        String transactionDataHash = "";
+        try {
+            rawTransaction = TransactionBuilderJniObj
+                    .createTransactionData(groupId, chainIdAndGroupId.getLeft(),
+                            contractAddress, Hex.toHexString(data), "", client.getBlockLimit().longValue());
+            encodedTransaction = TransactionBuilderJniObj.encodeTransactionData(rawTransaction);
+            transactionDataHash = client.getCryptoSuite().hash(encodedTransaction);
+            log.debug("signMessage rawTransaction:{}", JsonUtils.objToString(rawTransaction));
+        } catch (JniException e) {
+            log.error("createTransactionData jni error ", e);
         }
+        TransactionEncoderService encoderService = new TransactionEncoderService(client.getCryptoSuite());
+        String signMsg = "";
+        try{
+            if (signType == SignType.LOCALCONFIG.getValue()) {
+                CryptoKeyPair cryptoKeyPair = keyStoreService.getKeyPairFromFile(groupId);
+                signMsg = encoderService.encodeAndSign(rawTransaction, cryptoKeyPair, USE_SOLIDITY);
+            } else if (signType == SignType.LOCALRANDOM.getValue()) {
+                CryptoKeyPair cryptoKeyPair = keyStoreService.getRandomKeypair(groupId);
+                signMsg = encoderService.encodeAndSign(rawTransaction, cryptoKeyPair, USE_SOLIDITY);
+            } else if (signType == SignType.CLOUDCALL.getValue()) {
+                SignatureResult signData = this.requestSignForSign(encodedTransaction, signUserId, groupId);
+                int mark = client.isWASM() ? USE_WASM : USE_SOLIDITY;
+                if (client.isWASM() && isDeploy) {
+                    mark = USE_WASM_DEPLOY;
+                }
+                log.info("mark {}", mark);
+                String transactionDataHashSignedData = Hex.toHexString(signData.encode());
+                signMsg = TransactionBuilderJniObj.createSignedTransaction(rawTransaction,
+                        transactionDataHashSignedData,
+                        transactionDataHash, mark);
+            }
+        } catch (JniException e) {
+            log.error("createSignedTransactionData jni error:", e);
+        }
+
         return signMsg;
+    }
+
+    /**
+     * sign by
+     * @param encodedDataStr
+     * @param signUserId
+     * @return
+     */
+    public SignatureResult requestSignForSign(String encodedDataStr, String signUserId, String groupId) {
+        EncodeInfo encodeInfo = new EncodeInfo();
+        encodeInfo.setSignUserId(signUserId);
+        encodeInfo.setEncodedDataStr(encodedDataStr);
+
+        Instant startTime = Instant.now();
+        String signDataStr = keyStoreService.getSignData(encodeInfo);
+        log.info("get requestSignForSign cost time: {}",
+                Duration.between(startTime, Instant.now()).toMillis());
+        SignatureResult signData = CommonUtils.stringToSignatureData(signDataStr,
+                web3ApiService.getCryptoSuite(groupId).cryptoTypeConfig);
+        return signData;
     }
 
     /**
@@ -582,6 +604,7 @@ public class TransService {
 
     /**
      * sdk仅用于了预编译合约，其余解析需要自行完成
+     *
      * @param client
      * @param receipt
      */
@@ -594,7 +617,7 @@ public class TransService {
 
     /**
      * check groupId.
-     * 
+     *
      * @param groupId info
      * @return
      */
@@ -618,6 +641,7 @@ public class TransService {
 
     /**
      * get encoded function for /trans/query-transaction
+     *
      * @param abiStr
      * @param funcName
      * @param funcParam
@@ -628,12 +652,13 @@ public class TransService {
         funcParam = funcParam == null ? new ArrayList<>() : funcParam;
         this.validFuncParam(abiStr, funcName, funcParam, groupId);
         log.debug("abiStr:{} ,funcName:{},funcParam {},groupID {}", abiStr, funcName,
-            funcParam, groupId);
-        ABICodec abiCodec = new ABICodec(bcosSDK.getClient(groupId).getCryptoSuite(), false);
+                funcParam, groupId);
+        ContractCodec abiCodec = new ContractCodec(bcosSDK.getClient(groupId).getCryptoSuite(), false);
         byte[] encodeFunction;
+
         try {
             encodeFunction = abiCodec.encodeMethod(abiStr, funcName, funcParam);
-        } catch (ABICodecException e) {
+        } catch (ContractCodecException e) {
             log.error("transHandleWithSign encode fail:[]", e);
             throw new BaseException(ConstantCode.CONTRACT_TYPE_ENCODED_ERROR);
         }
@@ -651,7 +676,7 @@ public class TransService {
 
         ContractABIDefinition contractABIDefinition = factory.loadABI(abiStr);
         List<ABIDefinition> abiDefinitionList = contractABIDefinition.getFunctions()
-            .get(functionName);
+                .get(functionName);
         if (abiDefinitionList.isEmpty()) {
             throw new BaseException(ConstantCode.FUNCTION_NOT_EXISTS);
         }
@@ -659,8 +684,10 @@ public class TransService {
         ABIDefinition function = abiDefinitionList.get(0);
         return function;
     }
+
     /**
      * check input
+     *
      * @param contractAbiStr
      * @param funcName
      * @param funcParam
@@ -709,11 +736,11 @@ public class TransService {
                             String temp = type.substring("bytes".length());
                             // 32[] => 32
                             int bytesNLength = Integer
-                                .parseInt(temp.substring(0, temp.length() - 2));
+                                    .parseInt(temp.substring(0, temp.length() - 2));
                             if (inputArray.length != bytesNLength) {
                                 log.error("validFuncParam param of bytesN size not match");
                                 throw new BaseException(
-                                    ConstantCode.IN_FUNCPARAM_ERROR);
+                                        ConstantCode.IN_FUNCPARAM_ERROR);
                             }
                         }
                         bytesArray.add(inputArray);
