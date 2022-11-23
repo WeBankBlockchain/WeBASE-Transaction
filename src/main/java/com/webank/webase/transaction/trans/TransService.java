@@ -29,7 +29,6 @@ import com.webank.webase.transaction.util.CommonUtils;
 import com.webank.webase.transaction.util.ContractAbiUtil;
 import com.webank.webase.transaction.util.JsonUtils;
 import com.webank.webase.transaction.util.LogUtils;
-import com.webank.webase.transaction.web3api.Web3ApiService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -88,8 +87,6 @@ public class TransService {
     private ConstantProperties properties;
     @Autowired
     private KeyStoreService keyStoreService;
-    @Autowired
-    private Web3ApiService web3ApiService;
 
     private static final int USE_SOLIDITY = 1;
     private static final int USE_WASM = 2;
@@ -583,7 +580,7 @@ public class TransService {
         log.info("get requestSignForSign cost time: {}",
                 Duration.between(startTime, Instant.now()).toMillis());
         SignatureResult signData = CommonUtils.stringToSignatureData(signDataStr,
-                web3ApiService.getCryptoSuite(groupId).cryptoTypeConfig);
+                bcosSDK.getClient(groupId).getCryptoSuite().cryptoTypeConfig);
         return signData;
     }
 
