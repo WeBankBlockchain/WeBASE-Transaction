@@ -16,14 +16,10 @@ package com.webank.webase.transaction.util;
 
 import com.webank.webase.transaction.base.ConstantProperties;
 import com.webank.webase.transaction.base.exception.BaseException;
-import org.fisco.bcos.sdk.codec.abi.EventValues;
-import org.fisco.bcos.sdk.codec.datatypes.DynamicArray;
-import org.fisco.bcos.sdk.codec.datatypes.Event;
-import org.fisco.bcos.sdk.codec.datatypes.Type;
-import org.fisco.bcos.sdk.codec.datatypes.TypeReference;
-import org.fisco.bcos.sdk.codec.wrapper.ABIDefinition;
-import org.fisco.bcos.sdk.contract.Contract;
-import org.fisco.bcos.sdk.model.TransactionReceipt;
+import org.fisco.bcos.sdk.v3.codec.datatypes.DynamicArray;
+import org.fisco.bcos.sdk.v3.codec.datatypes.Type;
+import org.fisco.bcos.sdk.v3.codec.datatypes.TypeReference;
+import org.fisco.bcos.sdk.v3.codec.wrapper.ABIDefinition;
 
 import java.io.File;
 import java.io.FileOutputStream;

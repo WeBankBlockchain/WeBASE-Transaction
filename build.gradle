@@ -1,6 +1,6 @@
 version '1.0'
 
-apply plugin: 'maven'
+apply plugin: 'maven-publish'
 apply plugin: 'java'
 apply plugin: 'idea'
 apply plugin: 'eclipse'
@@ -20,21 +20,27 @@ repositories {
 }
 
 
-def spring_boot_version="1.5.22.RELEASE"
-List spring_boot =[ 
-    "org.springframework.boot:spring-boot-starter-web:$spring_boot_version",
-    "org.springframework.boot:spring-boot-starter-jdbc:$spring_boot_version",
-    "org.springframework.boot:spring-boot-autoconfigure:$spring_boot_version",
-    "org.springframework.boot:spring-boot-configuration-processor:$spring_boot_version",
+def spring_boot_version="2.7.0"
+List spring_boot =[
+        "org.springframework.boot:spring-boot-starter-web:$spring_boot_version",
+        "org.springframework.boot:spring-boot-starter-jdbc:$spring_boot_version",
+        "org.springframework.boot:spring-boot-starter-validation:$spring_boot_version"
 ]
 
 // cover old version
-def spring_version="4.3.29.RELEASE"
-List spring =[
-    "org.springframework:spring-web:$spring_version",
-    "org.springframework:spring-webmvc:$spring_version",
-    "org.springframework:spring-jdbc:$spring_version"
-]
+//def spring_version="5.3.21"
+//List spring =[
+//        "org.springframework:spring-core:$spring_version",
+//        "org.springframework:spring-aop:$spring_version",
+//        "org.springframework:spring-beans:$spring_version",
+//        "org.springframework:spring-context:$spring_version",
+//        "org.springframework:spring-expression:$spring_version",
+//        "org.springframework:spring-jcl:$spring_version",
+//        "org.springframework:spring-jdbc:$spring_version",
+//        "org.springframework:spring-tx:$spring_version",
+//        "org.springframework:spring-test:$spring_version",
+//        "org.springframework:spring-web:$spring_version"
+//]
 
 List mysql = [
     'mysql:mysql-connector-java:8.0.22',
@@ -47,12 +53,12 @@ List swagger = [
     'io.springfox:springfox-swagger-ui:2.8.0'
 ]
 
-def log4j_version="2.17.1"
+def log4j_version="2.18.0"
 List log4j = [
-    "org.apache.logging.log4j:log4j-api:$log4j_version",
-    "org.apache.logging.log4j:log4j-core:$log4j_version",
-    "org.apache.logging.log4j:log4j-slf4j-impl:$log4j_version",
-    "org.apache.logging.log4j:log4j-web:$log4j_version"
+        "org.apache.logging.log4j:log4j-api:$log4j_version",
+        "org.apache.logging.log4j:log4j-core:$log4j_version",
+        "org.apache.logging.log4j:log4j-slf4j-impl:$log4j_version",
+        "org.apache.logging.log4j:log4j-web:$log4j_version",
 ]
 
 List elasticjob = [
@@ -73,14 +79,14 @@ List jaxb = [
      "javax.activation:activation:1.1.1"
 ]
 
-def jackson_version = "2.13.2"
+def jackson_version = "2.14.1"
 List jackson = [
-    "com.fasterxml.jackson.core:jackson-databind:2.13.2.1",
-    "com.fasterxml.jackson.core:jackson-annotations:$jackson_version",
-    "com.fasterxml.jackson.core:jackson-core:$jackson_version",
-    "com.fasterxml.jackson.module:jackson-module-parameter-names:$jackson_version",
-    "com.fasterxml.jackson.datatype:jackson-datatype-jdk8:$jackson_version",
-    "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jackson_version",
+        "com.fasterxml.jackson.core:jackson-databind:$jackson_version",
+        "com.fasterxml.jackson.core:jackson-annotations:$jackson_version",
+        "com.fasterxml.jackson.core:jackson-core:$jackson_version",
+        "com.fasterxml.jackson.module:jackson-module-parameter-names:$jackson_version",
+        "com.fasterxml.jackson.datatype:jackson-datatype-jdk8:$jackson_version",
+        "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jackson_version",
 ]
 
 
@@ -96,8 +102,8 @@ List tomcat = [
 
 dependencies {
 
-    compile spring_boot,spring,mysql,swagger,log4j,elasticjob,zookeeper,jaxb,jackson,tomcat
-    compile ('org.fisco-bcos.java-sdk:fisco-bcos-java-sdk:3.0.0-rc2')
+    compile spring_boot,mysql,swagger,log4j,elasticjob,zookeeper,jaxb,jackson,tomcat
+    compile ('org.fisco-bcos.java-sdk:fisco-bcos-java-sdk:3.0.0')
     // support guomi/ecdsa same time, support solcJ-0.5.2
     compile "org.fisco-bcos:solcJ:0.4.25-rc1"
     compile "org.slf4j:jcl-over-slf4j:1.7.30"
@@ -105,6 +111,8 @@ dependencies {
     compile "commons-io:commons-io:2.4"
     compile 'com.alibaba:druid:1.1.23'
     compile 'org.projectlombok:lombok:1.18.6'
+    compile 'org.yaml:snakeyaml:1.31'
+    compile 'com.lmax:disruptor:3.4.4'
     // cover low version guava
     compile 'com.google.guava:guava:29.0-jre'
     annotationProcessor 'org.projectlombok:lombok:1.18.2'
@@ -115,6 +123,7 @@ configurations {
     all*.exclude group: 'org.slf4j', module: 'slf4j-log4j12'
     all*.exclude group: 'log4j', module: 'log4j'
     all*.exclude group: 'com.mchange', module: '*'
+    all*.exclude group: 'com.fasterxml.jackson', module: 'jackson-bom'
 }
 
 sourceSets {
