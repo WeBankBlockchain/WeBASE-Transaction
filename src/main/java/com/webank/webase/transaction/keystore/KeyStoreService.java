@@ -20,11 +20,13 @@ import com.webank.webase.transaction.base.ResponseEntity;
 import com.webank.webase.transaction.base.exception.BaseException;
 import com.webank.webase.transaction.keystore.entity.EncodeInfo;
 import com.webank.webase.transaction.keystore.entity.KeyStoreInfo;
+import com.webank.webase.transaction.keystore.entity.ReqSignHashVo;
 import com.webank.webase.transaction.keystore.entity.SignInfo;
 import com.webank.webase.transaction.util.CommonUtils;
 import com.webank.webase.transaction.util.JsonUtils;
 import com.webank.webase.transaction.util.LogUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.fisco.bcos.sdk.v3.BcosSDK;
 import org.fisco.bcos.sdk.v3.crypto.keypair.CryptoKeyPair;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,6 +51,7 @@ public class KeyStoreService {
 
     private static final int PUBLIC_KEY_LENGTH_IN_HEX = 128;
     private static final String SIGN_ADDSIGN_URL = "http://%s/WeBASE-Sign/sign";
+    private static final String SIGN_HASH_URL = "http://%s/WeBASE-Sign/sign/hash";
     private static final String SIGN_USERINFO_URL = "http://%s/WeBASE-Sign/user/%s/userInfo";
 
     /**
@@ -107,6 +110,41 @@ public class KeyStoreService {
             log.error("getSignData exception", e);
             LogUtils.monitorAbnormalLogger().error(ConstantProperties.CODE_ABNORMAL_S0005,
                     ConstantProperties.MSG_ABNORMAL_S0005);
+        }
+        return null;
+    }
+
+    /**
+     * sign hash in webase-sign
+     */
+    public String getSignData(ReqSignHashVo params) {
+        try {
+            String url = String.format(SIGN_HASH_URL, properties.getSignServer());
+            log.info("getSignData url:{}", url);
+            HttpHeaders headers = CommonUtils.buildHeaders();
+            HttpEntity<String> formEntity =
+                new HttpEntity<String>(JsonUtils.toJSONString(params), headers);
+            ResponseEntity response =
+                restTemplate.postForObject(url, formEntity, ResponseEntity.class);
+            log.info("getSignData response:{}", JsonUtils.toJSONString(response));
+            SignInfo signInfo = new SignInfo();
+            if (response.getCode() == 0) {
+                signInfo = JsonUtils.toJavaObject(response.getData(), SignInfo.class);
+            } else {
+                log.error("getSignData fail for error response:{}", response);
+                throw new BaseException(response.getCode(), response.getMessage());
+            }
+            String signDataStr = signInfo.getSignDataStr();
+
+            if (StringUtils.isBlank(signDataStr)) {
+                log.warn("get sign data error and get blank string.");
+                throw new BaseException(ConstantCode.DATA_SIGN_ERROR);
+            }
+            return signDataStr;
+        } catch (Exception e) {
+            log.error("getSignData hash exception", e);
+            LogUtils.monitorAbnormalLogger().error(ConstantProperties.CODE_ABNORMAL_S0005,
+                ConstantProperties.MSG_ABNORMAL_S0005);
         }
         return null;
     }

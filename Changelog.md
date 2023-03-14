@@ -1,3 +1,25 @@
+### v3.0.2(2023-03-14)
+
+**Fix**
+- 兼容FISCO-BCOS v3.2.0对交易哈希校验的修改
+- 通过WeBASE-Sign签名时改为使用`/sign/hash`对交易哈希签名
+
+**兼容性**
+- 支持FISCO-BCOS v3.0.0及以上版本
+- WeBASE-Sign v3.0.2
+
+
+### v3.0.0(2022-12-06)
+
+**Add**
+- 支持FISCO BCOS v3.0.0正式版
+
+
+**兼容性**
+- 支持FISCO-BCOS v3.0.0及以上版本
+- WeBASE-Sign v3.0.0
+
+
 ### lab-rc2
 (2022-03-14)
 
