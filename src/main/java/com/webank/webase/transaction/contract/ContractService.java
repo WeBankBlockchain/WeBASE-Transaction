@@ -360,7 +360,6 @@ public class ContractService {
             }
             // send transaction
             TransactionReceipt receipt = transService.sendMessage(groupId, signMsg);
-//            TransactionReceipt receipt = transFuture.get(properties.getTransMaxWait(), TimeUnit.SECONDS);
 
             deployInfoDto.setContractAddress(receipt.getContractAddress());
             deployInfoDto.setTransHash(receipt.getTransactionHash());

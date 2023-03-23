@@ -17,9 +17,9 @@ package com.webank.webase.transaction.trans.entity;
 import com.webank.webase.transaction.base.ConstantCode;
 import java.util.ArrayList;
 import java.util.List;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import lombok.Data;
-import org.hibernate.validator.constraints.NotBlank;
 
 /**
  * transaction call request parameters.
