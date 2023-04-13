@@ -35,7 +35,7 @@ checkProcess(){
 
 JAVA_OPTS=" -Dfile.encoding=UTF-8"
 JAVA_OPTS+=" -Xmx256m -Xms256m -Xmn128m -Xss512k -XX:MetaspaceSize=128m -XX:MaxMetaspaceSize=256m"
-JAVA_OPTS+=" -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=${LOG_DIR}/heap_error.log"
+JAVA_OPTS+=" -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=${LOG_DIR}/heap_error.hprof"
 
 start(){
     checkProcess
@@ -45,7 +45,7 @@ start(){
         echo "==============================================================================================="
     else
         echo -n "Server $APP_MAIN Port $SERVER_PORT ..."
-        nohup $JAVA_HOME/bin/java -Djdk.tls.namedGroups="secp256k1" $JAVA_OPTS -cp $CLASSPATH $APP_MAIN >> $LOG_DIR/transaction.out 2>&1 &
+        nohup $JAVA_HOME/bin/java -Djdk.tls.namedGroups="secp256k1" $JAVA_OPTS -cp $CLASSPATH $APP_MAIN >> $LOG_DIR/server.out 2>&1 &
         
         count=1
         result=0
