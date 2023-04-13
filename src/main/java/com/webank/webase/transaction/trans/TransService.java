@@ -21,6 +21,7 @@ import com.webank.webase.transaction.base.exception.BaseException;
 import com.webank.webase.transaction.contract.ContractMapper;
 import com.webank.webase.transaction.keystore.KeyStoreService;
 import com.webank.webase.transaction.keystore.entity.EncodeInfo;
+import com.webank.webase.transaction.keystore.entity.ReqSignHashVo;
 import com.webank.webase.transaction.keystore.entity.SignType;
 import com.webank.webase.transaction.trans.entity.ReqTransCallInfo;
 import com.webank.webase.transaction.trans.entity.ReqTransSendInfo;
@@ -493,7 +494,6 @@ public class TransService {
             }
             // send transaction
             TransactionReceipt receipt = sendMessage(groupId, signMsg);
-//            TransactionReceipt receipt = transFuture.get(properties.getTransMaxWait(), TimeUnit.SECONDS);
 
             transInfoDto.setTransHash(receipt.getTransactionHash());
             transInfoDto.setTransOutput(receipt.getOutput());
@@ -523,16 +523,14 @@ public class TransService {
         Client client = bcosSDK.getClient(groupId);
         // to encode raw tx
         Pair<String, String> chainIdAndGroupId = TransactionProcessorFactory.getChainIdAndGroupId(client);
-        long rawTransaction = 0L;
-        String encodedTransaction = "";
+        long transactionData = 0L;
         String transactionDataHash = "";
         try {
-            rawTransaction = TransactionBuilderJniObj
+            transactionData = TransactionBuilderJniObj
                     .createTransactionData(groupId, chainIdAndGroupId.getLeft(),
                             contractAddress, Hex.toHexString(data), "", client.getBlockLimit().longValue());
-            encodedTransaction = TransactionBuilderJniObj.encodeTransactionData(rawTransaction);
-            transactionDataHash = client.getCryptoSuite().hash(encodedTransaction);
-            log.debug("signMessage rawTransaction:{}", JsonUtils.objToString(rawTransaction));
+            transactionDataHash = TransactionBuilderJniObj.calcTransactionDataHash(client.getCryptoType(), transactionData);
+            log.debug("signMessage transactionData:{}, transactionDataHash:{}", transactionData, transactionDataHash);
         } catch (JniException e) {
             log.error("createTransactionData jni error ", e);
         }
@@ -541,19 +539,19 @@ public class TransService {
         try{
             if (signType == SignType.LOCALCONFIG.getValue()) {
                 CryptoKeyPair cryptoKeyPair = keyStoreService.getKeyPairFromFile(groupId);
-                signMsg = encoderService.encodeAndSign(rawTransaction, cryptoKeyPair, USE_SOLIDITY);
+                signMsg = encoderService.encodeAndSign(transactionData, cryptoKeyPair, USE_SOLIDITY);
             } else if (signType == SignType.LOCALRANDOM.getValue()) {
                 CryptoKeyPair cryptoKeyPair = keyStoreService.getRandomKeypair(groupId);
-                signMsg = encoderService.encodeAndSign(rawTransaction, cryptoKeyPair, USE_SOLIDITY);
+                signMsg = encoderService.encodeAndSign(transactionData, cryptoKeyPair, USE_SOLIDITY);
             } else if (signType == SignType.CLOUDCALL.getValue()) {
-                SignatureResult signData = this.requestSignForSign(encodedTransaction, signUserId, groupId);
+                SignatureResult signData = this.requestSignHashFromSign(transactionDataHash, signUserId, groupId);
                 int mark = client.isWASM() ? USE_WASM : USE_SOLIDITY;
                 if (client.isWASM() && isDeploy) {
                     mark = USE_WASM_DEPLOY;
                 }
                 log.info("mark {}", mark);
                 String transactionDataHashSignedData = Hex.toHexString(signData.encode());
-                signMsg = TransactionBuilderJniObj.createSignedTransaction(rawTransaction,
+                signMsg = TransactionBuilderJniObj.createSignedTransaction(transactionData,
                         transactionDataHashSignedData,
                         transactionDataHash, mark);
             }
@@ -570,7 +568,7 @@ public class TransService {
      * @param signUserId
      * @return
      */
-    public SignatureResult requestSignForSign(String encodedDataStr, String signUserId, String groupId) {
+    public SignatureResult requestSignFromSign(String encodedDataStr, String signUserId, String groupId) {
         EncodeInfo encodeInfo = new EncodeInfo();
         encodeInfo.setSignUserId(signUserId);
         encodeInfo.setEncodedDataStr(encodedDataStr);
@@ -581,6 +579,23 @@ public class TransService {
                 Duration.between(startTime, Instant.now()).toMillis());
         SignatureResult signData = CommonUtils.stringToSignatureData(signDataStr,
                 bcosSDK.getClient(groupId).getCryptoSuite().cryptoTypeConfig);
+        return signData;
+    }
+
+    /**
+     * sign by
+     * @param messageHash
+     * @param signUserId
+     * @return
+     */
+    public SignatureResult requestSignHashFromSign(String messageHash, String signUserId, String groupId) {
+        ReqSignHashVo signHashVo = new ReqSignHashVo(signUserId, messageHash);
+        Instant startTime = Instant.now();
+        String signDataStr = keyStoreService.getSignData(signHashVo);
+        log.info("get requestSignHashFromSign cost time: {}",
+            Duration.between(startTime, Instant.now()).toMillis());
+        SignatureResult signData = CommonUtils.stringToSignatureData(signDataStr,
+            bcosSDK.getClient(groupId).getCryptoType());
         return signData;
     }
 
