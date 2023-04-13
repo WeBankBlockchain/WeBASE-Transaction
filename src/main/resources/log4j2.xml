@@ -15,7 +15,7 @@
                 pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5p %c{1}(%L) - %m%n" />
             <Policies>
                 <TimeBasedTriggeringPolicy />
-                <SizeBasedTriggeringPolicy size="200 MB" />
+                <SizeBasedTriggeringPolicy size="1000 MB" />
             </Policies>
             <DefaultRolloverStrategy max="24" >
             </DefaultRolloverStrategy>
@@ -26,7 +26,7 @@
             <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5p %c{1}(%L) - %m%n" />
             <Policies>
                 <TimeBasedTriggeringPolicy />
-                <SizeBasedTriggeringPolicy size="200 MB" />
+                <SizeBasedTriggeringPolicy size="1000 MB" />
             </Policies>
             <DefaultRolloverStrategy max="24" >
             </DefaultRolloverStrategy>
@@ -37,7 +37,7 @@
             <PatternLayout pattern="[%-5p][%d{yyyy-MM-dd HH:mm:ss.SSS}][%t][TRANS][123][123][LOG_POINT]%m%n" />
             <Policies>
                 <TimeBasedTriggeringPolicy />
-                <SizeBasedTriggeringPolicy size="200 MB" />
+                <SizeBasedTriggeringPolicy size="1000 MB" />
             </Policies>
             <DefaultRolloverStrategy max="24" >
             </DefaultRolloverStrategy>
@@ -48,7 +48,7 @@
             <PatternLayout pattern="[%-5p][%d{yyyy-MM-dd HH:mm:ss.SSS}][%t][TRANS][123][123][LOG_POINT]%m%n" />
             <Policies>
                 <TimeBasedTriggeringPolicy />
-                <SizeBasedTriggeringPolicy size="200 MB" />
+                <SizeBasedTriggeringPolicy size="1000 MB" />
             </Policies>
             <DefaultRolloverStrategy max="24" >
             </DefaultRolloverStrategy>
@@ -72,11 +72,11 @@
     </Appenders>
 
     <Loggers>
-        <Logger name="org.fisco.bcos.channel" level="debug" additivity="false">
+        <Logger name="org.fisco.bcos.channel" level="info" additivity="false">
             <AppenderRef ref="asyncWeb3sdk" />
         </Logger>
         
-        <Logger name="org.fisco.bcos.web3j" level="debug" additivity="false">
+        <Logger name="org.fisco.bcos.web3j" level="info" additivity="false">
             <AppenderRef ref="asyncWeb3sdk" />
         </Logger>
         
